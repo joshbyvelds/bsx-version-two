@@ -1,0 +1,1 @@
+Now that the prototype is working and stable, it's time to make it cleaner, there are some more advanced feature I plan to add as well. I need to create a second clean repository rather than a new branch so I can use many of the new Symfony 6 features without upgrade issues.
