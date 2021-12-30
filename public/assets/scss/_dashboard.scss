@@ -1,0 +1,25 @@
+.portfolio_wrapper {
+    display: inline-block;
+    width: 680px;
+    vertical-align: top;
+}
+
+.portfolio {
+    display: inline-block;
+    width: 318px;
+    height: 220px;
+    margin-right: 20px;
+    margin-top: 10px;
+    background: $portfolio-background-color;
+    border-radius: 10px;
+}
+
+.cash {
+    display: inline-block;
+    width: 396px;
+    vertical-align: top;
+    margin-top: 10px;
+    height: 220px;
+    background: $cash-background-color;
+    border-radius: 10px;
+}
