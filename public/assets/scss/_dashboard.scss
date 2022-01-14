@@ -14,6 +14,34 @@
     margin-top: 10px;
     background: $portfolio-background-color;
     border-radius: 10px;
+    vertical-align: top;
+
+    .status{
+        height: 130px;
+    }
+
+    .money{
+        height: 70px;
+        font-size: 40px
+    }
+
+    .gainbox {
+        display: inline-block;
+        width: 50%;
+        vertical-align: top;
+    }
+
+    .info {
+        .name{
+            display: inline-block;
+            width: calc(100% - 70px);
+        }
+
+        .updated{
+            display: inline-block;
+            width: 70px;
+        }
+    }
 }
 
 .cash {

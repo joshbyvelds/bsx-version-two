@@ -21,7 +21,7 @@ class WalletController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
-            $data = $form->getData();;
+            $data = $form->getData();
             $em = $doctrine->getManager();
             //TODO:: Get the users wallet.. for now use the demo
             $wallet = $em->getRepository(Wallet::class)->find(1);

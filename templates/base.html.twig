@@ -27,6 +27,8 @@
         --><div class="page_content">
                 <header>
                     <div class="page_title">{{ page_title }}</div>
+
+                    {% if user is defined %}
                     <div class="user_panel">
                         <div class="profile_pic"></div>
                         <div class="user_text">
@@ -34,6 +36,7 @@
                             <div class="username">{{ user.username }}</div>
                         </div>
                     </div>
+                    {% endif %}
                 </header>
 
                 {% block body %}{% endblock %}
