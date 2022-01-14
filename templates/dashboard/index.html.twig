@@ -1,80 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello IndexController!{% endblock %}
+{% block title %}BSX - Dashboard{% endblock %}
 
-{% block body %}`
-{# <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/src/Controller/IndexController.php'|file_link(0) }}">src/Controller/IndexController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/templates/index/index.html.twig'|file_link(0) }}">templates/index/index.html.twig</a></code></li>
-    </ul>
-</div> #}
-
-<div class="container">
-    <div class="panel navbar">
-        <div class="logo"></div>
-        <nav>
-            <ul>
-                <li><a href="/"><span class="material-icons">space_dashboard</span>Dashboard</a></li>
-                <li>
-                    <a href="/stocks"><span class="material-icons">card_membership</span>Stocks</a>
-                    <ul>
-                        <li><a href="/portfolio/add"><span class="material-icons">add_to_queue</span>Create Portfolio</a></li>
-                        <li><a href="/stocks/add"><span class="material-icons">add_to_queue</span>Add Stock</a></li>
-                        <li><a href="/stocks/buy"><span class="material-icons">add_circle</span>Buy Shares</a></li>
-                        <li><a href="/stocks/sell"><span class="material-icons">remove_circle</span>Sell Shares</a></li>
-                        <li><a href="/options/buy"><span class="material-icons">add_box</span>Buy Option</a></li>
-                        <li><a href="/options/sell"><span class="material-icons">indeterminate_check_box</span>Sell Option</a></li>
-                    </ul>
-                </li>
-                <li><a href="/dividends/stock"><span class="material-icons">payments</span>Dividends</a>
-                    <ul>
-                        <li><a href="/dividends/add"><span class="material-icons">queue</span>Add Dividend</a></li>
-                        <li><a href="/dividends/stock"><span class="material-icons">card_membership</span>View Stock</a></li>
-                        <li><a href="/dividends/month"><span class="material-icons">today</span>View Month</a></li>
-                        <li><a href="/dividends/year"><span class="material-icons">calendar_month</span>View Year</a></li>
-                    </ul>
-                </li>
-                <li><a href="/transactions"><span class="material-icons">receipt_long</span>Transactions</a></li>
-                <li><a href="/notes"><span class="material-icons">speaker_notes</span>Notes</a>
-                <li><a href="/settings"><span class="material-icons">settings</span>Settings</a>
-                <li><a href="/logout"><span class="material-icons">power_settings_new</span>Logout</a></li>
-            </ul>
-        </nav>
-    </div><!--
-
- --><div class="page_content">
-        <header>
-            <div class="page_title">Dashboard</div>
-            <div class="user_panel">
-                <div class="profile_pic"></div>
-                <div class="user_text">
-                    <div class="realname">{{ user.realname }}</div>
-                    <div class="username">{{ user.username }}</div>
-                </div>
-            </div>
-        </header>
-
-        {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
-        <div class="portfolio_wrapper">
-            {% include "partials/panels/portfolio.html.twig" with {'name':'Swing/Day Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_day':0} %}
-            {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Holding', 'updated':'12/28/2021', 'amount': 0, 'gain_total':0, 'gain_day':0} %}
-        </div>
-
-        {% include "partials/panels/cash.html.twig" with {'amount': 0} %}
-        <div class="graph"></div>
-        <div class="stats"></div>
-        <div class="stocks_summary"></div>
-        <div class="recent_transactions"></div>
+{% block body %}
+    {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
+    <div class="portfolio_wrapper">
+        {% include "partials/panels/portfolio.html.twig" with {'name':'Swing/Day Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_day':0} %}
+        {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Holding', 'updated':'12/28/2021', 'amount': 0, 'gain_total':0, 'gain_day':0} %}
     </div>
-</div>
 
+    {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD} %}
+    <div class="graph"></div>
+    <div class="stats"></div>
+    <div class="stocks_summary"></div>
+    <div class="recent_transactions"></div>
 {% endblock %}
+

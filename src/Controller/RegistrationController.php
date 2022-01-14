@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Wallet;
 use App\Form\RegistrationFormType;
 use App\Security\LoginAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +20,7 @@ class RegistrationController extends AbstractController
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator, EntityManagerInterface $entityManager): Response
     {
         $user = new User();
+        $wallet = new Wallet();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
@@ -31,7 +33,12 @@ class RegistrationController extends AbstractController
                 )
             );
 
+            $wallet->setUser($user);
+            $wallet->setCAN(0.00);
+            $wallet->setUSD(0.00);
+
             $entityManager->persist($user);
+            $entityManager->persist($wallet);
             $entityManager->flush();
             // do anything else you need here, like send an email
 

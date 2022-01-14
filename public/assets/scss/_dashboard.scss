@@ -6,8 +6,10 @@
 
 .portfolio {
     display: inline-block;
+    box-sizing: border-box;
     width: 318px;
     height: 220px;
+    padding: 20px;
     margin-right: 20px;
     margin-top: 10px;
     background: $portfolio-background-color;
@@ -16,10 +18,42 @@
 
 .cash {
     display: inline-block;
+    box-sizing: border-box;
     width: 396px;
-    vertical-align: top;
     margin-top: 10px;
+    padding: 20px;
     height: 220px;
     background: $cash-background-color;
     border-radius: 10px;
+    vertical-align: top;
+
+    .title{
+        line-height: 30px;
+    }
+
+    .amount{
+        height: 100px;
+        line-height: 80px;
+        font-size: 40px;
+    }
+
+    a{
+        display: inline-block;
+        background: green;
+        width: 170px;
+        height: 50px;
+        margin: 0 4px;
+        text-align: center;
+        line-height: 50px;
+        color: white;
+        border-radius: 12px;
+        
+        &:first-of-type{
+            margin-left: 0;
+        }
+
+        &:last-of-type{
+            margin-right: 0;
+        }
+    }
 }

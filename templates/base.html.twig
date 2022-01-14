@@ -2,20 +2,44 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}BSX - My Personal Stock Managment System{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
         {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wdth,wght@83.9,300&display=swap" rel="stylesheet">
             <link rel="stylesheet" href="/assets/css/master.min.css">
         {% endblock %}
 
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
+            <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+            <script src="/assets/js/master.js"></script>
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div class="container">
+            {% include "partials/navbar.html.twig" %}<!--
+
+        --><div class="page_content">
+                <header>
+                    <div class="page_title">{{ page_title }}</div>
+                    <div class="user_panel">
+                        <div class="profile_pic"></div>
+                        <div class="user_text">
+                            <div class="realname">{{ user.realname }}</div>
+                            <div class="username">{{ user.username }}</div>
+                        </div>
+                    </div>
+                </header>
+
+                {% block body %}{% endblock %}
+            </div>
+        </div>
+
+        
     </body>
 </html>

@@ -1,0 +1,23 @@
+{
+  "name": "bsx",
+  "homepage": "https://github.com/joshbyvelds/bsx-version-two",
+  "authors": [
+    "Josh Byvelds <joshbyvelds@gmail.com>"
+  ],
+  "description": "",
+  "main": "public/index.php",
+  "license": "GNU",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.6.0"
+  }
+
+  
+}
