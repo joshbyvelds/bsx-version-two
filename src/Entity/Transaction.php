@@ -29,6 +29,12 @@ class Transaction
     #[ORM\Column(type: 'date')]
     private $date;
 
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $convert_usd;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $convert_cdn;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,6 +96,30 @@ class Transaction
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
+
+        return $this;
+    }
+
+    public function getConvertUsd(): ?float
+    {
+        return $this->convert_usd;
+    }
+
+    public function setConvertUsd(?float $convert_usd): self
+    {
+        $this->convert_usd = $convert_usd;
+
+        return $this;
+    }
+
+    public function getConvertCdn(): ?float
+    {
+        return $this->convert_cdn;
+    }
+
+    public function setConvertCdn(?float $convert_cdn): self
+    {
+        $this->convert_cdn = $convert_cdn;
 
         return $this;
     }

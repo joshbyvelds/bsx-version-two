@@ -20,4 +20,5 @@
 ###< phpunit/phpunit ###
 
 /bower_components/
+/documents/
 /public/bower_components/

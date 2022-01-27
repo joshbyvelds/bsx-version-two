@@ -13,6 +13,6 @@
     <div class="graph"></div>
     <div class="stats"></div>
     <div class="stocks_summary"></div>
-    <div class="recent_transactions"></div>
+    {% include "partials/panels/transactions.html.twig" with {'transactions': transactions} %}
 {% endblock %}
 
