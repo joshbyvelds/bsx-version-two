@@ -4,7 +4,11 @@
     background: $navbar-background-color;
     vertical-align: top;
     border-radius: 0 0 0 24px;
-    border-right:solid 1px black; 
+    border-right:solid 1px black;
+
+    &.panel {
+        margin: 0;
+    }
 
     .logo {
         display: block;

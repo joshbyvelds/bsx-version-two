@@ -1,0 +1,68 @@
+<div class="statsgraph hotcold">
+    <ul class="legend">
+        <li>Hot Money</li>
+        <li>Cold Money</li>
+        <li>Free Space</li>
+    </ul>
+
+    <div class="center_percent">
+        <div class="amount" id="hc_percent_used">0%</div>
+        <div class="text">Money Used</div>
+        <div class="warning" id="hc_over"></div>
+    </div>
+    <div class="hcChartWrapper">
+        <canvas id="hotcoldChart" width="230" height="230"></canvas>
+    </div>
+</div>
+
+<script>
+const limit = 1000;
+const hot_money = 567;
+const cold_money = 127;
+const free = Math.max(limit - (hot_money + cold_money), 0);
+const percent = Math.floor(((hot_money + cold_money) / limit) * 100);
+
+document.getElementById("hc_percent_used").innerHTML = percent + "%";
+
+if(percent >= 100){
+    document.getElementById("hc_over").innerHTML = "$"+ ((hot_money + cold_money) - limit) + " over limit";
+}
+
+const hc_ctx = document.getElementById('hotcoldChart').getContext('2d');
+const hc_chart = new Chart(hc_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+        'Free',
+        'Hot',
+        'Cold',
+        
+    ],
+    datasets: [{
+        label: 'My First Dataset',
+        data: [free, hot_money, cold_money],
+        backgroundColor: [
+            '#DBE2F4',
+            '#FF4267', 
+            '#216FED',
+        ],
+        hoverOffset: 0,
+        borderWidth: 0,
+        borderJoinStyle: 'bevel',
+        borderRadius: 20, // how round thge edges of the sections are
+        cutout:104, // thinkness of the ring..
+        spacing: -30,
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    plugins:{
+        legend: {
+            display: false //This will do the task
+        },
+    },
+
+
+  }
+});
+</script>

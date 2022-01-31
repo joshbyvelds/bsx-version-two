@@ -1,7 +1,17 @@
 
 // Panel Types..
-.large_panel{
+.panel{
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 21px;
 
+    &.end{
+        margin-right: 0;
+    }
+}
+
+.large_panel{
+    width: 660px;
 }
 
 .small_panel {
@@ -40,17 +50,45 @@
     }
 
     .money{
-        height: 70px;
+        height: 50px;
         font-size: 40px
     }
 
     .gainbox {
         display: inline-block;
-        width: 50%;
+        width: 45%;
+        margin: 0 2.5%;
         vertical-align: top;
+
+        &:first-of-type{
+            margin-left: 0;
+        }
+
+        &:last-of-type{
+            margin-right: 0;
+        }
+
+        .title{
+
+        }
+
+        .amount_wrapper{
+            background: white;
+
+            .amount{
+                padding: 5px 0;
+            }
+        }
     }
 
     .info {
+        padding-top: 15px;
+
+        .info_label{
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+
         .name{
             display: inline-block;
             width: calc(100% - 70px);
@@ -237,3 +275,87 @@
         vertical-align: top;
     }
 }
+
+// Graph Panel
+
+.graph{
+    padding-top: 80px;
+}
+
+// Stats Panel
+
+.stats {
+    position: relative;
+    // Stats - Hot/Cold
+
+    .hcChartWrapper{
+        width: 230px;
+        height: 230px;
+        margin-top: 31px;
+        margin-left: 24px;
+    }
+
+    .legend{
+        position: absolute;
+        left: 263px;
+        top: 89px;
+        list-style: none;
+
+        li{
+            position: relative;
+            padding-bottom: 33px;
+            &:before{
+                content: "";
+                display: block;
+                position: absolute;
+                top: 4px;
+                left: -23px;
+                width: 12px;
+                height: 12px;
+                border-radius: 12px;
+            }
+
+            &:nth-of-type(1){
+                &:before{
+                    background-color: #FF224E;
+                }
+            }
+
+            &:nth-of-type(2){
+                &:before{
+                    background-color: #005DF3;
+                }
+            }
+
+            &:nth-of-type(3){
+                &:before{
+                    background-color: #DBE2F4;
+                }
+            }
+        }
+    }
+
+    .center_percent{
+        position: absolute;
+        top: 176px;
+        left: 23px;
+        width: 231px;
+        text-align: center;
+
+        .amount {
+            font-size: 51px;
+        }
+
+        .text {
+            padding-top: 14px;
+        }
+
+        .warning{
+            font-size: 14px;
+            color: red;
+        }
+    }
+
+}
+
+

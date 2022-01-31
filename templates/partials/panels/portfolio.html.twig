@@ -3,11 +3,17 @@
         <div class="money">{{ amount }}</div>
         <div class="gainbox">
             <span class="title">Gain</span>
-            <span class="amount">{{ gain_total }}</span>
+            <div class="amount_wrapper">
+                <div class="amount">+${{ gain_total }}</div>
+                <div class="amount">&#129045;{{ gain_total_percent }}%</div>
+            </div>
         </div><!--
      --><div class="gainbox">
             <span class="title">Gain Today</span>
-            <span class="amount">{{ gain_day }}</span>
+            <div class="amount_wrapper">
+                <div class="amount">-${{ gain_day }}</div>
+                <div class="amount">&#129047;{{ gain_day_percent }}%</div>
+            </div>
         </div>
     </div>
     <div class="info">
