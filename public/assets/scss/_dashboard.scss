@@ -279,8 +279,42 @@
 // Graph Panel
 
 .graph{
-    padding-top: 80px;
+    position: relative;
+    height: 270px;
+    padding-top: 0;
+
+    .label_wrapper{
+        display: inline-block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding-top: 34px;
+        padding-right: 4px;
+        text-align: right;
+    }
+
+    .graph_label {
+         position: relative;
+         display: inline-block;
+         margin-left: 50px;
+         text-align: right;
+
+         &:before{
+             content: '';
+             position: absolute;
+             top: 50%;
+             left: -18px;
+             display: block;
+             width: 10px;
+             height: 10px;
+             background: black;
+             border-radius: 50%;
+             transform: translateY(-50%);
+         }
+     }
 }
+
+
 
 // Stats Panel
 
@@ -356,6 +390,68 @@
         }
     }
 
+}
+
+
+// Plays Panel
+
+.plays {
+    > .title {
+        padding-top: 61px;
+    }
+    .play{
+        position: relative;
+        box-sizing: border-box;
+        width: calc(100% - 4px);
+        padding: 9px 12px;
+        margin-bottom: 16px;
+        border: solid 1px black;
+        border-radius: 10px;
+
+        &:last-of-type{
+            margin-bottom: 0;
+        }
+    }
+
+    .logo{
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background-size: 100%;
+        vertical-align: top;
+    }
+
+    .info{
+        display: inline-block;
+        padding-left: 8px;
+        vertical-align: top;
+    }
+
+    .playname{
+        font-size: 19px;
+        padding-bottom: 3px;
+    }
+
+    .playdetails{
+        font-size: 14px;
+    }
+
+    .profit{
+        position: absolute;
+        top: 19px;
+        right: 11px;
+        display: block;
+        font-size: 18px;
+
+        &.green{
+
+        }
+
+        &.red{
+            
+        }
+    }
 }
 
 
