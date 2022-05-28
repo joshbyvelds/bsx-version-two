@@ -50,6 +50,7 @@ class RegistrationController extends AbstractController
         }
 
         return $this->render('registration/register.html.twig', [
+            'show_nav' => false,
             'registrationForm' => $form->createView(),
         ]);
     }

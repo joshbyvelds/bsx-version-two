@@ -25,11 +25,12 @@
     </head>
     <body>
         <div class="container">
+            {% if show_nav %}
             {% include "partials/navbar.html.twig" %}<!--
 
-        --><div class="page_content">
+        -->{% endif %}<div class="page_content">
                 <header>
-                    <div class="page_title">{{ page_title }}</div>
+                    <div class="page_title">{{ block('title') }}</div>
 
                     {% if user is defined %}
                     <div class="user_panel">
