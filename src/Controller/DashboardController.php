@@ -17,8 +17,7 @@ class DashboardController extends AbstractController
     {
         $user = $user = $this->getUser();
         
-        // TODO:: Make this a user option in the settings..
-        $transactions_limit = 6;
+        $transactions_limit = $user->getSettings()->getDashboardTransactions();
         
         $wallet = $doctrine->getRepository(Wallet::class)->find($user->getId());
 
