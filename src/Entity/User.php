@@ -40,6 +40,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Transaction::class, orphanRemoval: true)]
     private $transactions;
 
+    #[ORM\OneToOne(mappedBy: 'User', targetEntity: Settings::class, cascade: ['persist', 'remove'])]
+    private $settings;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -170,6 +173,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $transaction->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSettings(): ?Settings
+    {
+        return $this->settings;
+    }
+
+    public function setSettings(Settings $settings): self
+    {
+        // set the owning side of the relation if necessary
+        if ($settings->getUser() !== $this) {
+            $settings->setUser($this);
+        }
+
+        $this->settings = $settings;
 
         return $this;
     }

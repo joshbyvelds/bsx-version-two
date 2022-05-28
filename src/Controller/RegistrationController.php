@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Wallet;
+use App\Entity\Settings;
 use App\Form\RegistrationFormType;
 use App\Security\LoginAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,7 @@ class RegistrationController extends AbstractController
     {
         $user = new User();
         $wallet = new Wallet();
+        $settings = new Settings();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
@@ -33,13 +35,20 @@ class RegistrationController extends AbstractController
                 )
             );
 
+            // Set Default Settings for User..
+            $settings->setUser($user);
+            $settings->setDashboardTransactions(6);
+
+            // Create a Wallet
             $wallet->setUser($user);
             $wallet->setCAN(0.00);
             $wallet->setUSD(0.00);
 
             $entityManager->persist($user);
             $entityManager->persist($wallet);
+            $entityManager->persist($settings);
             $entityManager->flush();
+            
             // do anything else you need here, like send an email
 
             return $userAuthenticator->authenticateUser(
