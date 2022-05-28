@@ -19,7 +19,7 @@ class WalletController extends AbstractController
     #[Route('/wallet/withdrawl', name: 'wallet_withdrawl')]
     public function withdrawl(ManagerRegistry $doctrine, Request $request): Response
     {
-        
+        $user = $this->getUser();
         $form = $this->createForm(WalletAdjustmentType::class);
         $form->handleRequest($request);
 
@@ -29,8 +29,7 @@ class WalletController extends AbstractController
 
             // Update Wallet
             //TODO:: Get the users wallet.. for now use the demo
-            $wallet = $em->getRepository(Wallet::class)->find(1);
-            $user = $em->getRepository(User::class)->find(10);
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
             $wallet->withdraw('USD', $data['usd']);
             $wallet->withdraw('CAN', $data['can']);
             $em->persist($wallet);
@@ -75,17 +74,16 @@ class WalletController extends AbstractController
     #[Route('/wallet/deposit', name: 'wallet_deposit')]
     public function deposit(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
         $form = $this->createForm(WalletAdjustmentType::class);
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
             $data = $form->getData();
             $em = $doctrine->getManager();
-            $user = $em->getRepository(User::class)->find(10);
            // Update Wallet
             //TODO:: Get the users wallet.. for now use the demo
-            $wallet = $em->getRepository(Wallet::class)->find(1);
-            $user = $em->getRepository(User::class)->find(10);
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
             $wallet->deposit('USD', $data['usd']);
             $wallet->deposit('CAN', $data['can']);
             $em->persist($wallet);
@@ -131,16 +129,15 @@ class WalletController extends AbstractController
     #[Route('/wallet/convert', name: 'wallet_convert')]
     public function convert(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
         $form = $this->createForm(WalletConvertType::class);
         $form->handleRequest($request);
 
         if($form->isSubmitted()){
             $data = $form->getData();
             $em = $doctrine->getManager();
-            $user = $em->getRepository(User::class)->find(10);
             // Update Wallet
-            //TODO:: Get the users wallet.. for now use the demo
-            $wallet = $em->getRepository(Wallet::class)->find(1);
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
             // Create Transaction
             if($data['type'] === 5){
