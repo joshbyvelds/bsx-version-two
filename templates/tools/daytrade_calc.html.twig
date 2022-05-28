@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Day Trade Calculator{% endblock %}
+
+{% block body %}
+    <h2>Day Trade Calculator</h2>
+    <table id="dt_table">
+        <tr>
+            <th>Buy/Sell</th>
+            <th>Price</th>
+            <th>Contracts</th>
+            <th>Total</th>
+        </tr>
+
+        <tr class="calc_row">
+            <td>
+                Buy<input type="radio" name="bs_1" value="buy" id=""> | Sell <input type="radio" name="bs_1" value="sell" id="">
+            </td>
+            <td>
+                <input class="amount_input" type="text">
+            </td>
+            <td>
+                <input class="contract_input" type="text">
+            </td>
+            <td>
+                <input class="total_input" type="text" readonly>
+            </td>
+        </tr>
+        <tr id="total">
+            <td>
+                GRAND TOTAL
+            </td>
+            <td colspan="3" style="text-align: center;">
+                $0.00
+            </td>
+        </tr>
+    </table>
+
+    <button id="add_row">Add Row</button>
+
+
+    <script>
+        var row = 1;
+        $(function(){
+            $("#add_row").on("click", addRow);
+            engageListeners();
+        })
+
+        function engageListeners(){
+            $("table input").off().on("change", calculate);
+        }
+
+        function calculate(){
+            var total = 0;
+
+           $('.calc_row').each(function(index, value) {
+               var $a = $(this).find(".amount_input");
+               var $c = $(this).find(".contract_input");
+               var $t = $(this).find(".total_input");
+               var fee = 9.95;
+               var contract_fee = 1.25;
+
+               if ($(this).find("input[type='radio'][value='buy']").prop("checked")){
+                   total += parseFloat(-1 * (($a.val() * $c.val() * 100) + (fee + (contract_fee * $c.val()))));
+                   $t.val("$" + total.toFixed(2));
+
+               } else {
+                   total += parseFloat(($a.val() * $c.val() * 100) - (fee + (contract_fee * $c.val())));
+                   $t.val("$" + total.toFixed(2));
+               }
+           });
+        }
+
+        function addRow(){
+            row++;
+            var rowHTML = "";
+            rowHTML += "<tr class=\"calc_row\"><td>Buy<input type=\"radio\" name=\"bs_" + row + "\" value=\"buy\"> | Sell <input type=\"radio\" name=\"bs_" + row + "\" value=\"sell\"></td>";
+            rowHTML += "<td><input class=\"contract_input\" type=\"text\"></td>";
+            rowHTML += "<td><input class=\"amount_input\" type=\"text\"></td>";
+            rowHTML += "<td><input class=\"total_input\" type=\"text\" readonly></td></tr>";
+            $("#dt_table").append(rowHTML);
+            $("#total").remove();
+            engageListeners();
+        }
+
+    </script>
+{% endblock %}
+
