@@ -25,20 +25,20 @@
     </head>
     <body>
         <div class="container">
-            {% if show_nav %}
-            {% include "partials/navbar.html.twig" %}<!--
-
-        -->{% endif %}<div class="page_content">
+            {% block navbar %}{% include "partials/navbar.html.twig" %}{% endblock %}<!--
+        --><div class="page_content">
                 <header>
                     <div class="page_title">{{ block('title') }}</div>
-
+                    
+                    {% if app.user %}
                     <div class="user_panel">
-                        <div class="profile_pic" style="background-image: url(/assets/images/user_profile_pictures/{{ user.id }}.jpg);"></div>
+                        <div class="profile_pic" style="background-image: url(/assets/images/user_profile_pictures/{{ app.user.id }}.jpg);"></div>
                         <div class="user_text">
-                            <div class="realname">{{ user.realname }}</div>
-                            <div class="username">{{ user.username }}</div>
+                            <div class="realname">{{ app.user.realname }}</div>
+                            <div class="username">{{ app.user.username }}</div>
                         </div>
                     </div>
+                    {% endif %}
                 </header>
 
                 {% block body %}{% endblock %}

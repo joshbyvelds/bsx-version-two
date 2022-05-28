@@ -26,7 +26,6 @@ class DashboardController extends AbstractController
         return $this->render('dashboard/index.html.twig', [
             'page_title' => 'Dashboard',
             'show_nav' => true,
-            'user' => $user,
             'wallet' => $wallet,
             'transactions' => $transactions,
         ]);

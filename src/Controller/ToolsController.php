@@ -19,8 +19,8 @@ class ToolsController extends AbstractController
     #[Route('/tools/daytradecalc', name: 'tools_daytrade_calc')]
     public function index(): Response
     {
+        $user = $user = $this->getUser();
         return $this->render('tools/daytrade_calc.html.twig', [
-            'show_nav' => true,
             'controller_name' => 'ToolsController',
         ]);
     }
