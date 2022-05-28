@@ -26,7 +26,14 @@
                 <input class="total_input" type="text" readonly>
             </td>
         </tr>
-        
+        <tr id="total">
+            <td>
+                GRAND TOTAL
+            </td>
+            <td id="grand_total" colspan="3" style="text-align: center;">
+                $0.00
+            </td>
+        </tr>
     </table>
 
     <button id="add_row">Add Row</button>
@@ -62,6 +69,8 @@
                    $t.val("$" + total.toFixed(2));
                }
            });
+
+           $("#grand_total").html("$" + total.toFixed(2));
         }
 
         function addRow(){
@@ -71,8 +80,9 @@
             rowHTML += "<td><input class=\"contract_input\" type=\"text\"></td>";
             rowHTML += "<td><input class=\"amount_input\" type=\"text\"></td>";
             rowHTML += "<td><input class=\"total_input\" type=\"text\" readonly></td></tr>";
-            $("#dt_table").append(rowHTML);
             $("#total").remove();
+            $("#dt_table").append(rowHTML);
+            $("#dt_table").append("<tr id=\"total\"><td>GRAND TOTAL</td><td id=\"grand_total\" colspan=\"3\" style=\"text-align: center;\">$0.00</td>");
             engageListeners();
         }
 
