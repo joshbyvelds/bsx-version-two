@@ -32,15 +32,13 @@
                 <header>
                     <div class="page_title">{{ block('title') }}</div>
 
-                    {% if user is defined %}
                     <div class="user_panel">
-                        <div class="profile_pic"></div>
+                        <div class="profile_pic" style="background-image: url(/assets/images/user_profile_pictures/{{ user.id }}.jpg);"></div>
                         <div class="user_text">
                             <div class="realname">{{ user.realname }}</div>
                             <div class="username">{{ user.username }}</div>
                         </div>
                     </div>
-                    {% endif %}
                 </header>
 
                 {% block body %}{% endblock %}
