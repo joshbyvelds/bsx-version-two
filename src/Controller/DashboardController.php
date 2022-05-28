@@ -17,17 +17,19 @@ class DashboardController extends AbstractController
     {
         $user = $user = $this->getUser();
         
-        //TODO:: Get the users wallet.. for now use the demo
+        // TODO:: Make this a user option in the settings..
+        $transactions_limit = 6;
+        
         $wallet = $doctrine->getRepository(Wallet::class)->find($user->getId());
 
         //TODO: limit this to the last 6..
-        $transactions = $user->getTransactions();
+        $transactions = $user->getTransactions()->getValues();
         
         return $this->render('dashboard/index.html.twig', [
             'page_title' => 'Dashboard',
             'show_nav' => true,
             'wallet' => $wallet,
-            'transactions' => $transactions,
+            'transactions' => array_slice($transactions, -$transactions_limit),
         ]);
     }
 }
