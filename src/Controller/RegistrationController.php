@@ -38,6 +38,8 @@ class RegistrationController extends AbstractController
             // Set Default Settings for User..
             $settings->setUser($user);
             $settings->setDashboardTransactions(6);
+            $settings->setMaxPlayMoney(1000);
+            $settings->setMaxPlays(6);
 
             // Create a Wallet
             $wallet->setUser($user);

@@ -1,10 +1,17 @@
 <h2>Project Notes</h2>
 
+<h3>How to add a new user setting</h3>
+<ol>
+    <li>Add setting property to Settings entity (symfony console make:entity | Settings)</li>
+    <li>Update the Database (symfony console doctrine:schema:update --force)</li>
+    <li>Update SettingType form with new property</li>
+    <li>Update defaults in reg controller, register action</li>
+</ul>
+
 <h3>TODO List</h3>
 <ul>
     <li><strong>User Settings</strong></li>
     <ul>
-        <li>Create page to adjust user settings</li>
         <li>Create setting for max amount of play money (hot/cold)</li>
         <li>Create setting for max amount of plays at one time</li>
     </ul>

@@ -20,6 +20,12 @@ class Settings
     #[ORM\JoinColumn(nullable: false)]
     private $User;
 
+    #[ORM\Column(type: 'integer')]
+    private $max_play_money;
+
+    #[ORM\Column(type: 'integer')]
+    private $max_plays;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,6 +51,30 @@ class Settings
     public function setUser(User $User): self
     {
         $this->User = $User;
+
+        return $this;
+    }
+
+    public function getMaxPlayMoney(): ?int
+    {
+        return $this->max_play_money;
+    }
+
+    public function setMaxPlayMoney(int $max_play_money): self
+    {
+        $this->max_play_money = $max_play_money;
+
+        return $this;
+    }
+
+    public function getMaxPlays(): ?int
+    {
+        return $this->max_plays;
+    }
+
+    public function setMaxPlays(int $max_plays): self
+    {
+        $this->max_plays = $max_plays;
 
         return $this;
     }
