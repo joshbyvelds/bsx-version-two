@@ -43,9 +43,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'User', targetEntity: Settings::class, cascade: ['persist', 'remove'])]
     private $settings;
 
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: TenPercentPlanWeek::class, orphanRemoval: true)]
+    private $tenPercentPlanWeeks;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private $ten_percent_start_date;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private $ten_percent_start_amount;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
+        $this->tenPercentPlanWeeks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -190,6 +200,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->settings = $settings;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TenPercentPlanWeek>
+     */
+    public function getTenPercentPlanWeeks(): Collection
+    {
+        return $this->tenPercentPlanWeeks;
+    }
+
+    public function addTenPercentPlanWeek(TenPercentPlanWeek $tenPercentPlanWeek): self
+    {
+        if (!$this->tenPercentPlanWeeks->contains($tenPercentPlanWeek)) {
+            $this->tenPercentPlanWeeks[] = $tenPercentPlanWeek;
+            $tenPercentPlanWeek->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTenPercentPlanWeek(TenPercentPlanWeek $tenPercentPlanWeek): self
+    {
+        if ($this->tenPercentPlanWeeks->removeElement($tenPercentPlanWeek)) {
+            // set the owning side to null (unless already changed)
+            if ($tenPercentPlanWeek->getUser() === $this) {
+                $tenPercentPlanWeek->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTenPercentStartDate(): ?\DateTimeInterface
+    {
+        return $this->ten_percent_start_date;
+    }
+
+    public function setTenPercentStartDate(?\DateTimeInterface $ten_percent_start_date): self
+    {
+        $this->ten_percent_start_date = $ten_percent_start_date;
+
+        return $this;
+    }
+
+    public function getTenPercentStartAmount(): ?float
+    {
+        return $this->ten_percent_start_amount;
+    }
+
+    public function setTenPercentStartAmount(?float $ten_percent_start_amount): self
+    {
+        $this->ten_percent_start_amount = $ten_percent_start_amount;
 
         return $this;
     }

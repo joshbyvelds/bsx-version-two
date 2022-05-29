@@ -6,15 +6,13 @@
     <li>Update the Database (symfony console doctrine:schema:update --force)</li>
     <li>Update SettingType form with new property</li>
     <li>Update defaults in reg controller, register action</li>
-</ul>
+</ol>
 
 <h3>TODO List</h3>
 <ul>
     <li><strong>10% Plan</strong></li>
     <ul>
-        <li>Create Entity for 10% plan (week #1 (id), date, amount changed, target change, new total, target, percent, next weeks target)</li>
-        <li>Create Page for 10% plan details</li>
-        <li>Calculate weekly total automatic after week is over (next login after current week ends)</li>
+        <li>Check to make sure it has been less than 7 days since last 10% plan update BEFORE adjusting wallet. if not, do a update, then continue transaction.</li>
     </ul>
 
     <li><strong>Stocks/Plays Entites</strong></li>

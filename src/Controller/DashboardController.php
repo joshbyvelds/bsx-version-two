@@ -10,6 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\User;
 use App\Entity\Wallet;
 
+use App\Controller\ToolsController;
+
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'dashboard')]
@@ -23,6 +25,9 @@ class DashboardController extends AbstractController
 
         //TODO: limit this to the last 6..
         $transactions = $user->getTransactions()->getValues();
+
+        // check if ten percent plan needs to be updated
+        ToolsController::updateTenPercentPlan($user, $doctrine );
         
         return $this->render('dashboard/index.html.twig', [
             'page_title' => 'Dashboard',

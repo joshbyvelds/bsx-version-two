@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Ten Percent Plan{% endblock %}
+
+{% block body %}
+    {% if weeks|length > 0 %}
+        <table>
+            <tr>
+                <th>Week | </th>
+                <th>Date | </th>
+                <th>Amount | </th>
+                <th>Target | </th>
+                <th>Total | </th>
+                <th>Target Total | </th>
+                <th>Percent | </th>
+                <th>Next Target | </th>
+            </tr>
+
+            {% for week in weeks %}
+            <tr>
+                <td>{{ week.week }}</td>
+                <td>{{ week.date }}</td>
+                <td>{{ week.added }}</td>
+                <td>{{ week.target }}</td>
+                <td>{{ week.total }}</td>
+                <td>{{ week.totalTarget }}</td>
+                <td>{{ week.percent }}</td>
+                <td>{{ week.nextWeekTarget }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        {% if form is not empty %}
+            {{ form(form) }}
+        {% else %}
+            This weeks target is an ${{ target }} increase. Total Amount would be ${{ total_target }}. Next Check will be on {{ date }} at {{ time }}.
+        {% endif %}
+    {% endif %}
+{% endblock %}
