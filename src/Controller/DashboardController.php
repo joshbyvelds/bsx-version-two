@@ -27,7 +27,7 @@ class DashboardController extends AbstractController
         $transactions = $user->getTransactions()->getValues();
 
         // check if ten percent plan needs to be updated
-        ToolsController::updateTenPercentPlan($user, $doctrine );
+        ToolsController::updateTenPercentPlan( $user, $doctrine );
         
         return $this->render('dashboard/index.html.twig', [
             'page_title' => 'Dashboard',

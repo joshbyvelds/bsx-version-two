@@ -14,6 +14,8 @@ use App\Entity\Wallet;
 use App\Form\WalletAdjustmentType;
 use App\Form\WalletConvertType;
 
+use App\Controller\ToolsController;
+
 class WalletController extends AbstractController
 {
     #[Route('/wallet/withdrawl', name: 'wallet_withdrawl')]
@@ -81,8 +83,11 @@ class WalletController extends AbstractController
         if($form->isSubmitted()){
             $data = $form->getData();
             $em = $doctrine->getManager();
-           // Update Wallet
-            //TODO:: Get the users wallet.. for now use the demo
+
+            // Check if we need to update 10%
+            ToolsController::updateTenPercentPlan( $user, $doctrine );
+
+            // Update Wallet
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
             $wallet->deposit('USD', $data['usd']);
             $wallet->deposit('CAN', $data['can']);
@@ -136,6 +141,10 @@ class WalletController extends AbstractController
         if($form->isSubmitted()){
             $data = $form->getData();
             $em = $doctrine->getManager();
+            
+            // Check if we need to update 10%
+            ToolsController::updateTenPercentPlan( $user, $doctrine );
+
             // Update Wallet
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 

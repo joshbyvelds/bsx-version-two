@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\TenPercentPlanWeek;
 use App\Form\UserPercentType;
+use App\Repository\TenPercentPlanWeekRepository;
 
 class ToolsController extends AbstractController
 {
@@ -77,53 +78,56 @@ class ToolsController extends AbstractController
         ]);
     }
 
+    /**
+     * Update the ten percent plan..
+     *
+     * @param [type] $user
+     * @param [type] $doctrine
+     * @return void
+     */
     public static function updateTenPercentPlan($user, $doctrine)
     {
-        $weeks = $user->getTenPercentPlanWeeks()->getValues();
-        
-
-        $enddate = (count($weeks) === 0) ? $user->getTenPercentStartDate()->modify('+1 week')->modify('+16 hours') : end($weeks)->getWeekEnds();
+        $em = $doctrine->getManager();
+        $weeks = $em->getRepository(TenPercentPlanWeek::class)->findBy(['User' => $user->getId()]);
+        $enddate = new \DateTime((count($weeks) > 0) ? end($weeks)->getWeekEnds()->format('M jS Y') : $user->getTenPercentStartDate()->modify('+1 week')->modify('+16 hours')->format('M jS Y'));
         $now = new \DateTime();
 
         if($now > $enddate){
             $current_total = $user->getWallet()->getUSD();
-            $start_amount = (count($weeks) === 0) ? $user->getTenPercentStartAmount() : end($weeks)->getTotal();
+            $start_amount = (count($weeks) > 0) ? end($weeks)->getTotal() : $user->getTenPercentStartAmount();
             $target = ($start_amount / 10);
             $total_target = $start_amount + $target;
             $change_amount = $current_total - $start_amount;
-
-            dump($current_total);
-            dump($start_amount);
-            dump($target);
-            dump($total_target);
-            dump($change_amount);
-            
-        
+                    
             // dates
-            $weekenddate = $enddate;
-            $weekenddate = $weekenddate->format('M jS Y');
-            $weekstartdate = $enddate;
-            $weekstartdate = $weekstartdate->modify('-4 days')->format('M jS Y');
-            $nextweekenddate = new \DateTime($weekenddate);
+            $weekenddate = new \DateTime($enddate->format('M jS Y'));
+            $weekstartdate = new \DateTime($enddate->format('M jS Y'));
+            $nextweekenddate = new \DateTime($enddate->format('M jS Y'));
+
+            $weekstartdate = $weekstartdate->modify('-4 days');
             $nextweekenddate = $nextweekenddate->modify('+1 week');
-            $date = $weekstartdate . " - " . $weekenddate;
+            $date = $weekstartdate->format('M jS Y') . " - " . $weekenddate->format('M jS Y');
 
 
-            $em = $doctrine->getManager();
+            // Create new week entity with this weeks result..
             $week = new TenPercentPlanWeek();
             $week->setUser($user);
             $week->setWeek(count($weeks) + 1);
             $week->setDate($date);
             $week->setAdded($change_amount);
-            $week->setTarget($start_amount / 10);
+            $week->setTarget($target);
             $week->setTotal($start_amount + $change_amount);
-            $week->setTotalTarget($start_amount + ($start_amount / 10));
+            $week->setTotalTarget($total_target);
             $week->setPercent((($current_total - $start_amount) / $start_amount) * 100);
             $week->setNextWeekTarget($current_total + ($current_total / 10));
             $week->setWeekEnds($nextweekenddate);
-
+            
+            // Submit to the database..
             $em->persist($week);
             $em->flush();
+
+            // Now check again, incase it been more than 2 weeks..
+            ToolsController::updateTenPercentPlan( $user, $doctrine );
         }
     }
 }
