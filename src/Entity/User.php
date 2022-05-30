@@ -52,10 +52,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'float', nullable: true)]
     private $ten_percent_start_amount;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Stock::class, orphanRemoval: true)]
+    private $stocks;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Dividend::class)]
+    private $dividends;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
         $this->tenPercentPlanWeeks = new ArrayCollection();
+        $this->stocks = new ArrayCollection();
+        $this->dividends = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -254,6 +262,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTenPercentStartAmount(?float $ten_percent_start_amount): self
     {
         $this->ten_percent_start_amount = $ten_percent_start_amount;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Stock>
+     */
+    public function getStocks(): Collection
+    {
+        return $this->stocks;
+    }
+
+    public function addStock(Stock $stock): self
+    {
+        if (!$this->stocks->contains($stock)) {
+            $this->stocks[] = $stock;
+            $stock->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStock(Stock $stock): self
+    {
+        if ($this->stocks->removeElement($stock)) {
+            // set the owning side to null (unless already changed)
+            if ($stock->getUser() === $this) {
+                $stock->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Dividend>
+     */
+    public function getDividends(): Collection
+    {
+        return $this->dividends;
+    }
+
+    public function addDividend(Dividend $dividend): self
+    {
+        if (!$this->dividends->contains($dividend)) {
+            $this->dividends[] = $dividend;
+            $dividend->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDividend(Dividend $dividend): self
+    {
+        if ($this->dividends->removeElement($dividend)) {
+            // set the owning side to null (unless already changed)
+            if ($dividend->getUser() === $this) {
+                $dividend->setUser(null);
+            }
+        }
 
         return $this;
     }

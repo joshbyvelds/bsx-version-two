@@ -23,6 +23,10 @@ class Dividend
     #[ORM\Column(type: 'float')]
     private $amount;
 
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'dividends')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $user;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +64,18 @@ class Dividend
     public function setAmount(float $amount): self
     {
         $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

@@ -15,8 +15,60 @@ class DividendController extends AbstractController
     #[Route('/dividends', name: 'dividends')]
     public function index(): Response
     {
+        $user = $this->getUser();
+        $payments = $user->getDividends();
+        dump($payments);
+
         return $this->render('dividend/index.html.twig', [
-            'controller_name' => 'DividendController',
+            'dividend_payments' => $payments,
+        ]);
+    }
+
+    #[Route('/dividends/stock', name: 'dividends_stock')]
+    public function stock(): Response
+    {
+        $user = $this->getUser();
+        $stocks = $user->getStocks();
+        dump($stocks);
+
+        return $this->render('dividend/stock.html.twig', [
+            'stocks' => $stocks,
+        ]);
+    }
+
+    #[Route('/dividends/month', name: 'dividends_month')]
+    public function month(): Response
+    {
+        $user = $this->getUser();
+        $payments = $user->getDividends();
+        dump($payments);
+
+        return $this->render('dividend/month.html.twig', [
+            'dividend_payments' => $payments,
+        ]);
+    }
+
+    #[Route('/dividends/quarter', name: 'dividends_quarter')]
+    public function quarter(): Response
+    {
+        $user = $this->getUser();
+        $payments = $user->getDividends();
+        dump($payments);
+
+        return $this->render('dividend/quarter.html.twig', [
+            'dividend_payments' => $payments,
+        ]);
+    }
+
+    #[Route('/dividends/year', name: 'dividends_year')]
+    public function year(): Response
+    {
+        $user = $this->getUser();
+        $payments = $user->getDividends();
+        dump($payments);
+
+        return $this->render('dividend/year.html.twig', [
+            'dividend_payments' => $payments,
         ]);
     }
 
@@ -24,6 +76,7 @@ class DividendController extends AbstractController
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
         $dividend = new Dividend();
+        $dividend->setUser($this->getUser());
         $form = $this->createForm(DividendType::class, $dividend);
         $form->handleRequest($request);
 

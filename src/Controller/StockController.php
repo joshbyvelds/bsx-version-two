@@ -30,6 +30,7 @@ class StockController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
+            $stock->setUser($this->getUser());
             $stock->setEarned(0);
 
             $em = $doctrine->getManager();

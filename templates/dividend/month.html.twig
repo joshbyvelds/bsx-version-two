@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dividends by Month{% endblock %}
+
+{% block body %}
+    {% set months = [] %}
+    {% set total = 0 %}
+    {% for dividend_payment in dividend_payments %}
+        {% if months[dividend_payment.paymentDate|date("F Y")] is defined %}
+            {% set months = months|merge({(dividend_payment.paymentDate|date("F Y")):months[dividend_payment.paymentDate|date("F Y")] + dividend_payment.amount}) %}
+        {% else %}
+            {% set months = months|merge({(dividend_payment.paymentDate|date("F Y")):dividend_payment.amount}) %}    
+        {% endif %}
+    {% endfor %}
+
+    <table>
+        <tr>
+            <th>Month</th>
+            <th>Monthly Payout</th>
+            <th>Total Amount</th>
+        </tr>
+
+        {% for key,month in months %}
+            {% set total = total + month %}
+            <tr>
+                <td>{{ key }}</td>
+                <td>{{ month|number_format(2) }}</td>
+                <td>{{ total|number_format(2) }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

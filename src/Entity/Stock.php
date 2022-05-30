@@ -39,6 +39,10 @@ class Stock
     #[ORM\OneToMany(mappedBy: 'Stock', targetEntity: Dividend::class)]
     private $dividends;
 
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stocks')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $user;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -159,6 +163,18 @@ class Stock
                 $dividend->setStock(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

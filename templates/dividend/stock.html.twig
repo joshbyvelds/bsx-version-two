@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DividendController!{% endblock %}
+
+{% block body %}
+    <table>
+        <tr>
+            <th></th>
+            <th>Company Name</th>
+            <th>Last Payment</th>
+            <th>Average Payout</th>
+            <th>Total Payout</th>
+        </tr>
+
+        {% for stock in stocks %}
+            {% set total_amount = 0 %}
+            {% set total_payments = 0 %}
+            {% set last_payment = 0 %}
+            {% for dividend_payment in stock.dividends %}
+                {% set last_payment = dividend_payment.paymentDate %}
+                {% set total_amount = total_amount + dividend_payment.amount %}
+                {% set total_payments = total_payments + 1 %}
+            {% endfor %}
+
+            {% set average_payment_amount = total_amount / total_payments %}
+            <tr>
+                <td><img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                <td>{{ stock.name }}</td>
+                <td>{{ last_payment|date("m/d/Y") }}</td>
+                <td>{{ average_payment_amount|number_format(2) }}</td>
+                <td>{{ total_amount|number_format(2) }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

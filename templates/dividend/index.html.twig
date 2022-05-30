@@ -3,18 +3,21 @@
 {% block title %}Hello DividendController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <table>
+        <tr>
+            <th></th>
+            <th>Company Name</th>
+            <th>Payment Date</th>
+            <th>Payment Amount</th>
+        </tr>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/src/Controller/DividendController.php'|file_link(0) }}">src/Controller/DividendController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/templates/dividend/index.html.twig'|file_link(0) }}">templates/dividend/index.html.twig</a></code></li>
-    </ul>
-</div>
+        {% for payment in dividend_payments %}
+        <tr>
+            <td><img src="/assets/images/company_logos/{{ payment.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+            <td>{{ payment.stock.name }}</td>
+            <td>{{ payment.paymentDate|date("m/d/Y") }}</td>
+            <td>{{ payment.amount }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 {% endblock %}
