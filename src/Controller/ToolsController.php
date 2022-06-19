@@ -87,6 +87,10 @@ class ToolsController extends AbstractController
      */
     public static function updateTenPercentPlan($user, $doctrine)
     {
+        if(!$user->getTenPercentStartDate()){
+            return;
+        }
+        
         $em = $doctrine->getManager();
         $weeks = $em->getRepository(TenPercentPlanWeek::class)->findBy(['User' => $user->getId()]);
         $enddate = new \DateTime((count($weeks) > 0) ? end($weeks)->getWeekEnds()->format('M jS Y') : $user->getTenPercentStartDate()->modify('+1 week')->modify('+16 hours')->format('M jS Y'));
