@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Futures Trade Calculator{% endblock %}
+
+{% block body %}
+    <table id="dt_table">
+        <tr>
+            <th>Win Loss</th>
+            <th>Amount Price</th>
+            <th>Contracts</th>
+            <th>Fees</th>
+            <th>P/L</th>
+            <th>Total</th>
+        </tr>
+
+        <tr class="calc_row">
+            <td>
+                Win<input type="radio" name="wl_1" value="win" id=""> | Loss <input type="radio" name="wl_1" value="loss" id="">
+            </td>
+            <td>
+                <input class="amount_input" type="text">
+            </td>
+            <td>
+                <input class="contracts_input" type="text">
+            </td>
+            <td>
+                <input class="fee_trade_input" type="text" readonly>
+            </td>
+            <td>
+                <input class="pl_input" type="text" readonly>
+            </td>
+            <td>
+                <input class="total_input" type="text" readonly>
+            </td>
+        </tr>
+        <tr id="total">
+            <td colspan="3">GRAND TOTAL</td>
+            <td id="fee_total" style="text-align: center;">$0.00</td>
+            <td id="grand_total" colspan="2" style="text-align: center;">$0.00</td>
+        </tr>
+    </table>
+
+    <button id="add_row">Add Row</button>
+
+
+    <script>
+        var row = 1;
+        $(function(){
+            $("#add_row").on("click", addRow);
+            engageListeners();
+        })
+
+        function engageListeners(){
+            $("table input").off().on("change", calculate);
+        }
+
+        function calculate(){
+            var total = 0;
+            var fee_total = 0;
+
+           $('.calc_row').each(function(index, value) {
+               var $a = $(this).find(".amount_input");
+               var $c = $(this).find(".contracts_input");
+               var $f = $(this).find(".fee_trade_input");
+               var $p = $(this).find(".pl_input");
+               var $t = $(this).find(".total_input");
+               var side_fee = 0.78;
+               var trade_fee = (side_fee * 2) * parseInt($c.val());
+
+               if ($(this).find("input[type='radio'][value='loss']").prop("checked")){
+                   amount = parseFloat($a.val()) + trade_fee;
+                   total += parseFloat(-1 * amount);
+               } else {
+                   amount = parseFloat($a.val()) - trade_fee;
+                   total += parseFloat(amount);
+               }
+
+               fee_total += trade_fee;
+
+               $f.val("$" + trade_fee.toFixed(2));
+               $p.val("$" + amount.toFixed(2));
+               $t.val("$" + total.toFixed(2));
+           });
+
+           $("#fee_total").html("$" + fee_total.toFixed(2));
+           $("#grand_total").html("$" + total.toFixed(2));
+        }
+
+        function addRow(){
+            row++;
+            var rowHTML = "";
+            rowHTML += "<tr class=\"calc_row\"><td>Win<input type=\"radio\" name=\"wl_" + row + "\" value=\"win\"> | Lose <input type=\"radio\" name=\"wl_" + row + "\" value=\"loss\"></td>";
+            rowHTML += "<td><input class=\"amount_input\" type=\"text\"></td>";
+            rowHTML += "<td><input class=\"contracts_input\" type=\"text\"></td>";
+            rowHTML += "<td><input class=\"fee_trade_input\" type=\"text\" readonly></td>";
+            rowHTML += "<td><input class=\"pl_input\" type=\"text\" readonly></td>";
+            rowHTML += "<td><input class=\"total_input\" type=\"text\" readonly></td></tr>";
+            $("#total").remove();
+            $("#dt_table").append(rowHTML);
+            $("#dt_table").append("<tr id=\"total\"><td colspan=\"3\">GRAND TOTAL</td><td id=\"fee_total\">$0.00</td><td colspan=\"2\" id=\"grand_total\" style=\"text-align: center;\">$0.00</td>");
+            engageListeners();
+        }
+
+    </script>
+{% endblock %}
+

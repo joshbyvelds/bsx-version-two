@@ -22,11 +22,20 @@ class ToolsController extends AbstractController
     //     ]);
     // }
 
-    #[Route('/tools/daytradecalc', name: 'tools_daytrade_calc')]
+    #[Route('/tools/optionstradecalc', name: 'tools_options_daytrade_calc')]
     public function daytrade(): Response
     {
         $user = $user = $this->getUser();
-        return $this->render('tools/daytrade_calc.html.twig', [
+        return $this->render('tools/options_daytrade_calc.html.twig', [
+            'controller_name' => 'ToolsController',
+        ]);
+    }
+
+    #[Route('/tools/futurestradecalc', name: 'tools_futures_daytrade_calc')]
+    public function furturesdaytrade(): Response
+    {
+        $user = $user = $this->getUser();
+        return $this->render('tools/futures_daytrade_calc.html.twig', [
             'controller_name' => 'ToolsController',
         ]);
     }
