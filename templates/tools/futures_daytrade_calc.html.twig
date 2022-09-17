@@ -42,6 +42,10 @@
 
     <button id="add_row">Add Row</button>
 
+    <h2>Make into Daily Play</h2>
+    <p>Submit this when your done for the day.</p>
+    {{ form(day_form) }}
+
 
     <script>
         var row = 1;
@@ -57,6 +61,8 @@
         function calculate(){
             var total = 0;
             var fee_total = 0;
+            var pl_total;
+            var trades = 0;
 
            $('.calc_row').each(function(index, value) {
                var $a = $(this).find(".amount_input");
@@ -80,10 +86,15 @@
                $f.val("$" + trade_fee.toFixed(2));
                $p.val("$" + amount.toFixed(2));
                $t.val("$" + total.toFixed(2));
+               trades++;
            });
 
-           $("#fee_total").html("$" + fee_total.toFixed(2));
-           $("#grand_total").html("$" + total.toFixed(2));
+            $("#fee_total").html("$" + fee_total.toFixed(2));
+            $("#grand_total").html("$" + total.toFixed(2));
+            $("#futures_day_amount").val((total + fee_total).toFixed(2));
+            $("#futures_day_fees").val(fee_total.toFixed(2));
+            $("#futures_day_total").val(total.toFixed(2));
+            $("#futures_day_trades").val(trades);
         }
 
         function addRow(){

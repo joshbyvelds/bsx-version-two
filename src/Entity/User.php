@@ -58,12 +58,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Dividend::class)]
     private $dividends;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FuturesBuckets::class, orphanRemoval: true)]
+    private $futuresBuckets;
+
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: FuturesDay::class, orphanRemoval: true)]
+    private $futuresDays;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
         $this->tenPercentPlanWeeks = new ArrayCollection();
         $this->stocks = new ArrayCollection();
         $this->dividends = new ArrayCollection();
+        $this->futuresBuckets = new ArrayCollection();
+        $this->futuresDays = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -320,6 +328,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($dividend->getUser() === $this) {
                 $dividend->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FuturesBuckets>
+     */
+    public function getFuturesBuckets(): Collection
+    {
+        return $this->futuresBuckets;
+    }
+
+    public function addFuturesBucket(FuturesBuckets $futuresBucket): self
+    {
+        if (!$this->futuresBuckets->contains($futuresBucket)) {
+            $this->futuresBuckets[] = $futuresBucket;
+            $futuresBucket->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFuturesBucket(FuturesBuckets $futuresBucket): self
+    {
+        if ($this->futuresBuckets->removeElement($futuresBucket)) {
+            // set the owning side to null (unless already changed)
+            if ($futuresBucket->getUser() === $this) {
+                $futuresBucket->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FuturesDay>
+     */
+    public function getFuturesDays(): Collection
+    {
+        return $this->futuresDays;
+    }
+
+    public function addFuturesDay(FuturesDay $futuresDay): self
+    {
+        if (!$this->futuresDays->contains($futuresDay)) {
+            $this->futuresDays[] = $futuresDay;
+            $futuresDay->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFuturesDay(FuturesDay $futuresDay): self
+    {
+        if ($this->futuresDays->removeElement($futuresDay)) {
+            // set the owning side to null (unless already changed)
+            if ($futuresDay->getUser() === $this) {
+                $futuresDay->setUser(null);
             }
         }
 

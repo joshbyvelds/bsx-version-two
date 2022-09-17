@@ -1,0 +1,267 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Futures{% endblock %}
+
+{% block body %}
+
+<div class="futures_wrapper">
+
+    {% if buckets == "NO BUCKETS" %}
+
+    {{ form(form) }}
+
+    {% else %}
+    <h2>Output</h2>
+    <p>
+        Play: ${{ buckets.play|number_format(2) }}<br />
+        Profit: ${{ buckets.profit|number_format(2) }}<br />
+        Withdrawn: ${{ buckets.withdrawn|number_format(2) }}<br />
+        Used: ${{ buckets.used|number_format(2) }}<br />
+    </p>
+    <h2>Output End</h2>
+    <h2>Buckets</h2>
+    <div class="bucket">
+        <div class="statsgraph hotcold">
+            <div class="center_percent">
+                <div class="amount" id="f1_percent"></div>
+                <div class="text">Play Bucket</div>
+                <div class="warning" id="f1_small">$1000</div>
+            </div>
+            <div class="hcChartWrapper">
+                <canvas id="f1Chart" width="230" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bucket">
+        <div class="statsgraph hotcold">
+            <div class="center_percent">
+                <div class="amount" id="f2_percent"></div>
+                <div class="text">Profit Bucket</div>
+                <div class="warning" id="f2_small">$500</div>
+            </div>
+            <div class="hcChartWrapper">
+                <canvas id="f2Chart" width="230" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="bucket">
+        <div class="statsgraph hotcold">
+            <div class="center_percent">
+                <div class="amount" id="f3_percent"></div>
+                <div class="text">Yearly Withdrawl Saved</div>
+                <div class="warning" id="f3_small">$950 / $1000</div>
+            </div>
+            <div class="hcChartWrapper">
+                <canvas id="f3Chart" width="230" height="230"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <h2>Daily Plays</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Trades</th>
+            <th>P/L</th>
+            <th>Fees</th>
+            <th>Total</th>
+        </tr>
+
+        {% for play in plays %}
+        <tr>
+            <td>{{ play.date|date("m/d/Y") }}</td>
+            <td>{{ play.trades }}</td>
+            <td>${{ play.amount|number_format(2) }}</td>
+            <td>${{ play.fees|number_format(2) }}</td>
+            <td>${{ play.total|number_format(2) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% if buckets != "NO BUCKETS" %}
+    <h2>Actions</h2>
+    <button id="empty_bucket_btn">Empty Monthly Bucket</button>
+    {% endif %}
+
+    <div class="modal_bg" style="display:none;"></div>
+    <div class="modal" style="display:none;">
+        <div class="inside">
+            <h2>Empty Profit Bucket</h2>
+            <h4>How much CDN money did you get for converting the profit bucket?</h4>
+            <p>Warning! The withdrawl fee will removed auto-magic-ly! Just input the amount you submitted in the withdrawl request.</p>
+            <input type="text" id="cdn_amount" placeholder="$0">
+            <button type="button" class="cdn_btn" id="cdn_submit">Empty Bucket and Bank That Cash!</button>
+            <button class="close_x">X</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+$(".close_x").on('click', function(){
+    $(".modal_bg, .modal").hide();
+});
+
+$("#empty_bucket_btn").on('click', function(){
+    $(".modal_bg, .modal").show();
+});
+
+$("#cdn_submit").on("click", function(){
+    
+    var cdn = $("#cdn_amount").val();
+    $.post("/futures/emptyprofitbucket/" + cdn, {}, function(json){
+        alert("Empty Complete");
+        // result complete... refresh page here..
+
+    });
+});
+
+{% if buckets != "NO BUCKETS" %}
+const play_limit = 1000;
+const play_amount = {{ buckets.play }};
+const profit = {{ buckets.profit }};
+const profit_limit = 1000;
+const withdrawl = {{ buckets.withdrawn }};
+const withdrawl_used = {{ buckets.used }};
+
+document.getElementById("f1_percent").innerHTML = Math.floor((play_amount/play_limit) * 100) + "%";
+document.getElementById("f2_percent").innerHTML = Math.floor((profit/profit_limit) * 100) + "%";
+document.getElementById("f3_percent").innerHTML = Math.floor((withdrawl_used/withdrawl) * 100) + "%";
+document.getElementById("f1_small").innerHTML = "$" + play_amount + "/$" + play_limit;
+document.getElementById("f2_small").innerHTML = "$" + profit + "/$" + profit_limit;
+document.getElementById("f3_small").innerHTML = "$" + withdrawl_used + "/$" + withdrawl + " Used";
+
+const play_colors = ['#209e3b', '#deeb2a', '#c9101c'];
+const play_color = play_colors[(play_amount / play_limit > 0.75) ? 0 : (play_amount / play_limit > 0.50) ? 1 : 2];
+
+const f1_ctx = document.getElementById('f1Chart').getContext('2d');
+const f2_ctx = document.getElementById('f2Chart').getContext('2d');
+const f3_ctx = document.getElementById('f3Chart').getContext('2d');
+
+
+
+const f1_chart = new Chart(f1_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+        'Free Space',
+        'Play Amount',        
+    ],
+    datasets: [{
+        label: 'My First Dataset',
+        data: [play_limit - play_amount, play_amount],
+        backgroundColor: [
+            '#DBE2F4',
+            play_color, 
+        ],
+        hoverOffset: 0,
+        borderWidth: 0,
+        borderJoinStyle: 'bevel',
+        borderRadius: 0, // how round thge edges of the sections are
+        cutout:104, // thinkness of the ring..
+        spacing: -30,
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    plugins:{
+        legend: {
+            display: false //This will do the task
+        },
+    },
+
+
+  }
+});
+
+
+  const f2_chart = new Chart(f2_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+        'Free Space',
+        'Profit',        
+    ],
+    datasets: [{
+        label: 'My First Dataset',
+        data: [profit_limit - profit, profit],
+        backgroundColor: [
+            '#DBE2F4',
+            '#209e3b', 
+        ],
+        hoverOffset: 0,
+        borderWidth: 0,
+        borderJoinStyle: 'bevel',
+        borderRadius: 20, // how round thge edges of the sections are
+        cutout:104, // thinkness of the ring..
+        spacing: -30,
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    plugins:{
+        legend: {
+            display: false //This will do the task
+        },
+    },
+
+
+  }
+  });
+
+
+  const f3_chart = new Chart(f3_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+        'Saved Money',
+        'Used Withdrawl Amount',   
+    ],
+
+    datasets: [{
+        label: 'My First Dataset',
+        data: [withdrawl_used, withdrawl - withdrawl_used],
+        backgroundColor: [
+            '#209e3b', 
+            '#DBE2F4',
+        ],
+        hoverOffset: 0,
+        borderWidth: 0,
+        borderJoinStyle: 'bevel',
+        borderRadius: 20, // how round thge edges of the sections are
+        cutout:104, // thinkness of the ring..
+        spacing: -30,
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    plugins:{
+        legend: {
+            display: false //This will do the task
+        },
+    },
+
+
+  }
+});
+{% endif %}
+
+$("#create_buckets").on("click", function(){
+    var play = parseFloat($("#new_buckets_start_play").val());
+    var profit = parseFloat($("#new_buckets_start_profit").val());
+    var withdrawn = parseFloat($("#new_buckets_start_withdrawn").val());
+    var used = parseFloat($("#new_buckets_start_used").val());
+
+    if(isNaN(play)){console.error("play value is: NaN"); return;}
+    if(isNaN(profit)){console.error("profit value is: NaN"); return;}
+    if(isNaN(withdrawn)){console.error("withdrawn value is: NaN"); return;}
+    if(isNaN(used)){console.error("used value is: NaN"); return;}
+
+    $.post("/futures/createbuckets", {'play':play,'profit':profit,'widthdrawn':withdrawn,'used':used});
+});
+
+</script>
+{% endblock %}

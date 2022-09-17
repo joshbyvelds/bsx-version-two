@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\FuturesDay;
+use App\Form\FuturesDayType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,9 +36,14 @@ class ToolsController extends AbstractController
     #[Route('/tools/futurestradecalc', name: 'tools_futures_daytrade_calc')]
     public function furturesdaytrade(): Response
     {
-        $user = $user = $this->getUser();
+        $user = $this->getUser();
+        $f_day_form = new FuturesDay();
+        $date = new \DateTime();
+        $f_day_form->setDate($date);
+        $form = $this->createForm(FuturesDayType::class, $f_day_form, ['action' => $this->generateUrl('app_futures_create_play'), 'method' => 'POST']);
         return $this->render('tools/futures_daytrade_calc.html.twig', [
             'controller_name' => 'ToolsController',
+            'day_form' => $form->createView(),
         ]);
     }
 
