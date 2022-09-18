@@ -32,6 +32,12 @@ class FuturesDay
     #[ORM\Column(type: 'float')]
     private $total;
 
+    #[ORM\Column(type: 'float')]
+    private $play;
+
+    #[ORM\Column(type: 'float')]
+    private $profit;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +111,31 @@ class FuturesDay
     public function setTotal(float $total): self
     {
         $this->total = $total;
+
+        return $this;
+    }
+
+    public function getPlay(): ?float
+    {
+        return $this->play;
+    }
+
+    public function setPlay(float $play): self
+    {
+        $this->play = $play;
+
+        return $this;
+    }
+
+
+    public function getProfit(): ?float
+    {
+        return $this->profit;
+    }
+
+    public function setProfit(float $profit): self
+    {
+        $this->profit = $profit;
 
         return $this;
     }

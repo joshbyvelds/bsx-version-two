@@ -11,14 +11,15 @@
     {{ form(form) }}
 
     {% else %}
-    <h2>Output</h2>
+{#     
+    <h2>Data Output</h2>
     <p>
         Play: ${{ buckets.play|number_format(2) }}<br />
         Profit: ${{ buckets.profit|number_format(2) }}<br />
         Withdrawn: ${{ buckets.withdrawn|number_format(2) }}<br />
         Used: ${{ buckets.used|number_format(2) }}<br />
-    </p>
-    <h2>Output End</h2>
+    </p> #}
+
     <h2>Buckets</h2>
     <div class="bucket">
         <div class="statsgraph hotcold">
@@ -38,7 +39,7 @@
             <div class="center_percent">
                 <div class="amount" id="f2_percent"></div>
                 <div class="text">Profit Bucket</div>
-                <div class="warning" id="f2_small">$500</div>
+                <div class="warning" id="f2_small"></div>
             </div>
             <div class="hcChartWrapper">
                 <canvas id="f2Chart" width="230" height="230"></canvas>
@@ -51,7 +52,7 @@
             <div class="center_percent">
                 <div class="amount" id="f3_percent"></div>
                 <div class="text">Yearly Withdrawl Saved</div>
-                <div class="warning" id="f3_small">$950 / $1000</div>
+                <div class="warning" id="f3_small"></div>
             </div>
             <div class="hcChartWrapper">
                 <canvas id="f3Chart" width="230" height="230"></canvas>
@@ -68,6 +69,9 @@
             <th>P/L</th>
             <th>Fees</th>
             <th>Total</th>
+            <th>|</th>
+            <th>Play Bucket</th>
+            <th>Profit Bucket</th>
         </tr>
 
         {% for play in plays %}
@@ -77,6 +81,9 @@
             <td>${{ play.amount|number_format(2) }}</td>
             <td>${{ play.fees|number_format(2) }}</td>
             <td>${{ play.total|number_format(2) }}</td>
+            <td>|</td>
+            <td>${{ play.play|number_format(2) }}</td>
+            <td>${{ play.profit|number_format(2) }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -126,13 +133,16 @@ const profit = {{ buckets.profit }};
 const profit_limit = 1000;
 const withdrawl = {{ buckets.withdrawn }};
 const withdrawl_used = {{ buckets.used }};
+const play_percent = Math.floor((play_amount/play_limit) * 100);
+const profit_percent = Math.floor((profit/profit_limit) * 100)
+const withdrawn_used_percent = 100 - Math.floor((withdrawl_used/withdrawl) * 100);
 
-document.getElementById("f1_percent").innerHTML = Math.floor((play_amount/play_limit) * 100) + "%";
-document.getElementById("f2_percent").innerHTML = Math.floor((profit/profit_limit) * 100) + "%";
-document.getElementById("f3_percent").innerHTML = Math.floor((withdrawl_used/withdrawl) * 100) + "%";
+document.getElementById("f1_percent").innerHTML = play_percent + "%";
+document.getElementById("f2_percent").innerHTML = profit_percent + "%";
+document.getElementById("f3_percent").innerHTML = withdrawn_used_percent + "%";
 document.getElementById("f1_small").innerHTML = "$" + play_amount + "/$" + play_limit;
 document.getElementById("f2_small").innerHTML = "$" + profit + "/$" + profit_limit;
-document.getElementById("f3_small").innerHTML = "$" + withdrawl_used + "/$" + withdrawl + " Used";
+document.getElementById("f3_small").innerHTML = "$" + withdrawl + "<br />$" + withdrawl_used + " Used";
 
 const play_colors = ['#209e3b', '#deeb2a', '#c9101c'];
 const play_color = play_colors[(play_amount / play_limit > 0.75) ? 0 : (play_amount / play_limit > 0.50) ? 1 : 2];
@@ -140,8 +150,6 @@ const play_color = play_colors[(play_amount / play_limit > 0.75) ? 0 : (play_amo
 const f1_ctx = document.getElementById('f1Chart').getContext('2d');
 const f2_ctx = document.getElementById('f2Chart').getContext('2d');
 const f3_ctx = document.getElementById('f3Chart').getContext('2d');
-
-
 
 const f1_chart = new Chart(f1_ctx, {
   type: 'doughnut',
@@ -151,7 +159,7 @@ const f1_chart = new Chart(f1_ctx, {
         'Play Amount',        
     ],
     datasets: [{
-        label: 'My First Dataset',
+        label: 'Play Account Bucket',
         data: [play_limit - play_amount, play_amount],
         backgroundColor: [
             '#DBE2F4',
@@ -160,7 +168,7 @@ const f1_chart = new Chart(f1_ctx, {
         hoverOffset: 0,
         borderWidth: 0,
         borderJoinStyle: 'bevel',
-        borderRadius: 0, // how round thge edges of the sections are
+        borderRadius: [0, 20], // how round thge edges of the sections are
         cutout:104, // thinkness of the ring..
         spacing: -30,
     }]
@@ -186,7 +194,7 @@ const f1_chart = new Chart(f1_ctx, {
         'Profit',        
     ],
     datasets: [{
-        label: 'My First Dataset',
+        label: 'Profit Bucket',
         data: [profit_limit - profit, profit],
         backgroundColor: [
             '#DBE2F4',
@@ -195,7 +203,7 @@ const f1_chart = new Chart(f1_ctx, {
         hoverOffset: 0,
         borderWidth: 0,
         borderJoinStyle: 'bevel',
-        borderRadius: 20, // how round thge edges of the sections are
+        borderRadius: [0, 20], // how round thge edges of the sections are
         cutout:104, // thinkness of the ring..
         spacing: -30,
     }]
@@ -217,21 +225,21 @@ const f1_chart = new Chart(f1_ctx, {
   type: 'doughnut',
   data: {
     labels: [
-        'Saved Money',
         'Used Withdrawl Amount',   
+        'Saved Money',
     ],
 
     datasets: [{
-        label: 'My First Dataset',
+        label: 'Withdrawn/Saved Profit',
         data: [withdrawl_used, withdrawl - withdrawl_used],
         backgroundColor: [
-            '#209e3b', 
             '#DBE2F4',
+            '#209e3b', 
         ],
         hoverOffset: 0,
         borderWidth: 0,
         borderJoinStyle: 'bevel',
-        borderRadius: 20, // how round thge edges of the sections are
+        borderRadius: [20, 0], // how round the edges of the sections are
         cutout:104, // thinkness of the ring..
         spacing: -30,
     }]

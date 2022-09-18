@@ -101,6 +101,13 @@ class FuturesBuckets
         return $this;
     }
 
+    public function lostPlayMoney(float $moneyLost): self
+    {
+        $this->play -= $moneyLost;
+
+        return $this;
+    }
+
     public function dumpProfitBucket($cdn): self
     {
         $this->setWithdrawn($this->getWithdrawn() + ($cdn - 30));

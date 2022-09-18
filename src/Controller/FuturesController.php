@@ -71,11 +71,11 @@ class FuturesController extends AbstractController
         if ($form->isValid()) {
             $user = $user = $this->getUser();
             $day->setUser($user);
-            $entityManager->persist($day);
+            
             
             // TODO:: Make these into settings..
             $play_max = 1000;
-            $use_profit_split = true;
+            $use_profit_split = false;
             $profit_split_ratio = [0.20, 0.25, 0.33, 0.50];
             
             // Remember this assumes a user already has buckets..
@@ -99,22 +99,27 @@ class FuturesController extends AbstractController
                     $extra = $play - $play_max;
                     $play = $play - (($extra > 0) ? $extra : 0);  
                     $profit = $split_profit_total + (($extra > 0) ? $extra : 0);
+                    $day->setPlay(($extra > 0) ? $split_play_total - $extra : $split_play_total);
                 } else {
                     $play = $play_amount + $total;
                     $extra = $play - $play_max;
                     $play = $play - (($extra > 0) ? $extra : 0);  
-                    $profit = (($extra > 0) ? $extra : 0);  
+                    $profit = (($extra > 0) ? $extra : 0);
+                    $day->setPlay(($extra > 0) ? $total - $extra : $total);
                 }
-                
+
+                $day->setProfit($profit);
                 $buckets->setPlay($play);
                 $buckets->addProfit($profit);
             
             // ... Fail to make money..
             } else {
-                $buckets->lostPlayMoney($total);
+                $day->setPlay($total);
+                $day->setProfit(0);
+                $buckets->lostPlayMoney(abs($total));
             }
             
-
+            $entityManager->persist($day);
             $entityManager->flush();
         } else {
             dump($form->getErrors(true));
