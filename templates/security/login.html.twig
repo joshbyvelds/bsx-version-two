@@ -5,7 +5,8 @@
 {% block navbar %}{% endblock %}
 
 {% block body %}
-<div class="splash">
+<div class="wave"></div>
+<div class="login">
     <div class="header">
         <div class="logo"></div>
         <nav>
@@ -14,7 +15,8 @@
         </nav>
     </div>
     <div class="intro_text">
-        <h2>Welcome Back</h2>
+        <h2>Welcome Back<span>.</span></h2>
+        <h3>New Member? <a href="/register">Create an account.</a></h3>
     </div>
     <form method="post">
         {% if error %}
@@ -27,43 +29,83 @@
             </div>
         {% endif %}
 
-        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="inputUsername">Username</label>
-        <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" autocomplete="username" required autofocus>
-        <label for="inputPassword">Password</label>
-        <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-        <label>
-                            <input type="checkbox" name="_remember_me" class="form-check-input"> Remember me
-                        </label>
-
-        <input type="hidden" name="_csrf_token"
-            value="{{ csrf_token('authenticate') }}"
-        >
-
-        {#
-            Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-            See https://symfony.com/doc/current/security/remember_me.html
-
-            <div class="checkbox mb-3">
-                <label>
-                    <input type="checkbox" name="_remember_me"> Remember me
-                </label>
+        <div class="input_wrapper" data-input="inputUsername">
+            <div class="input_inner">
+                <span class="input_icon material-symbols-outlined">account_circle</span>
+                <label for="inputUsername">Username</label>
+                <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control username" autocomplete="username" required autofocus>
             </div>
-        #}
+        </div>
 
-        <button class="btn btn-lg btn-primary" type="submit">
-            Sign in
-        </button>
+        <div class="input_wrapper" data-input="inputPassword">
+            <div class="input_inner">
+                <span class="input_icon material-symbols-outlined">key</span>
+                <label for="inputPassword">Password</label>
+                <input type="password" name="password" id="inputPassword"  class="form-control pass" autocomplete="current-password" required>
+            </div>
+        </div>
+
+        <div class="submit_row">
+            <div class="checkbox">
+                <input type="checkbox" name="_remember_me" id="remember" class="form-check-input">
+                <label for="remember" class="text">Remember Me</label>
+            </div>
+             
+            <input type="hidden" name="_csrf_token"
+                value="{{ csrf_token('authenticate') }}"
+            >
+
+            {#
+                Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+                See https://symfony.com/doc/current/security/remember_me.html
+
+                <div class="checkbox mb-3">
+                    <label>
+                        <input type="checkbox" name="_remember_me"> Remember me
+                    </label>
+                </div>
+            #}
+
+            <button class="btn btn-lg btn-primary" type="submit">
+                Sign in
+            </button>
+        </div>
+       
     </form>
 </div>
 
 <style>
+    body .container{
+        background: url("/assets/images/splash_bg.jpg") 0 200% no-repeat;
+        overflow: hidden;
+    }
+
+    .page_content{
+        position: relative;
+        max-width: 700px;
+        background: white;
+    }
+
     header{
         display: none;
     }
 
-    .header{
-
-    }
 </style>
+
+<script>
+    $(() => {
+        $("input").on("focus", function(){
+            $(this).parent().addClass("selected");
+        });
+
+        $("input").on("blur", function(){
+            $(this).parent().removeClass("selected");
+        });
+
+        $(".input_wrapper").on("click", function(){
+            var data = $(this).attr("data-input");
+            $("#" + data).focus();
+        });
+    });
+</script>
 {% endblock %}

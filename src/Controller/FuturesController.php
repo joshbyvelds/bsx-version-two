@@ -75,7 +75,7 @@ class FuturesController extends AbstractController
             
             // TODO:: Make these into settings..
             $play_max = 1000;
-            $use_profit_split = false;
+            $use_profit_split = true;
             $profit_split_ratio = [0.20, 0.25, 0.33, 0.50];
             
             // Remember this assumes a user already has buckets..

@@ -5,7 +5,8 @@
 {% block navbar %}{% endblock %}
 
 {% block body %}
-<div class="splash">
+<div class="wave"></div>
+<div class="reg">
     <div class="header">
         <div class="logo"></div>
         <nav>
@@ -13,15 +14,76 @@
             <a href="/register">Register</a>
         </nav>
     </div>
+        <div class="intro_text">
+        <h2>Create New Account<span>.</span></h2>
+        <h3>Already Registered? <a href="/">Login in here.</a></h3>
+    </div>
     {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.username) }}
-        {{ form_row(registrationForm.realname) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+        <div class="input_wrapper" data-input="registration_form_username">
+            <div class="input_inner">
+                {{ form_row(registrationForm.username) }}
+            </div>
+        </div>
 
-        <button type="submit" class="btn">Register</button>
+        <div class="input_wrapper" data-input="registration_form_realname">
+            <div class="input_inner">
+                {{ form_row(registrationForm.realname) }}
+            </div>
+        </div>
+
+        <div class="input_wrapper" data-input="registration_form_plainPassword">
+            <div class="input_inner">
+                {{ form_row(registrationForm.plainPassword, {
+                    label: 'Password'
+                }) }}
+            </div>
+        </div>    
+
+        <div class="submit_row">
+            <div class="checkbox">
+                <input type="checkbox" id="registration_form_agreeTerms" name="registration_form[agreeTerms]" required="required" value="1">
+                <label for="registration_form_agreeTerms" class="required text">Agree terms</label>
+            </div>
+            <button type="submit" class="btn">Register</button>
+        </div>
     {{ form_end(registrationForm) }}
 </div>
+
+
+<style>
+        body .container{
+        background: url("/assets/images/splash_bg.jpg") 0 200% no-repeat;
+        overflow: hidden;
+    }
+
+    .page_content{
+        position: relative;
+        max-width: 700px;
+        background: white;
+    }
+
+    header{
+        display: none;
+    }
+</style>
+
+<script>
+    $(() => {
+        $("input").on("focus", function(){
+            $(this).parent().parent().addClass("selected");
+        });
+
+        $("input").on("blur", function(){
+            $(this).parent().parent().removeClass("selected");
+        });
+
+        $(".input_wrapper").on("click", function(){
+            var data = $(this).attr("data-input");
+            $("#" + data).focus();
+        });
+
+        // remove last div on form
+        $($("form div")[$("form div").length - 1]).remove();
+    });
+</script>
 {% endblock %}
