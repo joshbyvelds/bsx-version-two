@@ -70,25 +70,62 @@ class FuturesController extends AbstractController
 
         if ($form->isValid()) {
             $user = $user = $this->getUser();
+            $settings = $user->getSettings();
             $day->setUser($user);
             
             
             // TODO:: Make these into settings..
-            $play_max = 1000;
-            $use_profit_split = true;
-            $profit_split_ratio = [0.20, 0.25, 0.33, 0.50];
+            $play_max = $settings->getFuturesPlayBucketMax();
+            $use_profit_split = $settings->getFuturesUseSplitProfits();
+            $profit_split_ratio = [
+                $settings->getFuturesProfitSplitLevel1Ratio(),
+                $settings->getFuturesProfitSplitLevel2Ratio(),
+                $settings->getFuturesProfitSplitLevel3Ratio(),
+                $settings->getFuturesProfitSplitLevel4Ratio(),
+                $settings->getFuturesProfitSplitLevel5Ratio(),
+                $settings->getFuturesProfitSplitLevel6Ratio(),
+                $settings->getFuturesProfitSplitLevel7Ratio(),
+            ];
             
             // Remember this assumes a user already has buckets..
             $buckets = $user->getFuturesBuckets()[0];
 
             $data = $form->getData();
-            $total = $data->getTotal(); // 250
+            $total = $data->getTotal();
             
             //Check if we made profit today..
             if($total > 0){
 
                 $play_amount = $buckets->getPlay();
-                if ($play_amount <= 400){$split_level = 0;} else if($play_amount <= 500){$split_level = 1;} else if($play_amount <= 750) {$split_level = 2;} else {$split_level = 3;}
+
+                if ($play_amount < $settings->getFuturesProfitSplitLevel1Amount()){
+                    $split_level = 0;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel2Amount()){
+                    $split_level = 1;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel3Amount()){
+                    $split_level = 2;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel4Amount()){
+                    $split_level = 3;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel5Amount()){
+                    $split_level = 4;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel6Amount()){
+                    $split_level = 5;
+                }
+
+                if ($play_amount <= $settings->getFuturesProfitSplitLevel7Amount()){
+                    $split_level = 6;
+                }
+                
                 $profit_ratio = $profit_split_ratio[$split_level];
                 $play_ratio = 1.00 - $profit_ratio;
                 $split_play_total = $total * $play_ratio;

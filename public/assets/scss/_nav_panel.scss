@@ -3,7 +3,7 @@
     width: $nav-panel-width;
     background: $navbar-background-color;
     vertical-align: top;
-    border-radius: 0 0 0 24px;
+    border-radius: 24px 0 0 24px;
     border-right:solid 1px black;
 
     &.panel {
@@ -14,8 +14,8 @@
         display: block;
         width: 100%;
         height: 110px;
-        background: green;
-        border-radius: 24px 0 0 0;
+        background: url(/assets/images/small-2.png) center 10px no-repeat;
+        background-size: 54%;
     }
 
     ul {

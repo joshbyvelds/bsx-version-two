@@ -20,6 +20,35 @@ class SettingsController extends AbstractController
         $user = $this->getUser();
         $em = $doctrine->getManager();
         $settings = $em->getRepository(Settings::class)->find($user->getId());
+        
+        if(empty($settings)){
+            $settings = new Settings();
+            $settings->setUser($user);
+            $settings->setDashboardTransactions(6);
+            $settings->setMaxPlayMoney(1000);
+            $settings->setMaxPlays(6);
+            $settings->setFuturesPlayBucketMax(1000);
+            $settings->setFuturesProfitBucketMax(1000);
+            $settings->setFuturesProfitBucketMax(1000);
+            $settings->setFuturesUseSplitProfits(false);
+            $settings->setFuturesProfitSplitLevel1Amount(0);
+            $settings->setFuturesProfitSplitLevel2Amount(0);
+            $settings->setFuturesProfitSplitLevel3Amount(0);
+            $settings->setFuturesProfitSplitLevel4Amount(0);
+            $settings->setFuturesProfitSplitLevel5Amount(0);
+            $settings->setFuturesProfitSplitLevel6Amount(0);
+            $settings->setFuturesProfitSplitLevel7Amount(0);
+            $settings->setFuturesProfitSplitLevel1Ratio(0);
+            $settings->setFuturesProfitSplitLevel2Ratio(0);
+            $settings->setFuturesProfitSplitLevel3Ratio(0);
+            $settings->setFuturesProfitSplitLevel4Ratio(0);
+            $settings->setFuturesProfitSplitLevel5Ratio(0);
+            $settings->setFuturesProfitSplitLevel6Ratio(0);
+            $settings->setFuturesProfitSplitLevel7Ratio(0);
+            $em->persist($settings);
+            $em->flush();
+        }
+        
 
 
         $form = $this->createForm(SettingsType::class, $settings);

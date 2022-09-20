@@ -6,6 +6,7 @@ use App\Entity\Settings;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class SettingsType extends AbstractType
@@ -16,6 +17,23 @@ class SettingsType extends AbstractType
             ->add('dashboard_transactions')
             ->add('max_play_money')
             ->add('max_plays')
+            ->add('futures_play_bucket_max')
+            ->add('futures_profit_bucket_max')
+            ->add('futures_use_split_profits', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('futures_profit_split_level_1_amount')
+            ->add('futures_profit_split_level_1_ratio')
+            ->add('futures_profit_split_level_2_amount')
+            ->add('futures_profit_split_level_2_ratio')
+            ->add('futures_profit_split_level_3_amount')
+            ->add('futures_profit_split_level_3_ratio')
+            ->add('futures_profit_split_level_4_amount')
+            ->add('futures_profit_split_level_4_ratio')
+            ->add('futures_profit_split_level_5_amount')
+            ->add('futures_profit_split_level_5_ratio')
+            ->add('futures_profit_split_level_6_amount')
+            ->add('futures_profit_split_level_6_ratio')
+            ->add('futures_profit_split_level_7_amount')
+            ->add('futures_profit_split_level_7_ratio')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'
@@ -28,6 +46,7 @@ class SettingsType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Settings::class,
+            'validation_groups' => false,
         ]);
     }
 }

@@ -3,5 +3,88 @@
 {% block title %}Settings{% endblock %}
 
 {% block body %}
-    {{ form(form) }}
+    {# {{ form(form) }} #}
+    {{ form_start(form) }}
+        <h2>Dashboard</h2>
+        {{ form_row(form.dashboard_transactions) }}
+        <h2>Broker Account</h2>
+        {{ form_row(form.max_play_money) }}
+        {{ form_row(form.max_plays) }}
+        <h2>Futures Account</h2>
+        {{ form_row(form.futures_play_bucket_max) }}
+        {{ form_row(form.futures_profit_bucket_max) }}
+        {{ form_row(form.futures_use_split_profits) }}
+        <h3>Futures Profilt Split Levels </h3>
+        <table class="settings_split_table">
+            <tr>
+                <th>Level</th>
+                <th>Amount</th>
+                <th>Ratio</th>
+            </tr>
+            <tr>
+                <td>Level 1</td>
+                <td>{{ form_row(form.futures_profit_split_level_1_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_1_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 2</td>
+                <td>{{ form_row(form.futures_profit_split_level_2_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_2_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 3</td>
+                <td>{{ form_row(form.futures_profit_split_level_3_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_3_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 4</td>
+                <td>{{ form_row(form.futures_profit_split_level_4_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_4_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 5</td>
+                <td>{{ form_row(form.futures_profit_split_level_5_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_5_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 6</td>
+                <td>{{ form_row(form.futures_profit_split_level_6_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_6_ratio) }}</td>
+            </tr>
+
+            <tr>
+                <td>Level 7</td>
+                <td>{{ form_row(form.futures_profit_split_level_7_amount) }}</td>
+                <td>{{ form_row(form.futures_profit_split_level_7_ratio) }}</td>
+            </tr>
+        </table>
+        {{ form_row(form.save) }}
+    {{ form_end(form) }}
+
+    <script>
+        $(() => {
+            if($("#settings_futures_use_split_profits").prop('checked')){
+                $(".settings_split_table").css("opacity", "1");
+                $(".settings_split_table input").removeAttr("readonly");
+            } else {
+                $(".settings_split_table").css("opacity", "0.5");
+                $(".settings_split_table input").attr("readonly", true);
+            }
+
+            $("#settings_futures_use_split_profits").on("click", function(){
+                if($(this).prop('checked')){
+                    $(".settings_split_table").css("opacity", "1");
+                    $(".settings_split_table input").removeAttr("readonly");
+                } else {
+                    $(".settings_split_table").css("opacity", "0.5");
+                    $(".settings_split_table input").attr("readonly", true);
+                }
+            })
+        });
+    </script>
 {% endblock %}
