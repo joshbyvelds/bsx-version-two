@@ -11,14 +11,21 @@
     {{ form(form) }}
 
     {% else %}
-{#     
+
+    {% set play_max = play_bucket_limit %}
+    {% set profit_max = profit_bucket_limit %}
+    {% set play = buckets.play %}
+    {% set profit = buckets.profit %}
+    {% set saved = buckets.withdrawn %}
+    {% set used = buckets.used %}
+        
     <h2>Data Output</h2>
     <p>
-        Play: ${{ buckets.play|number_format(2) }}<br />
-        Profit: ${{ buckets.profit|number_format(2) }}<br />
-        Withdrawn: ${{ buckets.withdrawn|number_format(2) }}<br />
-        Used: ${{ buckets.used|number_format(2) }}<br />
-    </p> #}
+        Play: ${{ play|number_format(2) }}<br />
+        Profit: ${{ profit|number_format(2) }}<br />
+        Withdrawn: ${{ saved|number_format(2) }}<br />
+        Used: ${{ used|number_format(2) }}<br />
+    </p>
 
     <h2>Buckets</h2>
     <div class="bucket">
@@ -74,16 +81,16 @@
             <th>Profit Bucket</th>
         </tr>
 
-        {% for play in plays %}
+        {% for day in plays %}
         <tr>
-            <td>{{ play.date|date("m/d/Y") }}</td>
-            <td>{{ play.trades }}</td>
-            <td>${{ play.amount|number_format(2) }}</td>
-            <td>${{ play.fees|number_format(2) }}</td>
-            <td>${{ play.total|number_format(2) }}</td>
+            <td>{{ day.date|date("m/d/Y") }}</td>
+            <td>{{ day.trades }}</td>
+            <td>${{ day.amount|number_format(2) }}</td>
+            <td>${{ day.fees|number_format(2) }}</td>
+            <td>${{ day.total|number_format(2) }}</td>
             <td>|</td>
-            <td>${{ play.play|number_format(2) }}</td>
-            <td>${{ play.profit|number_format(2) }}</td>
+            <td>${{ day.play|number_format(2) }}</td>
+            <td>${{ day.profit|number_format(2) }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -127,12 +134,13 @@ $("#cdn_submit").on("click", function(){
 });
 
 {% if buckets != "NO BUCKETS" %}
-const play_limit = 1000;
-const play_amount = {{ buckets.play }};
-const profit = {{ buckets.profit }};
-const profit_limit = 1000;
-const withdrawl = {{ buckets.withdrawn }};
-const withdrawl_used = {{ buckets.used }};
+const play_limit = {{ play_max }};
+const play_amount = {% if use_broker_margin %}{{ play - broker_margin_amount }}{% else %}{{ play }}{% endif %};
+//const play_amount = {{ play }};
+const profit = {{ profit }};
+const profit_limit = {{ profit_max }};
+const withdrawl = {{ saved }};
+const withdrawl_used = {{ used }};
 const play_percent = Math.floor((play_amount/play_limit) * 100);
 const profit_percent = Math.floor((profit/profit_limit) * 100)
 const withdrawn_used_percent = 100 - Math.floor((withdrawl_used/withdrawl) * 100);

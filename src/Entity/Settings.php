@@ -77,6 +77,12 @@ class Settings
     #[ORM\Column(type: 'float')]
     private $futures_profit_split_level_7_ratio;
 
+    #[ORM\Column(type: 'boolean')]
+    private $futures_use_broker_margin;
+
+    #[ORM\Column(type: 'float')]
+    private $futures_broker_margin_amount;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -330,6 +336,30 @@ class Settings
     public function setFuturesProfitSplitLevel7Ratio(float $futures_profit_split_level_7_ratio): self
     {
         $this->futures_profit_split_level_7_ratio = $futures_profit_split_level_7_ratio;
+
+        return $this;
+    }
+
+    public function isFuturesUseBrokerMargin(): ?bool
+    {
+        return $this->futures_use_broker_margin;
+    }
+
+    public function setFuturesUseBrokerMargin(bool $futures_use_broker_margin): self
+    {
+        $this->futures_use_broker_margin = $futures_use_broker_margin;
+
+        return $this;
+    }
+
+    public function getFuturesBrokerMarginAmount(): ?float
+    {
+        return $this->futures_broker_margin_amount;
+    }
+
+    public function setFuturesBrokerMarginAmount(float $futures_broker_margin_amount): self
+    {
+        $this->futures_broker_margin_amount = $futures_broker_margin_amount;
 
         return $this;
     }

@@ -34,6 +34,8 @@ class SettingsType extends AbstractType
             ->add('futures_profit_split_level_6_ratio')
             ->add('futures_profit_split_level_7_amount')
             ->add('futures_profit_split_level_7_ratio')
+            ->add('futures_use_broker_margin', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('futures_broker_margin_amount')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

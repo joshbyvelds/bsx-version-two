@@ -29,7 +29,8 @@ class SettingsController extends AbstractController
             $settings->setMaxPlays(6);
             $settings->setFuturesPlayBucketMax(1000);
             $settings->setFuturesProfitBucketMax(1000);
-            $settings->setFuturesProfitBucketMax(1000);
+            $settings->setFuturesUseBrokerMargin(false);
+            $settings->setFuturesBrokerMarginAmount(0);
             $settings->setFuturesUseSplitProfits(false);
             $settings->setFuturesProfitSplitLevel1Amount(0);
             $settings->setFuturesProfitSplitLevel2Amount(0);

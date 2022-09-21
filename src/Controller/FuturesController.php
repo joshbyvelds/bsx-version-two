@@ -19,6 +19,7 @@ class FuturesController extends AbstractController
     public function index(): Response
     {
         $user = $user = $this->getUser();
+        $settings = $user->getSettings();
 
         // create buckets entity if user does not have one
         if($user->getFuturesBuckets()->isEmpty()){
@@ -37,6 +38,10 @@ class FuturesController extends AbstractController
             'buckets' => $buckets,
             'plays' => $plays,
             'form' => $view,
+            'play_bucket_limit' => $settings->getFuturesPlayBucketMax(),
+            'profit_bucket_limit' => $settings->getFuturesProfitBucketMax(),
+            'use_broker_margin' => $settings->isFuturesUseBrokerMargin(),
+            'broker_margin_amount' => $settings->getFuturesBrokerMarginAmount(),
             'controller_name' => 'FuturesController',
         ]);
     }
@@ -98,6 +103,10 @@ class FuturesController extends AbstractController
 
                 $play_amount = $buckets->getPlay();
 
+                if($settings->isFuturesUseBrokerMargin()){
+                    $play_amount -= $settings->getFuturesBrokerMarginAmount();
+                }
+
                 if ($play_amount < $settings->getFuturesProfitSplitLevel1Amount()){
                     $split_level = 0;
                 }
@@ -143,6 +152,10 @@ class FuturesController extends AbstractController
                     $play = $play - (($extra > 0) ? $extra : 0);  
                     $profit = (($extra > 0) ? $extra : 0);
                     $day->setPlay(($extra > 0) ? $total - $extra : $total);
+                }
+                
+                if($settings->isFuturesUseBrokerMargin()){
+                    $play += $settings->getFuturesBrokerMarginAmount();
                 }
 
                 $day->setProfit($profit);
