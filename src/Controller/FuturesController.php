@@ -4,22 +4,27 @@ namespace App\Controller;
 
 use App\Entity\FuturesBuckets;
 use App\Entity\FuturesDay;
+use App\Entity\FuturesWeek;
 use App\Form\FuturesBucketsType;
 use App\Form\FuturesDayType;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+
 class FuturesController extends AbstractController
 {
+
     #[Route('/futures', name: 'app_futures')]
-    public function index(): Response
+    public function index(ManagerRegistry $doctrine): Response
     {
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
+        $weeks = $doctrine->getRepository(FuturesWeek::class)->findAll(array('user_id' => $user->getId()));
 
         // create buckets entity if user does not have one
         if($user->getFuturesBuckets()->isEmpty()){
@@ -38,10 +43,14 @@ class FuturesController extends AbstractController
             'buckets' => $buckets,
             'plays' => $plays,
             'form' => $view,
+            'current_week' => array_pop($weeks),
+            'prev_weeks' => $weeks,
             'play_bucket_limit' => $settings->getFuturesPlayBucketMax(),
             'profit_bucket_limit' => $settings->getFuturesProfitBucketMax(),
             'use_broker_margin' => $settings->isFuturesUseBrokerMargin(),
             'broker_margin_amount' => $settings->getFuturesBrokerMarginAmount(),
+            'weekly_goal' => $settings->getFuturesWeeklyGoal(),
+            'debt' => $settings->getFuturesDebt(),
             'controller_name' => 'FuturesController',
         ]);
     }
@@ -62,10 +71,10 @@ class FuturesController extends AbstractController
         }
 
         return $this->redirectToRoute('app_futures');
-    }
+    }    
 
     #[Route('/futures/makeplay', name: 'app_futures_create_play')]
-    public function futuresCreatePlay(EntityManagerInterface $entityManager, Request $request): Response
+    public function futuresCreatePlay(ManagerRegistry $doctrine, EntityManagerInterface $entityManager, Request $request): Response
     {
         $day = new FuturesDay();
         $date = new \DateTime();
@@ -168,8 +177,37 @@ class FuturesController extends AbstractController
                 $day->setProfit(0);
                 $buckets->lostPlayMoney(abs($total));
             }
-            
+
             $entityManager->persist($day);
+
+            // Get the latest week
+            $today = new \DateTime();
+            $weeks = $doctrine->getRepository(FuturesWeek::class)->findAll(array('user_id' => $user->getId()));
+
+            // check if week exists or that it is older than 7 days
+            if(empty($weeks) || $today > end($weeks)->getEnd()){
+                $week = new FuturesWeek();
+                $week->setTrades($day->getTrades());
+                $week->setPl($day->getAmount());
+                $week->setFees($day->getFees());
+                $week->setPlay($day->getPlay());
+                $week->setProfit($day->getProfit());
+                $week->setUser($user);
+                $e = new \DateTime('next saturday');
+                $s = new \DateTime('next saturday');
+                $week->setEnd($e);
+                $week->setStart($s->sub(new \DateInterval('P6D')));
+                $entityManager->persist($week);
+            } else {
+                $week = end($weeks);
+                $week->setTrades($week->getTrades() + $day->getTrades());
+                $week->setPl($week->getPl() + $day->getAmount());
+                $week->setFees($week->getFees() + $day->getFees());
+                $week->setPlay($week->getPlay() + $day->getPlay());
+                $week->setProfit($week->getProfit() + $day->getProfit());
+            }
+            
+            
             $entityManager->flush();
         } else {
             dump($form->getErrors(true));

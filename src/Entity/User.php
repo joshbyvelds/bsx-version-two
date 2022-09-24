@@ -64,6 +64,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'User', targetEntity: FuturesDay::class, orphanRemoval: true)]
     private $futuresDays;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FuturesWeek::class, orphanRemoval: true)]
+    private $futuresWeeks;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -72,6 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->dividends = new ArrayCollection();
         $this->futuresBuckets = new ArrayCollection();
         $this->futuresDays = new ArrayCollection();
+        $this->futuresWeeks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -388,6 +392,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($futuresDay->getUser() === $this) {
                 $futuresDay->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FuturesWeek>
+     */
+    public function getFuturesWeeks(): Collection
+    {
+        return $this->futuresWeeks;
+    }
+
+    public function addFuturesWeek(FuturesWeek $futuresWeek): self
+    {
+        if (!$this->futuresWeeks->contains($futuresWeek)) {
+            $this->futuresWeeks[] = $futuresWeek;
+            $futuresWeek->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFuturesWeek(FuturesWeek $futuresWeek): self
+    {
+        if ($this->futuresWeeks->removeElement($futuresWeek)) {
+            // set the owning side to null (unless already changed)
+            if ($futuresWeek->getUser() === $this) {
+                $futuresWeek->setUser(null);
             }
         }
 

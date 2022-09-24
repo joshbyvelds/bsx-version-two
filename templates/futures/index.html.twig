@@ -18,13 +18,16 @@
     {% set profit = buckets.profit %}
     {% set saved = buckets.withdrawn %}
     {% set used = buckets.used %}
+    {% set broker = play + profit %}
         
     <h2>Data Output</h2>
     <p>
+        Broker Account: ${{ broker|number_format(2) }}<br />
         Play: ${{ play|number_format(2) }}<br />
         Profit: ${{ profit|number_format(2) }}<br />
         Withdrawn: ${{ saved|number_format(2) }}<br />
         Used: ${{ used|number_format(2) }}<br />
+        {# Debt: -${{ debt|number_format(2) }}(CDN)<br /> #}
     </p>
 
     <h2>Buckets</h2>
@@ -68,6 +71,11 @@
     </div>
     {% endif %}
 
+    {% if buckets != "NO BUCKETS" %}
+    <h2>Actions</h2>
+    <button id="empty_bucket_btn">Empty Monthly Bucket</button>
+    {% endif %}
+
     <h2>Daily Plays</h2>
     <table>
         <tr>
@@ -75,7 +83,7 @@
             <th>Trades</th>
             <th>P/L</th>
             <th>Fees</th>
-            <th>Total</th>
+            {# <th>Total</th> #}
             <th>|</th>
             <th>Play Bucket</th>
             <th>Profit Bucket</th>
@@ -87,7 +95,7 @@
             <td>{{ day.trades }}</td>
             <td>${{ day.amount|number_format(2) }}</td>
             <td>${{ day.fees|number_format(2) }}</td>
-            <td>${{ day.total|number_format(2) }}</td>
+            {# <td>${{ day.total|number_format(2) }}</td> #}
             <td>|</td>
             <td>${{ day.play|number_format(2) }}</td>
             <td>${{ day.profit|number_format(2) }}</td>
@@ -95,10 +103,63 @@
         {% endfor %}
     </table>
 
-    {% if buckets != "NO BUCKETS" %}
-    <h2>Actions</h2>
-    <button id="empty_bucket_btn">Empty Monthly Bucket</button>
+    
+    <h2>Current Week</h2>
+    {% if current_week %}
+    {% set week_total = current_week.play + current_week.profit %}
+    {% set week_goal_percent = (week_total/weekly_goal) * 100 %}
+    <h3>${{ week_total|number_format(2) }}/{{ weekly_goal|number_format(2) }} - {{ week_goal_percent }}%</h3>
+    <progress value="{{ week_total }}" max="{{ weekly_goal }}" style="width: 407px;"></progress>
+    <table>
+        <tr>
+            <th>Week Start</th>
+            <th>Week End</th>
+            <th>Trades</th>
+            <th>P/L</th>
+            <th>Fees</th>
+            <th>Play</th>
+            <th>Profit</th>
+            <th></th>
+        </tr>
+
+        <tr>
+            <td>{{ current_week.start|date("m/d/Y") }}</td>
+            <td>{{ current_week.end|date("m/d/Y") }}</td>
+            <td>{{ current_week.trades }}</td>
+            <td>${{ current_week.pl|number_format(2) }}</td>
+            <td>${{ current_week.fees|number_format(2) }}</td>
+            <td>${{ current_week.play|number_format(2) }}</td>
+            <td>${{ current_week.profit|number_format(2) }}</td>
+        </tr>
+    </table>
     {% endif %}
+
+    <h2>Previous Weeks</h2>
+    <table>
+        <tr>
+            <th>Week Start</th>
+            <th>Week End</th>
+            <th>Trades</th>
+            <th>P/L</th>
+            <th>Fees</th>
+            <th>Play</th>
+            <th>Profit</th>
+            <th></th>
+        </tr>
+        {% for week in prev_weeks %}
+        <tr>
+            <td>{{ week.start|date("m/d/Y") }}</td>
+            <td>{{ week.end|date("m/d/Y") }}</td>
+            <td>{{ week.trades }}</td>
+            <td>${{ week.pl|number_format(2) }}</td>
+            <td>${{ week.fees|number_format(2) }}</td>
+            <td>${{ week.play|number_format(2) }}</td>
+            <td>${{ week.profit|number_format(2) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
 
     <div class="modal_bg" style="display:none;"></div>
     <div class="modal" style="display:none;">

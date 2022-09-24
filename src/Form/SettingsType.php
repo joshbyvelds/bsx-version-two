@@ -19,6 +19,8 @@ class SettingsType extends AbstractType
             ->add('max_plays')
             ->add('futures_play_bucket_max')
             ->add('futures_profit_bucket_max')
+            ->add('futures_weekly_goal')
+            ->add('futures_debt')
             ->add('futures_use_split_profits', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('futures_profit_split_level_1_amount')
             ->add('futures_profit_split_level_1_ratio')
