@@ -1,0 +1,54 @@
+<div class="panel portfolio futures">
+    <div class="title">Futures</div>
+    <div class="stat">
+        <div class="statname">Play Bucket</div>
+        
+        {% if settings.futuresUseBrokerMargin %}
+            {% set f_play_a = futures.play - settings.futuresBrokerMarginAmount %}
+        {% else %}
+            {% set f_play_a = futures.play %}
+        {% endif %}
+        
+        {% set f_play = f_play_a / settings.futuresPlayBucketMax %}
+        {% set f_play = f_play * 100 %}
+        {{ f_play|number_format(2) }}% <progress value="{{ f_play_a }}" max="{{ settings.futuresPlayBucketMax }}"></progress>
+    </div>
+
+    <div class="stat">
+        <div class="statname">Profit Bucket</div>
+        {% set f_profit = futures.profit / settings.futuresProfitBucketMax %}
+        {% set f_profit = f_profit  * 100 %}
+        {{ f_profit|number_format(2) }}% <progress value="{{ futures.profit }}" max="{{ settings.futuresProfitBucketMax }}"></progress>
+    </div>
+
+    <div class="stat">
+        <div class="statname">Saved Bucket</div>
+        {% set fu = futures.withdrawn - futures.used %}
+        {% if fu == 0 %}
+            {% set fup = 100 %}
+        {% else %}
+            {% set fup = fu / futures.withdrawn %}
+            {% set fup = fup * 100 %}
+        {% endif %}    
+        {{ fup|round(1, 'floor') }}% <progress value="{{ futures.withdrawn - futures.used }}" max="{{ futures.withdrawn }}"></progress>
+    </div>
+    
+    <div class="stat">
+        <div class="statname">Weekly Goal</div>
+        {% set weekly_goal = settings.futuresWeeklyGoal %}
+        {% set week_total = current_futures_week.play + current_futures_week.profit %}
+        {% set week_goal_percent = (week_total/weekly_goal) * 100 %}
+        {% if week_goal_percent < 0 %}
+            {{ week_goal_percent }}% <progress value="{{ week_total|abs }}" max="125" class="bad"></progress>
+        {% else %}
+            {{ week_goal_percent }}% <progress value="{{ week_total }}" max="125"></progress>
+        {% endif %}
+    </div>
+
+    <style>
+        progress.bad {
+           accent-color: red;
+        }
+    </style>
+
+</div>

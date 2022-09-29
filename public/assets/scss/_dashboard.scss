@@ -45,6 +45,12 @@
     border-radius: 10px;
     vertical-align: top;
 
+    &.futures{
+        .title{
+            padding-top: 0;
+        }
+    }
+
     .status{
         height: 130px;
     }

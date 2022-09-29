@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\User;
 use App\Entity\Wallet;
+use App\Entity\FuturesWeek;
 
 use App\Controller\ToolsController;
 
@@ -18,10 +19,27 @@ class DashboardController extends AbstractController
     public function index(ManagerRegistry $doctrine): Response
     {
         $user = $user = $this->getUser();
-        
+        $settings = $user->getSettings();
         $transactions_limit = $user->getSettings()->getDashboardTransactions();
         
+        // Stocks Wallet..
         $wallet = $doctrine->getRepository(Wallet::class)->find($user->getId());
+
+        // Futures Panel..
+        if($user->getFuturesBuckets()->isEmpty()){
+            $buckets = "NO BUCKETS";
+        } else {
+            $buckets = $user->getFuturesBuckets()[0];
+        }
+
+        $weeks = $doctrine->getRepository(FuturesWeek::class)->findAll(array('user_id' => $user->getId()));
+
+        if($weeks){
+            $current_futures_week = array_pop($weeks);
+        } else {
+            $current_futures_week = null;
+        }
+
 
         //TODO: limit this to the last 6..
         $transactions = $user->getTransactions()->getValues();
@@ -33,6 +51,9 @@ class DashboardController extends AbstractController
             'page_title' => 'Dashboard',
             'show_nav' => true,
             'wallet' => $wallet,
+            'futures' => $buckets,
+            'current_futures_week' => $current_futures_week,
+            'settings' => $settings,
             'transactions' => array_slice($transactions, -$transactions_limit),
         ]);
     }
