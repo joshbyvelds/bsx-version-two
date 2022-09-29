@@ -50,7 +50,6 @@ class FuturesController extends AbstractController
             'use_broker_margin' => $settings->isFuturesUseBrokerMargin(),
             'broker_margin_amount' => $settings->getFuturesBrokerMarginAmount(),
             'weekly_goal' => $settings->getFuturesWeeklyGoal(),
-            'debt' => $settings->getFuturesDebt(),
             'controller_name' => 'FuturesController',
         ]);
     }
@@ -64,6 +63,8 @@ class FuturesController extends AbstractController
 
         if ($form->isValid()) {
             $user = $user = $this->getUser();
+            $buckets->setDebt(0);
+            $buckets->setSavingsDebt(0);
             $buckets->setUser($user);
             $user->addFuturesBucket($buckets);
             $entityManager->persist($buckets);

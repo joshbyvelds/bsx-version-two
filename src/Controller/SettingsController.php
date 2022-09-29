@@ -32,6 +32,7 @@ class SettingsController extends AbstractController
             $settings->setFuturesUseBrokerMargin(false);
             $settings->setFuturesBrokerMarginAmount(0);
             $settings->setFuturesUseSplitProfits(false);
+            $settings->setFuturesWeeklyGoal(125);
             $settings->setFuturesProfitSplitLevel1Amount(0);
             $settings->setFuturesProfitSplitLevel2Amount(0);
             $settings->setFuturesProfitSplitLevel3Amount(0);

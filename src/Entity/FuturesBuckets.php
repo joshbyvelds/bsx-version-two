@@ -29,6 +29,12 @@ class FuturesBuckets
     #[ORM\Column(type: 'float')]
     private $used;
 
+    #[ORM\Column(type: 'float')]
+    private $savingsDebt;
+
+    #[ORM\Column(type: 'float')]
+    private $debt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -112,6 +118,30 @@ class FuturesBuckets
     {
         $this->setWithdrawn($this->getWithdrawn() + ($cdn - 30));
         $this->setProfit(0);
+        return $this;
+    }
+
+    public function getSavingsDebt(): ?float
+    {
+        return $this->savingsDebt;
+    }
+
+    public function setSavingsDebt(float $savingsDebt): self
+    {
+        $this->savingsDebt = $savingsDebt;
+
+        return $this;
+    }
+
+    public function getDebt(): ?float
+    {
+        return $this->debt;
+    }
+
+    public function setDebt(float $debt): self
+    {
+        $this->debt = $debt;
+
         return $this;
     }
 }

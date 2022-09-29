@@ -84,9 +84,6 @@ class Settings
     private $futures_broker_margin_amount;
 
     #[ORM\Column(type: 'float')]
-    private $futures_debt;
-
-    #[ORM\Column(type: 'float')]
     private $futures_weekly_goal;
 
     public function getId(): ?int
@@ -366,18 +363,6 @@ class Settings
     public function setFuturesBrokerMarginAmount(float $futures_broker_margin_amount): self
     {
         $this->futures_broker_margin_amount = $futures_broker_margin_amount;
-
-        return $this;
-    }
-
-    public function getFuturesDebt(): ?float
-    {
-        return $this->futures_debt;
-    }
-
-    public function setFuturesDebt(float $futures_debt): self
-    {
-        $this->futures_debt = $futures_debt;
 
         return $this;
     }

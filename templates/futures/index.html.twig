@@ -18,6 +18,8 @@
     {% set profit = buckets.profit %}
     {% set saved = buckets.withdrawn %}
     {% set used = buckets.used %}
+    {% set debt = buckets.debt %}
+    {% set savings_debt = buckets.savingsDebt %}
     {% set broker = play + profit %}
         
     <h2>Data Output</h2>
@@ -28,6 +30,7 @@
         Withdrawn: ${{ saved|number_format(2) }}<br />
         Used: ${{ used|number_format(2) }}<br />
         {# Debt: -${{ debt|number_format(2) }}(CDN)<br /> #}
+        Savings Debt: ${{ savings_debt|number_format(2) }}(CDN)<br />
     </p>
 
     <h2>Buckets</h2>
