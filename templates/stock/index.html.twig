@@ -3,18 +3,324 @@
 {% block title %}Hello StockController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <h2>Stocks</h2>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/src/Controller/StockController.php'|file_link(0) }}">src/Controller/StockController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/templates/stock/index.html.twig'|file_link(0) }}">templates/stock/index.html.twig</a></code></li>
-    </ul>
-</div>
+    Sort By: <select name="" id="sort_drop">
+        <option value="name">Alphabet</option>
+        <option value="newest">Newest</option>
+        <option value="oldest" selected>Oldest</option>
+        <option value="bought">Buy Update</option>
+        <option value="sell">Sell Update</option>
+        <option value="performance">Performance</option>
+        <option value="value">Value</option>
+    </select>
+     | Include Sold: <input type="checkbox" id="include_sold">
+
+    <div class="bubbles" id="bubbles">
+    {% for stock in stocks %}
+        {% set stock_dividend = 0 %}
+        {% set stock_amount = 0 %}
+        {% set stock_average = 0 %}
+        {% set stock_current = stock.currentPrice %}
+        {% set stock_breakeven = 0 %}
+        {% set stock_pl = 0 %}
+        {% set stock_sold = 0 %}
+        {% set buys = 0 %}
+        {% set fees = 0 %}
+        {% set d_buy = 0 %}
+        {% set d_sold = 0 %}
+
+        {% for buy in stock.shareBuys %}
+            {% set d_buy = buy.date|date('U') %}
+            {% if buy.sold < buy.amount %}
+                {% set remaining = buy.amount - buy.sold %}
+                {% set buys = buys + 1 %}
+                {% set stock_amount = stock_amount + remaining %}
+                {% set buy_average = remaining * buy.price %}
+                {% set stock_average = stock_average + buy_average %}
+            {% endif %}
+        {% endfor %}
+
+        {% if stock_amount > 0 %}
+            {% set stock_average = stock_average / stock_amount %}
+            {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+            {% set stock_breakeven = fee + stock_average %}
+        {% endif %}
+
+        {% for sell in stock.shareSells %}
+            {% set d_sold = sell.date|date('U') %}
+        {% endfor %}
+
+        {% if (stock_current - stock_breakeven) > 0 %}
+            {% set stock_class = "win" %}
+        {% elseif stock_current > stock_average %}
+            {% set stock_class = "fee_loss" %}
+        {% else %}
+            {% set stock_class = "loss" %}
+        {% endif %}
+
+        {% if stock_amount != 0 %}
+            {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
+            {% set diff = (stock_current - stock_breakeven) * stock_amount %}
+        {% else %}
+            {% set percent = 0 %}
+            {% set diff = 0 %}    
+        {% endif %}
+
+        <div class="stock_bubble {% if stock_amount == 0 %}no_shares{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            {% if stock_amount != 0 %}
+                <div class="inside">
+                    <div class="inside_content">
+                        {{ stock.name }}<br />
+                        <strong>{{ percent|number_format(2) }}%</strong>
+                        <small>${{ diff|number_format(2) }}</small><br />
+                        {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    </div>
+
+    <h3>All Stock Details</h3>
+    <div class="all_stocks" id="stock_details_table" style="display:none;">
+        <table>
+            <tr>
+                <th></th>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th>Last Bought</th>
+                <th>Last Sold</th>
+                <th>Amount Earned</th>
+                <th>Dividend</th>
+                <th>Shares</th>
+                <th>Average Price</th>
+                <th>Current Price</th>
+                <th>Break Even</th>
+                <th>P/L</th>
+            </tr>
+
+              {% for stock in stocks %}
+                {% set stock_dividend = 0 %}
+                {% set stock_amount = 0 %}
+                {% set stock_average = 0 %}
+                {% set stock_earned = 0 %}
+                {% set stock_current = stock.currentPrice %}
+                {% set stock_breakeven = 0 %}
+                {% set stock_pl = 0 %}
+                {% set stock_buy_cost_total = 0 %}
+                {% set buys = 0 %}
+                {% set sells = 0 %}
+                {% set d_bought = "" %}
+                {% set d_sold = "" %}
+                {% set buy_average = 0 %}
+
+               
+                {% for buy in stock.shareBuys %}
+                    {% set d_bought = buy.date %}
+                    {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
+                    {% if buy.sold < buy.amount %}
+                        {% set remaining = buy.amount - buy.sold %}
+                        {% set buys = buys + 1 %}
+                        {% set stock_amount = stock_amount + remaining %}
+                        {% set buy_average = remaining * buy.price %}
+                        {% set stock_average = stock_average + buy_average %}
+                    {% endif %}
+                {% endfor %}
+
+                {# {{ stock_buy_cost_total }} | {{ stock_amount }} | {{ buy_average }} | {{ stock_average }} #}
+
+                
+                {% if stock_amount > 0 %}
+                    {% set stock_average = stock_average / stock_amount %}
+                    {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+                    {% set stock_breakeven = fee + stock_average %}
+                    {% set diff = stock_current - stock_breakeven %}
+                    {% set stock_pl = diff * stock_amount %}
+                {% endif %}
+
+                {% for sell in stock.shareSells %}
+                    {% set sells = sells + 1 %}
+                    {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
+                    {% set d_sold = sell.date %}
+                {% endfor %}
+
+                {% for divi in stock.dividends %}
+                    {% set stock_dividend = stock_dividend + divi.amount %}
+                {% endfor %}
+
+                {% set stock_earned = stock_earned + stock_dividend - stock_buy_cost_total %}
+
+                <tr class="on" id="stock-detail-{{ stock.id }}">
+                    <td><img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt=""></td>
+                    <td>{{ stock.ticker }}</td>
+                    <td>{{ stock.name }}</td>
+                    <td>{% if d_bought != "" %}{{ d_bought|date("m/d/Y") }}{% endif %}</td>
+                    <td>{% if d_sold != "" %}{{ d_sold|date("m/d/Y") }}{% endif %}</td>
+                    <td>{% if stock.country == "USD" %}<img src="/assets/images/flag_us.png" alt="">{% else %}<img src="/assets/images/flag_can.png" alt="">{% endif %}${{ stock_earned|number_format(2) }}</td>
+                    <td>${{ stock_dividend|number_format(2) }}</td>
+                    <td>{{ stock_amount }}</td>
+                    <td>${{ stock_average|number_format(2) }}</td>
+                    <td>${{ stock_current|number_format(2) }}</td>
+                    <td>${{ stock_breakeven|number_format(2) }}</td>
+                    <td>${{ stock_pl|number_format(2) }}</td>
+                </tr>
+                <tr>
+                    <td colspan="12" style="text-align: center; border-bottom: solid 1px black;" class="buy_sell_switch down">
+                        <span class="down">&dArr; SHOW DETAILS &dArr;</span><span class="up">&uArr; HIDE DETAILS &uArr;</span>
+                        <table style="width: 100%">
+                            <tr>
+                                <th>BUYS</th>
+                                <th>SELLS</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <table class="buy_table" style="width: 100%; vertical-align: top;">
+                                        <tr>
+                                            <th>DATE</th>
+                                            <th>AMOUNT</th>
+                                            <th>PRICE</th>
+                                        </tr>
+                                        
+                                        {% for buy in stock.shareBuys %}
+                                        <tr>
+                                            <td>{{ buy.date|date("m/d/Y") }}</td>
+                                            <td>{{ buy.amount }}</td>
+                                            <td>{{ buy.price }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                                <td>
+                                    <table class="sell_table" style="width: 100%; vertical-align: top;">
+                                        <tr>
+                                            <th>DATE</th>
+                                            <th>AMOUNT</th>
+                                            <th>PRICE</th>
+                                        </tr>
+                                        {% for sell in stock.shareSells %}
+                                        <tr>
+                                            <td>{{ sell.date|date("m/d/Y") }}</td>
+                                            <td>{{ sell.amount }}</td>
+                                            <td>{{ sell.price }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+<script>
+    $(() => {
+        $(".stock_bubble").on("click", function(){open_stock_detail($(this).attr("data-id"));});
+        $(".buy_sell_switch").on("click", function(){
+            if($(this).hasClass("up")){
+                $(this).removeClass("up");
+                $(this).addClass("down");
+            } else {
+                $(this).removeClass("down");
+                $(this).addClass("up");
+            }
+        });
+
+        $("#sort_drop").on("change", function(){SortData($(this).val());});
+        $("#include_sold").on("change", function(){
+            if($(this).prop('checked')){
+                $("#bubbles").addClass("include_sold_on");
+            } else {
+                $("#bubbles").removeClass("include_sold_on");
+            }
+        });
+    });
+
+    function open_stock_detail(stock_id){
+        $("#stock_details_table").show();
+        $("#stock_details_table tr").removeClass("on");
+        $("#stock-detail-" + stock_id).addClass("on");
+        $("#stock-detail-" + stock_id).next().addClass("on");
+        $([document.documentElement, document.body]).animate({
+            scrollTop: $("#stock-detail-" + stock_id).offset().top - 200
+        }, 2000);
+    }
+
+    function comparator_name(a, b) {
+            if (a.dataset.name < b.dataset.name)
+                return -1;
+            if (a.dataset.name > b.dataset.name)
+                return 1;
+            return 0;
+        }
+
+        function comparator_newest(a, b) {
+            if (parseInt(a.dataset.id) > parseInt(b.dataset.id))
+                return -1;
+            if (parseInt(a.dataset.id) < parseInt(b.dataset.id))
+                return 1;
+            return 0;
+        }
+
+        function comparator_oldest(a, b) {
+            if (parseInt(a.dataset.id) < parseInt(b.dataset.id))
+                return -1;
+            if (parseInt(a.dataset.id) > parseInt(b.dataset.id))
+                return 1;
+            return 0;
+        }
+
+    function comparator_perform(a, b) {
+            if (parseFloat(a.dataset.perform) > parseFloat(b.dataset.perform))
+                return -1;
+            if (parseFloat(a.dataset.perform) < parseFloat(b.dataset.perform))
+                return 1;
+            return 0;
+        }
+
+        function comparator_bought(a, b) {
+            if (parseInt(a.dataset.buy) > parseInt(b.dataset.buy))
+                return -1;
+            if (parseInt(a.dataset.buy) < parseInt(b.dataset.buy))
+                return 1;
+            return 0;
+        }
+
+        function comparator_sell(a, b) {
+            if (parseInt(a.dataset.sell) > parseInt(b.dataset.sell))
+                return -1;
+            if (parseInt(a.dataset.sell) < parseInt(b.dataset.sell))
+                return 1;
+            return 0;
+        }
+
+        function comparator_value(a, b) {
+            if (parseFloat(a.dataset.value) > parseFloat(b.dataset.value))
+                return -1;
+            if (parseFloat(a.dataset.value) < parseFloat(b.dataset.value))
+                return 1;
+            return 0;
+        }
+          
+        // Function to sort Data
+        function SortData(sort_method) {
+            var subjects = document.querySelectorAll(".stock_bubble");
+            var subjectsArray = Array.from(subjects);
+            let sorted = 0;
+            switch(sort_method){
+                case ("name"): sorted = subjectsArray.sort(comparator_name); break;
+                case ("newest"): sorted = subjectsArray.sort(comparator_newest); break;
+                case ("oldest"): sorted = subjectsArray.sort(comparator_oldest); break;
+                case ("bought"): sorted = subjectsArray.sort(comparator_bought); break;
+                case ("sell"): sorted = subjectsArray.sort(comparator_sold); break;
+                case ("performance"): sorted = subjectsArray.sort(comparator_perform); break;
+                case ("value"): sorted = subjectsArray.sort(comparator_value); break;
+            }
+            
+            sorted.forEach(e => document.querySelector("#bubbles").appendChild(e));
+        }
+</script>
 {% endblock %}

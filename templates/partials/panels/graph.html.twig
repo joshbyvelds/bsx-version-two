@@ -1,9 +1,9 @@
 <div class="panel large_panel graph">
     <div class="title">Activites</div>
     <div class="label_wrapper">
-      <div class="graph_label">Label</div>
-      <div class="graph_label">Label</div>
-      <div class="graph_label">Label</div>
+      <div class="graph_label">Shares Money</div>
+      <div class="graph_label">Futures Money</div>
+      <div class="graph_label">Account Money</div>
     </div>
     <canvas id="activitiesChart" height="270"></canvas>
 </div>
@@ -22,17 +22,24 @@ const chart = new Chart(ctx, {
       moment(new Date(2022, 1, 28)).format(label_format),
     ],
     datasets: [{
-        label: '# of Red Votes',
-        data: [6, 18, 22, 15, 3],
+        label: 'Shares Money',
+        data: [0, 100, 20, -150, 30],
         fill: false,
         borderColor: 'red',
         borderWidth: 3
       },
       {
-        label: '# of Green Votes',
-        data: [6, 2, 13, 3, 20],
+        label: 'Futures Money',
+        data: [0, -100, 130, 20, ],
         fill: false,
         borderColor: 'green',
+        borderWidth: 3
+      },
+      {
+        label: 'Account Money',
+        data: [0, 150, 0, 0, 50],
+        fill: false,
+        borderColor: 'blue',
         borderWidth: 3
       }
     ]

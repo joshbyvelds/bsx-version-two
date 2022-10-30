@@ -42,10 +42,27 @@ class Stock
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'stocks')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
+    
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareBuy::class, orphanRemoval: true)]
+    private $shareBuys;
+
+    #[ORM\Column(type: 'float')]
+    private $current_price;
+
+    #[ORM\Column(type: 'datetime')]
+    private $last_price_update;
+
+    #[ORM\Column(type: 'string', length: 6)]
+    private $bg_color;
+
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareSell::class, orphanRemoval: true)]
+    private $shareSells;
 
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
+        $this->shareBuys = new ArrayCollection();
+        $this->shareSells = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,6 +192,102 @@ class Stock
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ShareBuy>
+     */
+    public function getShareBuys(): Collection
+    {
+        return $this->shareBuys;
+    }
+
+    public function addShareBuy(ShareBuy $shareBuy): self
+    {
+        if (!$this->shareBuys->contains($shareBuy)) {
+            $this->shareBuys[] = $shareBuy;
+            $shareBuy->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShareBuy(ShareBuy $shareBuy): self
+    {
+        if ($this->shareBuys->removeElement($shareBuy)) {
+            // set the owning side to null (unless already changed)
+            if ($shareBuy->getStock() === $this) {
+                $shareBuy->setStock(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCurrentPrice(): ?float
+    {
+        return $this->current_price;
+    }
+
+    public function setCurrentPrice(float $current_price): self
+    {
+        $this->current_price = $current_price;
+
+        return $this;
+    }
+
+    public function getLastPriceUpdate(): ?\DateTimeInterface
+    {
+        return $this->last_price_update;
+    }
+
+    public function setLastPriceUpdate(\DateTimeInterface $last_price_update): self
+    {
+        $this->last_price_update = $last_price_update;
+
+        return $this;
+    }
+
+    public function getBgColor(): ?string
+    {
+        return $this->bg_color;
+    }
+
+    public function setBgColor(string $bg_color): self
+    {
+        $this->bg_color = $bg_color;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ShareSell>
+     */
+    public function getShareSells(): Collection
+    {
+        return $this->shareSells;
+    }
+
+    public function addShareSell(ShareSell $shareSell): self
+    {
+        if (!$this->shareSells->contains($shareSell)) {
+            $this->shareSells[] = $shareSell;
+            $shareSell->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShareSell(ShareSell $shareSell): self
+    {
+        if ($this->shareSells->removeElement($shareSell)) {
+            // set the owning side to null (unless already changed)
+            if ($shareSell->getStock() === $this) {
+                $shareSell->setStock(null);
+            }
+        }
 
         return $this;
     }

@@ -18,6 +18,12 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'dashboard')]
     public function index(ManagerRegistry $doctrine): Response
     {
+        // $locale = "en_US";
+        // \Locale::setDefault($locale);
+        // setlocale(LC_ALL, 'en_US');
+        // setlocale(LC_MESSAGES, $locale);
+        // setlocale(LC_TIME, $locale);
+
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
         $transactions_limit = $user->getSettings()->getDashboardTransactions();
