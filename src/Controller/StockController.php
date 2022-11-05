@@ -25,6 +25,8 @@ class StockController extends AbstractController
 
         foreach($stocks as $stock){
             $updated = false;
+            $manual_update = false; // use this whgen the script is not working or you need a quick update..
+
             // check to see if has been 2 days or longer since last update
             $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
             $timeDiff = abs(time() - $lasttimestamp);
@@ -35,13 +37,24 @@ class StockController extends AbstractController
             $day = date('D', $lasttimestamp);
             $hour = date('H', $lasttimestamp);
 
-            if($stock->getCountry() == "CAN"){$updated = true;}
+            $day_today = date('D');
+            $hour_today = date('H');
             
             if($numberDays > 2){
-                // get current price
-                $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
-                $price = json_decode($result)->price->last;
-                $stock->setCurrentPrice($price);
+                if($stock->getCountry() == "CAN"){
+                    $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                    $data = json_decode($json,true);
+                    $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                    $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                    $stock->setCurrentPrice($price);
+                }
+
+                if($stock->getCountry() == "USD"){
+                    // get current price
+                    $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                    $price = json_decode($result)->price->last;
+                    $stock->setCurrentPrice($price);
+                }
                 
                 // update .. uh, the update time.
                 $date = new \DateTime();
@@ -53,30 +66,83 @@ class StockController extends AbstractController
 
             if(!$updated && $day != "Sat" && $day != "Sun") {
                 // get current price
-                $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
-                $price = json_decode($result)->price->last;
-                $stock->setCurrentPrice($price);
                 
-                // update .. uh, the update time.
-                $date = new \DateTime();
-                $stock->setLastPriceUpdate($date);
-                $em = $doctrine->getManager();
-                $em->flush();
-                $updated = true;
+                if(!$updated && $hour >= 4 && $hour < 20) {
+                    if($stock->getCountry() == "CAN"){
+                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        $data = json_decode($json,true);
+                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                        $stock->setCurrentPrice($price);
+                    }
+
+                    if($stock->getCountry() == "USD"){
+                        // make sure last update was during market hours.. otherwise there will be no difference..
+                        $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                        $price = json_decode($result)->price->last;
+                        $stock->setCurrentPrice($price);
+                        //dump($result);
+                    }
+                    
+                    // update .. uh, the update time.
+                    $date = new \DateTime();
+                    $stock->setLastPriceUpdate($date);
+                    $em = $doctrine->getManager();
+                    $em->flush();
+                    $updated = true;
+                }
             }
             
-            if(!$updated && $hour >= 4 && $hour < 20) {
-                // get current price
-                $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
-                $price = json_decode($result)->price->last;
-                $stock->setCurrentPrice($price);
+            // if the price was last checked on a weekend.. make sure the current time is during market hours..
+            if(!$updated && $day_today != "Sat" && $day_today != "Sun") {
+                if($hour_today >= 4 && $hour_today < 20) {
+                    if($stock->getCountry() == "CAN"){
+                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        $data = json_decode($json,true);
+                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                        $stock->setCurrentPrice($price);
+                    }
+
+                    if($stock->getCountry() == "USD"){
+                        // get current price
+                        $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                        $price = json_decode($result)->price->last;
+                        $stock->setCurrentPrice($price);
+                    }
+                    
+                    // update .. uh, the update time.
+                    $date = new \DateTime();
+                    $stock->setLastPriceUpdate($date);
+                    $em = $doctrine->getManager();
+                    $em->flush();
+                    $updated = true;
+                }
+            }
+            
+            // manual update
+            if(!$updated && $manual_update) {
+                if($stock->getCountry() == "CAN"){
+                    $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                    $data = json_decode($json,true);
+                    $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                    $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                    $stock->setCurrentPrice($price);
+                }
                 
-                // update .. uh, the update time.
-                $date = new \DateTime();
-                $stock->setLastPriceUpdate($date);
-                $em = $doctrine->getManager();
-                $em->flush();
-                $updated = true;
+                if($stock->getCountry() == "USD"){
+                    // get current price
+                    $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                    $price = json_decode($result)->price->last;
+                    $stock->setCurrentPrice($price);
+                }
+                 
+                 // update .. uh, the update time.
+                 $date = new \DateTime();
+                 $stock->setLastPriceUpdate($date);
+                 $em = $doctrine->getManager();
+                 $em->flush();
+                 $updated = true;
             }
         }  
 
@@ -130,7 +196,7 @@ class StockController extends AbstractController
             $em->persist($share_buy);
             $em->flush();
 
-            return $this->redirectToRoute('stocks');
+            return $this->redirectToRoute('stocks_buy_shares');
         }
 
         return $this->render('form/index.html.twig', [
@@ -194,7 +260,7 @@ class StockController extends AbstractController
             $em->persist($share_sell);
             $em->flush();
 
-            return $this->redirectToRoute('stocks');
+            return $this->redirectToRoute('stocks_sell_shares');
         }
 
         return $this->render('form/index.html.twig', [

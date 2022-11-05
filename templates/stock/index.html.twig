@@ -84,6 +84,7 @@
     </div>
 
     <h3>All Stock Details</h3>
+    <button id="show_details">Show Details</button>
     <div class="all_stocks" id="stock_details_table" style="display:none;">
         <table>
             <tr>
@@ -236,6 +237,10 @@
             } else {
                 $("#bubbles").removeClass("include_sold_on");
             }
+        });
+
+        $("#show_details").on("click", function(){
+
         });
     });
 
