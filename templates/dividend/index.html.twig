@@ -3,21 +3,26 @@
 {% block title %}Hello DividendController!{% endblock %}
 
 {% block body %}
-    <table>
+    <table class="dividend_table">
         <tr>
             <th></th>
             <th>Company Name</th>
             <th>Payment Date</th>
             <th>Payment Amount</th>
+            <th>Total</th>
         </tr>
 
+        {% set total = 0 %}
+
         {% for payment in dividend_payments %}
-        <tr>
-            <td><img src="/assets/images/company_logos/{{ payment.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
-            <td>{{ payment.stock.name }}</td>
-            <td>{{ payment.paymentDate|date("m/d/Y") }}</td>
-            <td>{{ payment.amount }}</td>
-        </tr>
+            {% set total = total + payment.amount %}
+            <tr>
+                <td><img src="/assets/images/company_logos/{{ payment.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                <td>{{ payment.stock.name }}</td>
+                <td>{{ payment.paymentDate|date("m/d/Y") }}</td>
+                <td>{{ payment.amount|number_format(2) }}</td>
+                <td>{{ total|number_format(2) }}</td>
+            </tr>
         {% endfor %}
     </table>
 {% endblock %}

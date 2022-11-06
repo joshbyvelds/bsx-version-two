@@ -8,6 +8,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
 class StockType extends AbstractType
 {
@@ -28,6 +29,7 @@ class StockType extends AbstractType
                     'Red Chip' => "RED"
                 ],
             ])
+            ->add('pays_dividend', CheckboxType::class)
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

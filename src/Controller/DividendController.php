@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Dividend;
+use App\Entity\Transaction;
+use App\Entity\Wallet;
 use App\Form\DividendType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -75,21 +77,41 @@ class DividendController extends AbstractController
     #[Route('/dividends/add', name: 'dividends_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
+        $error = "";
         $dividend = new Dividend();
+        $transaction = new Transaction();
         $dividend->setUser($this->getUser());
         $form = $this->createForm(DividendType::class, $dividend);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            $data = $form->getData();
             $em = $doctrine->getManager();
+
+            // Update Wallet..
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            $wallet->deposit('CAN', $data->getAmount());
+
+            // Create Transaction..
+            $transaction->setUser($user);
+            $transaction->setType(4);
+            $transaction->setName('Dividend Payment - ' . $data->getStock()->getTicker());
+            $transaction->setAmount($data->getAmount());
+            $transaction->setDate($data->getPaymentDate());
+            
+            $em->persist($wallet);
+            $em->persist($transaction);
             $em->persist($dividend);
             $em->flush();
 
-            return $this->redirectToRoute('dividends');
+            //return $this->redirectToRoute('dividends');
+            return $this->redirectToRoute('dividends_add');
         }
 
         return $this->render('form/index.html.twig', [
             'form' => $form->createView(),
+            'error' => $error,
         ]);
     }
 }

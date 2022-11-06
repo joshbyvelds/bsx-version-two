@@ -58,6 +58,9 @@ class Stock
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareSell::class, orphanRemoval: true)]
     private $shareSells;
 
+    #[ORM\Column(type: 'boolean')]
+    private $pays_dividend;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -288,6 +291,18 @@ class Stock
                 $shareSell->setStock(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isPaysDividend(): ?bool
+    {
+        return $this->pays_dividend;
+    }
+
+    public function setPaysDividend(bool $pays_dividend): self
+    {
+        $this->pays_dividend = $pays_dividend;
 
         return $this;
     }

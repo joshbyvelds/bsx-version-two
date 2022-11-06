@@ -10,15 +10,31 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Doctrine\ORM\EntityRepository;
+use Symfony\Component\Security\Core\Security;
 
 class DividendType extends AbstractType
 {
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+        $this->user = $this->security->getUser();
+        $this->user_id = $this->user->getId(); 
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('Stock', EntityType::class, [
                 'class' => 'App\Entity\Stock',
-                'choice_label' => 'name'
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                    ->where('s.user = :user')
+                    ->andWhere('s.pays_dividend = 1')
+                    ->setParameter('user', $user_id);
+                },
             ])
             ->add('payment_date', DateType::class, [
                 'widget' => 'single_text',
