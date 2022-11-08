@@ -4,6 +4,8 @@ namespace App\Form;
 
 use App\Entity\ShareBuy;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\AbstractType;
@@ -40,6 +42,16 @@ class ShareBuyType extends AbstractType
             ->add('date', DateType::class, [
                 'widget' => 'single_text',
             ])
+            ->add('payment_currency',ChoiceType::class,[
+                'choices' => array(
+                    'CAN' => 'can',
+                    'USD' => 'usd'
+                ),
+                'mapped' => false,
+                'multiple'=>false,
+                'expanded'=>true
+            ])
+            ->add('cost', TextType::class, ['mapped' => false])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

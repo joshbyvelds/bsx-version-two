@@ -95,6 +95,7 @@ class DividendController extends AbstractController
 
             // Create Transaction..
             $transaction->setUser($user);
+            $transaction->setCurrency(1);
             $transaction->setType(4);
             $transaction->setName('Dividend Payment - ' . $data->getStock()->getTicker());
             $transaction->setAmount($data->getAmount());

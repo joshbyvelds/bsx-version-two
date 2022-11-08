@@ -42,8 +42,9 @@ class WalletController extends AbstractController
                 $transactionUsd = new Transaction();
                 $date = new \DateTime();
                 $transactionUsd->setUser($user);
+                $transactionUsd->setCurrency(2);
                 $transactionUsd->setType(3);
-                $transactionUsd->setName('Widthdrawl from Wallet (USD)');
+                $transactionUsd->setName('Widthdrawl from Wallet');
                 $transactionUsd->setAmount( $data['usd'] * -1 );
                 $transactionUsd->setDate($date);
                 $em->persist($transactionUsd);
@@ -54,8 +55,9 @@ class WalletController extends AbstractController
                 $transactionCan = new Transaction();
                 $date = new \DateTime();
                 $transactionCan->setUser($user);
+                $transactionCan->setCurrency(1);
                 $transactionCan->setType(3);
-                $transactionCan->setName('Widthdrawl from Wallet (CAN)');
+                $transactionCan->setName('Widthdrawl from Wallet');
                 $transactionCan->setAmount( $data['can'] * -1 );
                 $transactionCan->setDate($date);
                 $em->persist($transactionCan);
@@ -99,8 +101,9 @@ class WalletController extends AbstractController
                 $transactionUsd = new Transaction();
                 $date = new \DateTime();
                 $transactionUsd->setUser($user);
+                $transactionUsd->setCurrency(2);
                 $transactionUsd->setType(4);
-                $transactionUsd->setName('Deposit to Wallet (USD)');
+                $transactionUsd->setName('Deposit to Wallet');
                 $transactionUsd->setAmount( $data['usd']);
                 $transactionUsd->setDate($date);
                 $em->persist($transactionUsd);
@@ -111,8 +114,9 @@ class WalletController extends AbstractController
                 $transactionCan = new Transaction();
                 $date = new \DateTime();
                 $transactionCan->setUser($user);
+                $transactionCan->setCurrency(1);
                 $transactionCan->setType(4);
-                $transactionCan->setName('Deposit to Wallet (CAN)');
+                $transactionCan->setName('Deposit to Wallet');
                 $transactionCan->setAmount( $data['can']);
                 $transactionCan->setDate($date);
                 $em->persist($transactionCan);
@@ -128,6 +132,7 @@ class WalletController extends AbstractController
         return $this->render('form/index.html.twig', [
             'page_title' => 'Deposit to Wallet',
             'form' => $form->createView(),
+            'error' => "",
         ]);
     }
 
@@ -155,6 +160,7 @@ class WalletController extends AbstractController
                 $transaction = new Transaction();
                 $date = new \DateTime();
                 $transaction->setUser($user);
+                $transaction->setCurrency(3);
                 $transaction->setType(5);
                 $transaction->setName('Currency Conversion (CAN to USD)');
                 $transaction->setAmount(0);
@@ -169,6 +175,7 @@ class WalletController extends AbstractController
                 $transaction = new Transaction();
                 $date = new \DateTime();
                 $transaction->setUser($user);
+                $transaction->setCurrency(3);
                 $transaction->setType(6);
                 $transaction->setName('Currency Conversion (USD to CDN)');
                 $transaction->setAmount(0);

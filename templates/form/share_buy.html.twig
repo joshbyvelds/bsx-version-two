@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard{% endblock %}
+
+{% block body %}
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
+
+    <script>
+        $(() => {
+            $("#share_buy_price, #share_buy_amount").on("change", function(){
+                var cost = (parseFloat($("#share_buy_price").val()) * parseInt($("#share_buy_amount").val())) + 9.95;
+                $("#share_buy_cost").val(cost);
+            });
+        });
+    </script>
+{% endblock %}

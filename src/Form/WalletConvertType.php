@@ -7,7 +7,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class WalletConvertType extends AbstractType
@@ -27,8 +27,8 @@ class WalletConvertType extends AbstractType
                 'expanded' => true
             ]
         )
-        ->add('usd', IntegerType::class, ['label' => 'Amount USD'])
-        ->add('can', IntegerType::class, ['label' => 'Amount Canadian'])
+        ->add('usd', TextType::class, ['label' => 'Amount USD'])
+        ->add('can', TextType::class, ['label' => 'Amount Canadian'])
         ->add('save', SubmitType::class, [
             'attr' => [
                 'class' => 'btn btn-primary float-right'

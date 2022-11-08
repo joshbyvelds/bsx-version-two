@@ -3,16 +3,20 @@
 {% block title %}BSX - Dashboard{% endblock %}
 
 {% block body %}
-    {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
-    <div class="portfolio_wrapper">
-        {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
-        {% if futures != "NO BUCKETS" %}{% include "partials/panels/futures.html.twig" %}{% endif %}
-    </div>
+    <div class="wide_column">
+        {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
+        <div class="portfolio_wrapper">
+            {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
+            {% if futures != "NO BUCKETS" %}{% include "partials/panels/futures.html.twig" %}{% endif %}
+        </div>
+        {% include "partials/panels/graph.html.twig" %}
+        {% include "partials/panels/plays.html.twig" %}
+    </div><!--
 
-    {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD} %}<!--
-    -->{% include "partials/panels/graph.html.twig" %}<!--
-    -->{% include "partials/panels/stats.html.twig" %}<!--
-    -->{% include "partials/panels/plays.html.twig" %}<!--
-    -->{% include "partials/panels/transactions.html.twig" with {'transactions': transactions} %}<!--
+ --><div class="narrow_column">
+        {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD} %}
+        {% include "partials/panels/stats.html.twig" %}
+        {% include "partials/panels/transactions.html.twig" with {'transactions': transactions} %}
+    </div>
 {% endblock %}
 

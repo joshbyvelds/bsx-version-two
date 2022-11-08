@@ -35,6 +35,9 @@ class Transaction
     #[ORM\Column(type: 'float', nullable: true)]
     private $convert_cdn;
 
+    #[ORM\Column(type: 'integer')]
+    private $currency;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +123,18 @@ class Transaction
     public function setConvertCdn(?float $convert_cdn): self
     {
         $this->convert_cdn = $convert_cdn;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?int
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(int $currency): self
+    {
+        $this->currency = $currency;
 
         return $this;
     }

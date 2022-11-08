@@ -1,4 +1,18 @@
 
+
+.wide_column{
+    width: 660px;
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 21px;
+}
+
+.narrow_column{
+    width: 396px;
+    display: inline-block;
+    vertical-align: top;
+}
+
 // Panel Types..
 .panel{
     display: inline-block;

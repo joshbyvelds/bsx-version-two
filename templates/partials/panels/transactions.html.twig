@@ -8,14 +8,14 @@
                 <span class="name">{{ transaction.name }}</span>
 
                 {% if transaction.type == 5 %}
-                    <span class="amount">-{{ transaction.convertCdn }}</span> / <span class="amount green">{{ transaction.convertUsd }}</span>
+                    <span class="amount">-{{ transaction.convertCdn|number_format(2) }}</span> / <span class="amount green">{{ transaction.convertUsd|number_format(2) }}</span>
                 {% elseif transaction.type == 6 %}
-                    <span class="amount green">{{ transaction.convertCdn }}</span> / <span class="amount">-{{ transaction.convertUsd }}</span>
+                    <span class="amount green">{{ transaction.convertCdn|number_format(2) }}</span> / <span class="amount">-{{ transaction.convertUsd|number_format(2) }}</span>
                 {% else %}
-                    <span class="amount {% if transaction.amount > 0 %}green{% endif %}">{{ transaction.amount }}</span>
+                    <span class="amount {% if transaction.amount > 0 %}green{% endif %}">${{ transaction.amount|number_format(2) }} <small>({% if transaction.currency == 1 %}CAN{% else %}USD{% endif %})</small></span>
                 {% endif %}
             </div><!--
          --><div class="date">{{ transaction.date|date("m/d/Y") }}</div>
         </div>
     {% endfor %}
-</div>
+</divd

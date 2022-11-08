@@ -8,12 +8,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+
 use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
 use App\Entity\Stock;
 use App\Entity\ShareBuy;
 use App\Entity\ShareSell;
+use App\Entity\Transaction;
+use App\Entity\Wallet;
 
 class StockController extends AbstractController
 {
@@ -26,6 +29,9 @@ class StockController extends AbstractController
         foreach($stocks as $stock){
             $updated = false;
             $manual_update = false; // use this whgen the script is not working or you need a quick update..
+            $disable_update = true; 
+
+            if($disable_update){$updated = true;}
 
             // check to see if has been 2 days or longer since last update
             $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
@@ -190,16 +196,42 @@ class StockController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $share_buy->setSold(0);
             $em = $doctrine->getManager();
+            $data = $form->getData();
+            $cost = $form->get("cost")->getData();
+            $currency = $form->get("payment_currency")->getData();
+            $share_buy->setSold(0);
+            $user = $share_buy->getStock()->getUser();
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            $transaction = new Transaction();
+            $date = new \DateTime();
+            $transaction->setType(2);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $word = ($share_buy->getAmount() === 1) ? 'Share' : 'Shares';
+            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getTicker() . ' ' . $word);
+            
+            if ($currency == 'can'){
+                $wallet->withdraw('CAN', $cost);
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                $wallet->withdraw('USD', $cost);
+                $transaction->setCurrency(2);
+            }
+            
+            $transaction->setAmount($cost);
+
+            $em->persist($transaction);
             $em->persist($share_buy);
             $em->flush();
 
-            return $this->redirectToRoute('stocks_buy_shares');
+            return $this->redirectToRoute('stocks');
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/share_buy.html.twig', [
             'error' => "",
             'form' => $form->createView(),
         ]);
@@ -257,13 +289,40 @@ class StockController extends AbstractController
                 }
             }
 
+            $user = $share_sell->getStock()->getUser();
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            $transaction = new Transaction();
+            $date = new \DateTime();
+            $transaction->setType(1);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $word = ($data->getAmount() === 1) ? 'Share' : 'Shares';
+            $transaction->setName('Sold' . ' ' . $data->getAmount() . ' ' . $share_sell->getStock()->getTicker() . ' ' . $word);
+
+            $cost = $form->get("cost")->getData();
+            $currency = $form->get("payment_currency")->getData();
+            
+            if ($currency == 'can'){
+                $wallet->deposit('CAN', $cost);
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                $wallet->deposit('USD', $cost);
+                $transaction->setCurrency(2);
+            }
+            
+            $transaction->setAmount($cost);
+
+            $em->persist($transaction);
             $em->persist($share_sell);
             $em->flush();
 
             return $this->redirectToRoute('stocks_sell_shares');
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/share_sell.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
         ]);
