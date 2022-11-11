@@ -61,6 +61,9 @@ class Stock
     #[ORM\Column(type: 'boolean')]
     private $pays_dividend;
 
+    #[ORM\Column(type: 'boolean')]
+    private $delisted;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -303,6 +306,18 @@ class Stock
     public function setPaysDividend(bool $pays_dividend): self
     {
         $this->pays_dividend = $pays_dividend;
+
+        return $this;
+    }
+
+    public function isDelisted(): ?bool
+    {
+        return $this->delisted;
+    }
+
+    public function setDelisted(bool $delisted): self
+    {
+        $this->delisted = $delisted;
 
         return $this;
     }

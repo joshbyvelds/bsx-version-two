@@ -21,17 +21,29 @@ use App\Entity\Wallet;
 class StockController extends AbstractController
 {
     #[Route('/stocks', name: 'stocks')]
-    public function index(ManagerRegistry $doctrine): Response
+    public function index(Request $request, ManagerRegistry $doctrine): Response
     {
         $user = $this->getUser();
         $stocks = $user->getStocks();
 
         foreach($stocks as $stock){
             $updated = false;
-            $manual_update = false; // use this whgen the script is not working or you need a quick update..
-            $disable_update = true; 
+            $manual_update = false; // use this when the script is not working or you need a quick update..
+            $disable_update = false; 
+            $disable_can = true;
+
+            if($request->query->get('disable_update')){
+                $updated = true;
+            }
 
             if($disable_update){$updated = true;}
+
+            dump($stock->getTicker());
+
+            // check if stock has been delisted..
+            if($stock->isDelisted()){
+                $updated = true;
+            }
 
             // check to see if has been 2 days or longer since last update
             $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
@@ -46,18 +58,26 @@ class StockController extends AbstractController
             $day_today = date('D');
             $hour_today = date('H');
             
-            if($numberDays > 2){
+            if(!$updated && $numberDays > 2){
                 if($stock->getCountry() == "CAN"){
-                    $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
-                    $data = json_decode($json,true);
-                    $c_date = $data["Meta Data"]["3. Last Refreshed"];
-                    $price = $data["Time Series (Daily)"][$c_date]["4. close"];
-                    $stock->setCurrentPrice($price);
+                    if(!$disable_can){
+                        if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 4 && $hour_today < 20) {
+                            $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' . $stock->getTicker() .'.TRT&interval=1min&apikey=9OH2YI0MYLGXGW30');
+                        } else {
+                            $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        }
+                        dump($json);
+                        $data = json_decode($json,true);
+                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                        $stock->setCurrentPrice($price);
+                    }
                 }
 
                 if($stock->getCountry() == "USD"){
                     // get current price
                     $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                    dump($result);
                     $price = json_decode($result)->price->last;
                     $stock->setCurrentPrice($price);
                 }
@@ -75,19 +95,26 @@ class StockController extends AbstractController
                 
                 if(!$updated && $hour >= 4 && $hour < 20) {
                     if($stock->getCountry() == "CAN"){
-                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
-                        $data = json_decode($json,true);
-                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
-                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
-                        $stock->setCurrentPrice($price);
+                        if(!$disable_can){
+                            if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 4 && $hour_today < 20) {
+                                $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' . $stock->getTicker() .'.TRT&interval=1min&apikey=9OH2YI0MYLGXGW30');
+                            } else {
+                                $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                            }
+                            dump($json);
+                            $data = json_decode($json,true);
+                            $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                            $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                            $stock->setCurrentPrice($price);
+                        }
                     }
 
                     if($stock->getCountry() == "USD"){
                         // make sure last update was during market hours.. otherwise there will be no difference..
                         $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                        dump($result);
                         $price = json_decode($result)->price->last;
                         $stock->setCurrentPrice($price);
-                        //dump($result);
                     }
                     
                     // update .. uh, the update time.
@@ -103,16 +130,30 @@ class StockController extends AbstractController
             if(!$updated && $day_today != "Sat" && $day_today != "Sun") {
                 if($hour_today >= 4 && $hour_today < 20) {
                     if($stock->getCountry() == "CAN"){
-                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
-                        $data = json_decode($json,true);
-                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
-                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
-                        $stock->setCurrentPrice($price);
+                        if(!$disable_can){
+                            if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 4 && $hour_today < 20) {
+                                $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' . $stock->getTicker() .'.TRT&interval=1min&apikey=9OH2YI0MYLGXGW30');
+                                dump($json);
+                                $data = json_decode($json,true);
+                                $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                                $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                                
+                            } else {
+                                $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                                dump($json);
+                                $data = json_decode($json,true);
+                                $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                                $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                            }
+
+                            $stock->setCurrentPrice($price);
+                        }
                     }
 
                     if($stock->getCountry() == "USD"){
                         // get current price
                         $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                        dump($result);
                         $price = json_decode($result)->price->last;
                         $stock->setCurrentPrice($price);
                     }
@@ -129,16 +170,24 @@ class StockController extends AbstractController
             // manual update
             if(!$updated && $manual_update) {
                 if($stock->getCountry() == "CAN"){
-                    $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
-                    $data = json_decode($json,true);
-                    $c_date = $data["Meta Data"]["3. Last Refreshed"];
-                    $price = $data["Time Series (Daily)"][$c_date]["4. close"];
-                    $stock->setCurrentPrice($price);
+                    if(!$disable_can){
+                        if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 4 && $hour_today < 20) {
+                            $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' . $stock->getTicker() .'.TRT&interval=1min&apikey=9OH2YI0MYLGXGW30');
+                        } else {
+                            $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        }
+                        dump($json);
+                        $data = json_decode($json,true);
+                        $c_date = $data["Meta Data"]["3. Last Refreshed"];
+                        $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                        $stock->setCurrentPrice($price);
+                    }
                 }
                 
                 if($stock->getCountry() == "USD"){
                     // get current price
                     $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                    dump($result);
                     $price = json_decode($result)->price->last;
                     $stock->setCurrentPrice($price);
                 }
@@ -170,6 +219,7 @@ class StockController extends AbstractController
             $stock->setUser($this->getUser());
             $stock->setEarned(0);
             $stock->setCurrentPrice(0);
+            $stock->setDelisted(false);
             $date = new \DateTime();
             $stock->setLastPriceUpdate($date);
             $stock->setBgColor("ffffff");

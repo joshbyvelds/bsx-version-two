@@ -72,6 +72,7 @@ class WalletController extends AbstractController
         return $this->render('form/index.html.twig', [
             'page_title' => 'Withdrawl from Wallet',
             'form' => $form->createView(),
+            'error' => "",
         ]);
     }
 
