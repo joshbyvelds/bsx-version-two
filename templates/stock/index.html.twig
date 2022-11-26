@@ -21,7 +21,9 @@
     {% for stock in stocks %}
         {% set stock_dividend = 0 %}
         {% set stock_amount = 0 %}
+        {% set option_amount = 0 %}
         {% set stock_average = 0 %}
+        {% set option_diff = 0 %}
         {% set stock_current = stock.currentPrice %}
         {% set stock_breakeven = 0 %}
         {% set stock_pl = 0 %}
@@ -30,6 +32,9 @@
         {% set fees = 0 %}
         {% set d_buy = 0 %}
         {% set d_sold = 0 %}
+        {% set total = 0 %}
+        {% set option_cost = 0 %}
+        {% set option_total_worth = 0 %}
 
         {% for buy in stock.shareBuys %}
             {% set d_buy = buy.date|date('U') %}
@@ -39,6 +44,17 @@
                 {% set stock_amount = stock_amount + remaining %}
                 {% set buy_average = remaining * buy.price %}
                 {% set stock_average = stock_average + buy_average %}
+            {% endif %}
+        {% endfor %}
+
+        {% for option in stock.options %}
+            {% if option.expired == false %}
+                {% set option_amount = option_amount + 1 %}
+                {% set option_fee = 9.95 + (option.contracts * 1.25) %}
+                {% set option_current = (option.current * 100 * option.contracts) - option_fee %}
+                {% set option_average = (option.average * 100 * option.contracts) + (option_fee * option.buys) %}
+                {% set option_cost = option_cost + option_average %}
+                {% set option_total_worth = max(option_total_worth + option_current, 0) %}
             {% endif %}
         {% endfor %}
 
@@ -52,6 +68,25 @@
             {% set d_sold = sell.date|date('U') %}
         {% endfor %}
 
+        {% if stock_amount == 0 and option_amount == 0 %}
+            {% set percent = 0 %}
+            {% set diff = 0 %}
+        {% elseif stock_amount != 0 and option_amount != 0 %} 
+            {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
+            {% set diff = ((option_total_worth + (stock_current * stock_amount)) - (option_cost + (stock_breakeven * stock_amount))) %}
+        {% else %}
+            {% if stock_amount != 0 %}
+                {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
+                {% set diff = (stock_current - stock_breakeven) * stock_amount %}
+            {% endif %}
+
+            {% if option_amount != 0 %}
+                {% set percent = ((option_total_worth / option_cost) * 100) - 100 %}
+                {% set diff = option_total_worth - option_cost %}
+
+            {% endif %}
+        {% endif %}
+
         {% if (stock_current - stock_breakeven) > 0 %}
             {% set stock_class = "win" %}
         {% elseif stock_current > stock_average %}
@@ -60,25 +95,15 @@
             {% set stock_class = "loss" %}
         {% endif %}
 
-        {% if stock_amount != 0 %}
-            {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
-            {% set diff = (stock_current - stock_breakeven) * stock_amount %}
-        {% else %}
-            {% set percent = 0 %}
-            {% set diff = 0 %}    
-        {% endif %}
-
-        <div class="stock_bubble {% if stock_amount == 0 %}no_shares{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
-            {% if stock_amount != 0 %}
-                <div class="inside">
-                    <div class="inside_content">
-                        {{ stock.name }}<br />
-                        <strong>{{ percent|number_format(2) }}%</strong>
-                        <small>${{ diff|number_format(2) }}</small><br />
-                        {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
-                    </div>
+        <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            <div class="inside">
+                <div class="inside_content">
+                    {{ stock.name }}<br />
+                    <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
+                    <small>${{ diff|number_format(2) }}</small><br />
+                    {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
                 </div>
-            {% endif %}
+            </div>    
         </div>
     {% endfor %}
     </div>
@@ -106,7 +131,7 @@
                 {% set stock_dividend = 0 %}
                 {% set stock_amount = 0 %}
                 {% set stock_average = 0 %}
-                {% set stock_earned = 0 %}
+                {% set stock_earned = stock.earned %}
                 {% set stock_current = stock.currentPrice %}
                 {% set stock_breakeven = 0 %}
                 {% set stock_pl = 0 %}

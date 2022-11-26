@@ -5,73 +5,135 @@
 {% block body %}
     {# {{ form(form) }} #}
     {{ form_start(form) }}
-        <h2>Dashboard</h2>
-        {{ form_row(form.dashboard_transactions) }}
-        <h2>Broker Account</h2>
-        {{ form_row(form.max_play_money) }}
-        {{ form_row(form.max_plays) }}
-        <h2>Futures Account</h2>
-        {{ form_row(form.futures_play_bucket_max) }}
-        {{ form_row(form.futures_profit_bucket_max) }}
-        {{ form_row(form.futures_weekly_goal) }}
-        <h3>Broker Margin</h3>
-        {{ form_row(form.futures_use_broker_margin) }}
-        {{ form_row(form.futures_broker_margin_amount) }}
-        <h3>Futures Profilt Split Levels </h3>
-        {{ form_row(form.futures_use_split_profits) }}
-        <table class="settings_split_table">
-            <tr>
-                <th>Level</th>
-                <th>Amount</th>
-                <th>Ratio</th>
-            </tr>
-            <tr>
-                <td>Level 1</td>
-                <td>{{ form_row(form.futures_profit_split_level_1_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_1_ratio) }}</td>
-            </tr>
+        <div class="settings_section">
+            <div class="details">
+                <h2>Dashboard</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
+            </div>
 
-            <tr>
-                <td>Level 2</td>
-                <td>{{ form_row(form.futures_profit_split_level_2_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_2_ratio) }}</td>
-            </tr>
+            <div class="form">
+                {{ form_row(form.dashboard_transactions) }}
+            </div>
+        </div>
 
-            <tr>
-                <td>Level 3</td>
-                <td>{{ form_row(form.futures_profit_split_level_3_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_3_ratio) }}</td>
-            </tr>
+        <div class="settings_section">
+            <div class="details">
+                <h2>Broker Account</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
+            </div>
 
-            <tr>
-                <td>Level 4</td>
-                <td>{{ form_row(form.futures_profit_split_level_4_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_4_ratio) }}</td>
-            </tr>
+            <div class="form switches">
+                {{ form_row(form.max_play_money) }}
+                {{ form_row(form.max_plays) }}
+                <h3>Stock - Price Update Options</h3>
+                <div class="switches row">
+                    <div class="round inline">{{ form_widget(form.stocks_manual_update_enabled) }}<div class="back"><label class="but" for="settings_stocks_manual_update_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Manual</div></div>
+                    <div class="round inline">{{ form_widget(form.stocks_update_sold_price) }}<div class="back"><label class="but" for="settings_stocks_update_sold_price"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Sold</div></div>
+                    <div class="round inline">{{ form_widget(form.stocks_disable_update_enabled) }}<div class="back"><label class="but" for="settings_stocks_disable_update_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Disable All</div></div>
+                    <div class="round inline">{{ form_widget(form.stocks_disable_canadian_update_enabled) }}<div class="back"><label class="but" for="settings_stocks_disable_canadian_update_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Disable Can</div></div>
+                </div>
+            </div>
+        </div>
 
-            <tr>
-                <td>Level 5</td>
-                <td>{{ form_row(form.futures_profit_split_level_5_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_5_ratio) }}</td>
-            </tr>
+        <div class="settings_section">
+            <div class="details">
+                <h2>Futures Account</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
+            </div>
 
-            <tr>
-                <td>Level 6</td>
-                <td>{{ form_row(form.futures_profit_split_level_6_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_6_ratio) }}</td>
-            </tr>
+            <div class="form switches">   
+                {{ form_row(form.futures_play_bucket_max) }}
+                {{ form_row(form.futures_profit_bucket_max) }}
+                {{ form_row(form.futures_weekly_goal) }}
+                
+                <h3>Futures - Broker Margin</h3>
+                <div class="switches">
+                    <div class="round inline">{{ form_widget(form.futures_use_broker_margin) }}<div class="back"><label class="but" for="settings_futures_use_broker_margin"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label long">Use Broker Margin</div></div>
+                </div>
 
-            <tr>
-                <td>Level 7</td>
-                <td>{{ form_row(form.futures_profit_split_level_7_amount) }}</td>
-                <td>{{ form_row(form.futures_profit_split_level_7_ratio) }}</td>
-            </tr>
-        </table>
+                <div class="settings_broker_margin_input_wrapper">
+                    {{ form_row(form.futures_broker_margin_amount) }}
+                </div>
+
+                <h3>Futures - Profilt Split Levels</h3>
+                <div class="switches">
+                    <div class="round inline">{{ form_widget(form.futures_use_split_profits) }}<div class="back"><label class="but" for="settings_futures_use_split_profits"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label long">Split Profits</div></div>
+                </div>
+                <table class="settings_split_table">
+                    <tr>
+                        <th>Level</th>
+                        <th>Amount</th>
+                        <th>Ratio</th>
+                    </tr>
+                    <tr>
+                        <td>Level 1</td>
+                        <td>{{ form_row(form.futures_profit_split_level_1_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_1_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 2</td>
+                        <td>{{ form_row(form.futures_profit_split_level_2_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_2_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 3</td>
+                        <td>{{ form_row(form.futures_profit_split_level_3_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_3_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 4</td>
+                        <td>{{ form_row(form.futures_profit_split_level_4_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_4_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 5</td>
+                        <td>{{ form_row(form.futures_profit_split_level_5_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_5_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 6</td>
+                        <td>{{ form_row(form.futures_profit_split_level_6_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_6_ratio) }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Level 7</td>
+                        <td>{{ form_row(form.futures_profit_split_level_7_amount) }}</td>
+                        <td>{{ form_row(form.futures_profit_split_level_7_ratio) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
         {{ form_row(form.save) }}
     {{ form_end(form) }}
 
     <script>
         $(() => {
+            if($("#settings_futures_use_broker_margin").prop('checked')){
+                $(".settings_broker_margin_input_wrapper").css("opacity", "1");
+                $(".settings_broker_margin_input_wrapper input").removeAttr("readonly");
+            } else {
+                $(".settings_broker_margin_input_wrapper").css("opacity", "0.5");
+                $(".settings_broker_margin_input_wrapper input").attr("readonly", true);
+            }
+
+            $("#settings_futures_use_broker_margin").on("click", function(){
+                if($(this).prop('checked')){
+                    $(".settings_broker_margin_input_wrapper").css("opacity", "1");
+                    $(".settings_broker_margin_input_wrapper input").removeAttr("readonly");
+                } else {
+                    $(".settings_broker_margin_input_wrapper").css("opacity", "0.5");
+                    $(".settings_broker_margin_input_wrapper input").attr("readonly", true);
+                }
+            })
+
+            // fade out toogle inputs..
             if($("#settings_futures_use_split_profits").prop('checked')){
                 $(".settings_split_table").css("opacity", "1");
                 $(".settings_split_table input").removeAttr("readonly");

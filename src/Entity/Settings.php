@@ -86,6 +86,18 @@ class Settings
     #[ORM\Column(type: 'float')]
     private $futures_weekly_goal;
 
+    #[ORM\Column(type: 'boolean')]
+    private $stocks_update_sold_price;
+
+    #[ORM\Column(type: 'boolean')]
+    private $stocks_manual_update_enabled;
+
+    #[ORM\Column(type: 'boolean')]
+    private $stocks_disable_update_enabled;
+
+    #[ORM\Column(type: 'boolean')]
+    private $stocks_disable_canadian_update_enabled;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -375,6 +387,54 @@ class Settings
     public function setFuturesWeeklyGoal(float $futures_weekly_goal): self
     {
         $this->futures_weekly_goal = $futures_weekly_goal;
+
+        return $this;
+    }
+
+    public function isStocksUpdateSoldPrice(): ?bool
+    {
+        return $this->stocks_update_sold_price;
+    }
+
+    public function setStocksUpdateSoldPrice(bool $stocks_update_sold_price): self
+    {
+        $this->stocks_update_sold_price = $stocks_update_sold_price;
+
+        return $this;
+    }
+
+    public function isStocksManualUpdateEnabled(): ?bool
+    {
+        return $this->stocks_manual_update_enabled;
+    }
+
+    public function setStocksManualUpdateEnabled(bool $stocks_manual_update_enabled): self
+    {
+        $this->stocks_manual_update_enabled = $stocks_manual_update_enabled;
+
+        return $this;
+    }
+
+    public function isStocksDisableUpdateEnabled(): ?bool
+    {
+        return $this->stocks_disable_update_enabled;
+    }
+
+    public function setStocksDisableUpdateEnabled(bool $stocks_disable_update_enabled): self
+    {
+        $this->stocks_disable_update_enabled = $stocks_disable_update_enabled;
+
+        return $this;
+    }
+
+    public function isStocksDisableCanadianUpdateEnabled(): ?bool
+    {
+        return $this->stocks_disable_canadian_update_enabled;
+    }
+
+    public function setStocksDisableCanadianUpdateEnabled(bool $stocks_disable_canadian_update_enabled): self
+    {
+        $this->stocks_disable_canadian_update_enabled = $stocks_disable_canadian_update_enabled;
 
         return $this;
     }

@@ -64,11 +64,18 @@ class Stock
     #[ORM\Column(type: 'boolean')]
     private $delisted;
 
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: Option::class)]
+    private $options;
+
+    #[ORM\Column(type: 'boolean')]
+    private $being_played;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
         $this->shareBuys = new ArrayCollection();
         $this->shareSells = new ArrayCollection();
+        $this->options = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,6 +116,18 @@ class Stock
     {
         $this->earned = $earned;
 
+        return $this;
+    }
+
+    public function subtractEarned(float $amount): self
+    {
+        $this->earned -= $amount;
+        return $this;
+    }
+
+    public function addEarned(float $amount): self
+    {
+        $this->earned += $amount;
         return $this;
     }
 
@@ -318,6 +337,48 @@ class Stock
     public function setDelisted(bool $delisted): self
     {
         $this->delisted = $delisted;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Option>
+     */
+    public function getOptions(): Collection
+    {
+        return $this->options;
+    }
+
+    public function addOption(Option $option): self
+    {
+        if (!$this->options->contains($option)) {
+            $this->options[] = $option;
+            $option->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOption(Option $option): self
+    {
+        if ($this->options->removeElement($option)) {
+            // set the owning side to null (unless already changed)
+            if ($option->getStock() === $this) {
+                $option->setStock(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isBeingPlayed(): ?bool
+    {
+        return $this->being_played;
+    }
+
+    public function setBeingPlayed(bool $being_played): self
+    {
+        $this->being_played = $being_played;
 
         return $this;
     }
