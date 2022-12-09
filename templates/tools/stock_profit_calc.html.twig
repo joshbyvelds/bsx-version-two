@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Shares Trade Calculator{% endblock %}
+
+{% block body %}
+    <table id="dt_table">
+        <tr>
+            <th>Name</th>
+            <th>Shares</th>
+            <th>Price</th>
+            <th>Target</th>
+            <th>Profit</th>
+        </tr>
+
+        <tr class="calc_row">
+            <td>
+                <input type="text">
+            </td>
+            <td>
+                <input class="shares_input" type="text" value="0" placeholder="0">
+            </td>
+            <td>
+                <input class="price_input" type="text" value="0.00" placeholder="$0.00">
+            </td>
+            <td>
+                <input class="target_input" type="text" value="0.00" placeholder="$0.00">
+            </td>
+            <td>
+                <input class="profit_input" type="text" readonly>
+            </td>
+        </tr>
+    </table>
+
+    <button id="add_row">Add Row</button>
+
+
+    <script>
+        var row = 1;
+        $(function(){
+            $("#add_row").on("click", addRow);
+            engageListeners();
+        })
+
+        function engageListeners(){
+            $("table input").off().on("change", calculate);
+        }
+
+        function calculate(){
+            var total = 0;
+
+           $('.calc_row').each(function(index, value) {
+                var $s = parseInt($(this).find(".shares_input").val());
+                var $p = parseInt($(this).find(".price_input").val());
+                var $t = parseInt($(this).find(".target_input").val());
+                var $profit = $(this).find(".profit_input");
+                var fee = 9.95;
+                var contract_fee = 1.25;
+                var profit_value = (($t - $p) * $s) - (fee * 2);                
+                $profit.val("$" + profit_value.toFixed(2));
+           });
+        }
+
+        function addRow(){
+            row++;
+            var rowHTML = "<tr class=\"calc_row\">";
+            rowHTML += "<td><input type=\"text\"></td>";
+            rowHTML += "<td><input class=\"shares_input\" type=\"text\" placeholder=\"0\"></td>";
+            rowHTML += "<td><input class=\"price_input\" type=\"text\"  placeholder=\"$0.00\"></td>";
+            rowHTML += "<td><input class=\"target_input\" type=\"text\"  placeholder=\"$0.00\"></td>";
+            rowHTML += "<td><input class=\"profit_input\" type=\"text\" readonly></td></tr>";
+            $("#dt_table").append(rowHTML);
+            engageListeners();
+        }
+
+    </script>
+{% endblock %}
+

@@ -24,8 +24,16 @@ class ToolsController extends AbstractController
     //     ]);
     // }
 
+    #[Route('/tools/sharestradecalc', name: 'tools_shares_calc')]
+    public function sharestrade(): Response
+    {
+        return $this->render('tools/stock_profit_calc.html.twig', [
+            'controller_name' => 'ToolsController',
+        ]);
+    }
+
     #[Route('/tools/optionstradecalc', name: 'tools_options_daytrade_calc')]
-    public function daytrade(): Response
+    public function optionsdaytrade(): Response
     {
         $user = $user = $this->getUser();
         return $this->render('tools/options_daytrade_calc.html.twig', [
