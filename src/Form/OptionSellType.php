@@ -4,7 +4,6 @@ namespace App\Form;
 
 use App\Entity\Option;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -15,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Security\Core\Security;
 
-class OptionBuyType extends AbstractType
+class OptionSellType extends AbstractType
 {
     public function __construct(Security $security)
     {
@@ -35,13 +34,13 @@ class OptionBuyType extends AbstractType
                     return $er->createQueryBuilder('s')
                     ->where('s.user = :user')
                     ->andWhere('s.contracts > 0')
+                    ->andWhere('s.expired = false')
                     ->setParameter('user', $user_id);
                 },
                 'mapped' => false
-                
             ])
-            ->add('contracts', NumberType::class, ['mapped' => false])
-            ->add('average', NumberType::class, ['mapped' => false])
+            ->add('contracts')
+            ->add('average')
             ->add('payment_currency',ChoiceType::class,[
                 'choices' => array(
                     'CAN' => 'can',
@@ -51,7 +50,7 @@ class OptionBuyType extends AbstractType
                 'multiple'=>false,
                 'expanded'=>true
             ])
-            ->add('cost', TextType::class, ['mapped' => false])
+            ->add('total', TextType::class, ['mapped' => false])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use App\Form\OptionType;
 use App\Form\OptionBuyType;
+use App\Form\OptionSellType;
 use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
@@ -47,6 +48,7 @@ class StockController extends AbstractController
             //dump($result);
             $price = json_decode($result)->price->last;
             $stock->setCurrentPrice($price);
+            $date = new \DateTime();
             
             if(count($stock->getOptions()) > 0){
                 foreach ($stock->getOptions() as $option) {
@@ -61,6 +63,10 @@ class StockController extends AbstractController
                         $option_data = $option_data[$s];
                         $current = $option_data['b'];
                         $option->setCurrent($current);
+                    } else {
+                        if($option->getExpiry() < $date){
+                            $option->setExpired(true);
+                        }
                     }
                 }
             }
@@ -173,6 +179,7 @@ class StockController extends AbstractController
             $stock->setEarned(0);
             $stock->setCurrentPrice(0);
             $stock->setDelisted(false);
+            $stock->setBeingPlayed(false);
             $date = new \DateTime();
             $stock->setLastPriceUpdate($date);
             $stock->setBgColor("ffffff");
@@ -343,7 +350,7 @@ class StockController extends AbstractController
             $option->setBuys(1);
             $option->setExpired(false);
             $option->setUser($user);
-            $option.setCurrent(0.0);
+            $option->setCurrent(0.0);
             $transaction = new Transaction();
             $date = new \DateTime();
             $transaction->setType(2);
@@ -397,11 +404,18 @@ class StockController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
+            $data = $form->getData();
             $option = $form->get("option")->getData();
 
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            
+            $contracts = $option->getContracts() + $form->get("contracts")->getData();
+            $average = (($option->getAverage() * $option->getContracts()) + ($form->get("contracts")->getData() * $form->get("average")->getData())) / $contracts;
+            
 
+            $option->setAverage($average);
+            $option->setContracts($contracts);
             $option->setBuys((int)$option->getBuys() + 1);
             $transaction = new Transaction();
             $date = new \DateTime();
@@ -448,7 +462,7 @@ class StockController extends AbstractController
     public function sellOption(ManagerRegistry $doctrine, Request $request): Response
     {
         $error = "";
-        $form = $this->createForm(OptionBuyType::class);
+        $form = $this->createForm(OptionSellType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -458,37 +472,38 @@ class StockController extends AbstractController
 
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
-
-            $option->setBuys($option->getBuys() + 1);
+            
+            $option->setContracts($option->getContracts() - $form->get("contracts")->getData());
             $transaction = new Transaction();
             $date = new \DateTime();
-            $transaction->setType(2);
+            $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
             $word = ($option->getContracts() === 1) ? 'Contract' : 'Contracts';
             $option_type = ($option->getType() === 1) ? 'C' : 'P';
             $option_strike = $option->getStrike();
             $option_expiry = date_format($option->getExpiry(), 'Y-m-d');
-            $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Sold' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
 
             //dump($transaction->getName());
 
-            $cost = $form->get("cost")->getData();
+            $total = $form->get("total")->getData();
             $currency = $form->get("payment_currency")->getData();
             
             if ($currency == 'can'){
-                $wallet->withdraw('CAN', $cost);
+                $wallet->deposit('CAN', $total);
                 $transaction->setCurrency(1);
             }
 
             if ($currency == 'usd'){
-                $wallet->withdraw('USD', $cost);
+                $wallet->deposit('USD', $total);
                 $transaction->setCurrency(2);
             }
 
-            $transaction->setAmount($cost);
+            $transaction->setAmount($total);
 
-            $option->getStock()->subtractEarned($cost);
+            $option->getStock()->addEarned($total);
+
 
             $em->persist($transaction);
             $em->persist($option);
@@ -496,7 +511,7 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        return $this->render('form/option_buy.html.twig', [
+        return $this->render('form/option_sell.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
         ]);

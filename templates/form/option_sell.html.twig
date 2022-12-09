@@ -11,9 +11,9 @@
 
     <script>
         $(() => {
-            $("#option_average, #option_contracts").on("change", function(){
-                var cost = (((parseFloat($("#option_average").val()) * 100) * parseInt($("#option_contracts").val())) + (parseInt($("#option_contracts").val())) * 1.25) + 9.95;
-                $("#option_cost").val(cost);
+            $("#option_sell_average, #option_sell_contracts").on("change", function(){
+                var total = (((parseFloat($("#option_sell_average").val()) * 100) * parseInt($("#option_sell_contracts").val())) - (parseInt($("#option_sell_contracts").val())) * 1.25) - 9.95;
+                $("#option_sell_total").val(total);
             });
         });
     </script>

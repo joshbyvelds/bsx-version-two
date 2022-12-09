@@ -48,11 +48,12 @@
         {% endfor %}
 
         {% for option in stock.options %}
-            {% if option.expired == false %}
+            {% if option.expired == false and option.contracts > 1 %}
                 {% set option_amount = option_amount + 1 %}
-                {% set option_fee = 9.95 + (option.contracts * 1.25) %}
-                {% set option_current = (option.current * 100 * option.contracts) - option_fee %}
-                {% set option_average = (option.average * 100 * option.contracts) + (option_fee * option.buys) %}
+                {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
+                {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
+                {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
+                {% set option_average = (option.average * 100 * option.contracts) + option_buy_fee %}
                 {% set option_cost = option_cost + option_average %}
                 {% set option_total_worth = max(option_total_worth + option_current, 0) %}
             {% endif %}
