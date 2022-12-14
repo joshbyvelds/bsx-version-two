@@ -10,6 +10,7 @@
             <th>Price</th>
             <th>Target</th>
             <th>Profit</th>
+            <th>Percent</th>        
         </tr>
 
         <tr class="calc_row">
@@ -27,6 +28,9 @@
             </td>
             <td>
                 <input class="profit_input" type="text" readonly>
+            </td>
+            <td>
+                <input class="percent_input" type="text" readonly>
             </td>
         </tr>
     </table>
@@ -53,10 +57,12 @@
                 var $p = parseInt($(this).find(".price_input").val());
                 var $t = parseInt($(this).find(".target_input").val());
                 var $profit = $(this).find(".profit_input");
+                var $percent = $(this).find(".percent_input");
                 var fee = 9.95;
-                var contract_fee = 1.25;
-                var profit_value = (($t - $p) * $s) - (fee * 2);                
+                var profit_value = (($t - $p) * $s) - (fee * 2);
+                var percent_value = ((($t * $s) - fee) - (($p * $s) + fee)) / (($p * $s) + fee) * 100;
                 $profit.val("$" + profit_value.toFixed(2));
+                $percent.val(percent_value.toFixed(2) + "%");
            });
         }
 
@@ -67,7 +73,8 @@
             rowHTML += "<td><input class=\"shares_input\" type=\"text\" placeholder=\"0\"></td>";
             rowHTML += "<td><input class=\"price_input\" type=\"text\"  placeholder=\"$0.00\"></td>";
             rowHTML += "<td><input class=\"target_input\" type=\"text\"  placeholder=\"$0.00\"></td>";
-            rowHTML += "<td><input class=\"profit_input\" type=\"text\" readonly></td></tr>";
+            rowHTML += "<td><input class=\"profit_input\" type=\"text\" readonly></td>";
+            rowHTML += "<td><input class=\"percent_input\" type=\"text\" readonly></td></tr>";
             $("#dt_table").append(rowHTML);
             engageListeners();
         }
