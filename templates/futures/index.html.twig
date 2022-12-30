@@ -20,6 +20,7 @@
     {% set used = buckets.used %}
     {% set debt = buckets.debt %}
     {% set savings_debt = buckets.savingsDebt %}
+    {% set fees_paid = buckets.dataFees %}
     {% set broker = play + profit %}
         
     <h2>Data Output</h2>
@@ -31,6 +32,7 @@
         Used: ${{ used|number_format(2) }}<br />
         {# Debt: -${{ debt|number_format(2) }}(CDN)<br /> #}
         Savings Debt: ${{ savings_debt|number_format(2) }}(CDN)<br />
+        Fees Paid: ${{ fees_paid|number_format(2) }}
     </p>
 
     <h2>Buckets</h2>
@@ -77,6 +79,7 @@
     {% if buckets != "NO BUCKETS" %}
     <h2>Actions</h2>
     <button id="empty_bucket_btn">Empty Monthly Bucket</button>
+    <button id="pay_data_fee">Pay Monthly Data Fee</button>
     {% endif %}
 
     <h2>Daily Plays</h2>
@@ -194,6 +197,14 @@ $("#cdn_submit").on("click", function(){
         alert("Empty Complete");
         // result complete... refresh page here..
 
+    });
+});
+
+$("#pay_data_fee").on("click", function(){
+    
+    var cdn = $("#cdn_amount").val();
+    $.post("/futures/paydatafee", {}, function(json){
+        alert("Data Fee Paid. Please Refresh to see updated buckets.");
     });
 });
 

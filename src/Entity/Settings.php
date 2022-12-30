@@ -98,6 +98,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $stocks_disable_canadian_update_enabled;
 
+    #[ORM\Column(type: 'float')]
+    private $futures_data_fee;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -435,6 +438,18 @@ class Settings
     public function setStocksDisableCanadianUpdateEnabled(bool $stocks_disable_canadian_update_enabled): self
     {
         $this->stocks_disable_canadian_update_enabled = $stocks_disable_canadian_update_enabled;
+
+        return $this;
+    }
+
+    public function getFuturesDataFee(): ?float
+    {
+        return $this->futures_data_fee;
+    }
+
+    public function setFuturesDataFee(float $futures_data_fee): self
+    {
+        $this->futures_data_fee = $futures_data_fee;
 
         return $this;
     }

@@ -65,6 +65,7 @@ class FuturesController extends AbstractController
             $user = $user = $this->getUser();
             $buckets->setDebt(0);
             $buckets->setSavingsDebt(0);
+            $buckets->setDataFees(0);
             $buckets->setUser($user);
             $user->addFuturesBucket($buckets);
             $entityManager->persist($buckets);
@@ -223,6 +224,17 @@ class FuturesController extends AbstractController
         $user = $user = $this->getUser();
         $buckets = $user->getFuturesBuckets()[0];
         $buckets->dumpProfitBucket($cdn);
+        $entityManager->flush();
+        return new JsonResponse(['result' => 'ok']);
+    }
+
+    #[Route('/futures/paydatafee', name: 'app_futures_play_data_fee')]
+    public function payDataFee(EntityManagerInterface $entityManager): Response
+    {
+        $user = $user = $this->getUser();
+        $buckets = $user->getFuturesBuckets()[0];
+        $settings = $user->getSettings();
+        $buckets->PayDataFee($settings->getFuturesDataFee());
         $entityManager->flush();
         return new JsonResponse(['result' => 'ok']);
     }

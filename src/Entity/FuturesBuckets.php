@@ -35,6 +35,9 @@ class FuturesBuckets
     #[ORM\Column(type: 'float')]
     private $debt;
 
+    #[ORM\Column(type: 'float')]
+    private $dataFees;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -142,6 +145,25 @@ class FuturesBuckets
     {
         $this->debt = $debt;
 
+        return $this;
+    }
+
+    public function getDataFees(): ?float
+    {
+        return $this->dataFees;
+    }
+
+    public function setDataFees(float $dataFees): self
+    {
+        $this->dataFees = $dataFees;
+
+        return $this;
+    }
+
+    public function payDataFee($fee): self
+    {
+        $this->play -= $fee;
+        $this->dataFees =+ $fee; 
         return $this;
     }
 }

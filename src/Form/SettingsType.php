@@ -21,6 +21,7 @@ class SettingsType extends AbstractType
             ->add('stocks_manual_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_disable_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_disable_canadian_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('futures_data_fee')
             ->add('futures_play_bucket_max')
             ->add('futures_profit_bucket_max')
             ->add('futures_weekly_goal')
