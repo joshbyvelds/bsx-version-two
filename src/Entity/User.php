@@ -70,6 +70,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Option::class)]
     private $options;
 
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: Play::class)]
+    private $plays;
+
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: Note::class)]
+    private $notes;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -80,6 +86,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->futuresDays = new ArrayCollection();
         $this->futuresWeeks = new ArrayCollection();
         $this->options = new ArrayCollection();
+        $this->plays = new ArrayCollection();
+        $this->notes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -456,6 +464,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($option->getUser() === $this) {
                 $option->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Play>
+     */
+    public function getPlays(): Collection
+    {
+        return $this->plays;
+    }
+
+    public function addPlay(Play $play): self
+    {
+        if (!$this->plays->contains($play)) {
+            $this->plays[] = $play;
+            $play->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlay(Play $play): self
+    {
+        if ($this->plays->removeElement($play)) {
+            // set the owning side to null (unless already changed)
+            if ($play->getUser() === $this) {
+                $play->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notes>
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(Note $note): self
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes[] = $note;
+            $note->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Note $note): self
+    {
+        if ($this->notes->removeElement($note)) {
+            // set the owning side to null (unless already changed)
+            if ($note->getUser() === $this) {
+                $note->setUser(null);
             }
         }
 

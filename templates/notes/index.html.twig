@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello NotesController!{% endblock %}
+
+{% block body %}
+    {% for note in notes %}
+        {% if note.public or note.user.id == user %}
+            <h2>{{ note.title }}</h2>
+            <h3>Author: {{ note.user.username }} | Date: {{ note.date|date("m/d/Y") }}</h3>
+            <p>{{ note.text }}</p>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
