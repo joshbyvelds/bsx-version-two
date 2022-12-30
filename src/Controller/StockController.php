@@ -53,6 +53,10 @@ class StockController extends AbstractController
             if(count($stock->getOptions()) > 0){
                 foreach ($stock->getOptions() as $option) {
                     if(!$option->isExpired()){
+                        if($option->getExpiry() < $date){
+                            $option->setExpired(true);
+                            continue;
+                        }
                         $e = date_format($option->getExpiry(), "Y-m-d");
                         $t = ($stock->getType() === 1) ? "c":"p";
                         $s = number_format($option->getStrike(), 2);
@@ -63,10 +67,6 @@ class StockController extends AbstractController
                         $option_data = $option_data[$s];
                         $current = $option_data['b'];
                         $option->setCurrent($current);
-                    } else {
-                        if($option->getExpiry() < $date){
-                            $option->setExpired(true);
-                        }
                     }
                 }
             }
