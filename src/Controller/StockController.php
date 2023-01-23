@@ -28,6 +28,8 @@ class StockController extends AbstractController
         if($stock->getCountry() == "CAN"){
             if(!$disable_can){
                 if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 9 && $hour_today < 16) {
+                    dump("No Update, Canadian Stocks can only be updated when market is closed");
+                } else {
                     $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
                     dump("Update:" . $stock->getTicker());
                     //dump($json);
@@ -35,8 +37,6 @@ class StockController extends AbstractController
                     $c_date = $data["Meta Data"]["3. Last Refreshed"];
                     $price = $data["Time Series (Daily)"][$c_date]["4. close"];
                     $stock->setCurrentPrice($price);
-                } else {
-                    dump("No Update, Canadian Stocks can only be updated when market is closed");
                 }
             }
         }
