@@ -46,6 +46,8 @@ class DashboardController extends AbstractController
             $current_futures_week = null;
         }
 
+        $plays = $user->getPlays();
+
 
         //TODO: limit this to the last 6..
         $transactions = $user->getTransactions()->getValues();
@@ -60,6 +62,7 @@ class DashboardController extends AbstractController
             'futures' => $buckets,
             'current_futures_week' => $current_futures_week,
             'settings' => $settings,
+            'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
         ]);
     }

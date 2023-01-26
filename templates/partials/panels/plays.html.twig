@@ -1,41 +1,34 @@
 <div class="panel large_panel plays">
     <div class="title">Plays</div>
+    {% for play in plays %}
     <div class="play">
-        <div class="logo" style="background-image: url('/assets/images/company_logos/F.jpg')"></div>
+        <div class="logo" style="background-image: url('/assets/images/company_logos/{{ play.stock.ticker }}.jpg')"></div>
         <div class="info">
-            <div class="playname">Ford</div>
-            <div class="playdetails">16 December, 2022 - $14 Put</div>
-        </div>
-        <div class="profit">+$28</div>
-    </div>
+            <div class="playname">{{ play.stock.name }}</div>
+            <div class="playdetails">
+                {% set profit = 0 %}
+                {% set fee = 0 %}
+                {% if play.shares|length > 0 %}{% set fee = fee + 9.95 %}{% endif %}
+                {% for sb in play.shares %}
+                    Stock Swing - {{ sb.amount }} * ${{ sb.price }}<br/>
+                    {% set fee = fee + 9.95 %}
+                    {% set profit = profit + ((sb.stock.getCurrentPrice * sb.amount) - (sb.amount * sb.price)) %}
+                {% endfor %}
 
-    <div class="play">
-        <div class="logo" style="background-image: url('/assets/images/company_logos/ALTO.jpg')"></div>
-        <div class="info">
-            <div class="playname">Alto Ingredients</div>
-            <div class="playdetails">02 August, 2021 - $40 Call</div>
+                {% if play.options|length > 0 %}{% set fee = fee + 9.95 %}{% endif %}
+                {% set contractsTotal = 0 %}
+                {% for option in play.options %}
+                    {% set fee = fee + 9.95 %}
+                    {% set contractsTotal = contractsTotal + option.contracts %}
+                    {{ option.contracts }} * {{ option.expiry|date("j F, Y")}} - ${{option.strike|number_format(2)}} {% if option.type == 1 %}Call{% if option.contracts %}s{% endif %}{% else %}Put{% if option.contracts %}s{% endif %}{% endif %}<br />
+                    {% set profit = profit + (((option.current * option.contracts) - (option.average * option.contracts)) * 100) %}
+                {% endfor %}
+                {% if play.options|length > 0 %}{% set fee = 2.50 * contractsTotal %}{% endif %}
+                 
+            </div>
         </div>
-        <div class="profit">-$150</div>
+        {% set total = profit - fee %}
+        <div class="profit">{% if profit > 0 %}+{% endif %}{% if profit < 0 %}-{% endif %}${{ total|abs|number_format(2) }}</div>
     </div>
-
-    <div class="play">
-        <div class="logo" style="background-image: url('/assets/images/company_logos/GOOG.jpg')"></div>
-        <div class="info">
-            <div class="playname">Google</div>
-            <div class="playdetails">Stock Swing - $93.12</div>
-        </div>
-        <div class="profit">+$30</div>
-    </div>
-
-
-    {#
-        <div class="play">
-        <div class="logo"></div>
-        <div class="info">
-            <div class="playname"></div>
-            <div class="playdetails"></div>
-        </div>
-        <div class="profit"></div>
-    </div>
-     #}
+    {% endfor %}
 </div>
