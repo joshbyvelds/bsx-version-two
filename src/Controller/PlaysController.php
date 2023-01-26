@@ -32,15 +32,45 @@ class PlaysController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
             $data = $form->getData();
+            
+            // Make sure user has selected at least one shareBuy or Option
+            if(count($data->getShares()) === 0 && count($data->getOptions()) === 0){
+                dump("Nothing Selected");
+            }
 
-            $em->persist($play);
-            $em->flush();
-            return $this->redirectToRoute('dashboard');
+            $stock = $data->getStock();
+
+            /*
+             Since I'm not sure how to filter the collection dropdown in the form builder, 
+             we are going to use vaildation here to make sure the share buys and options
+             match the selected stock (and user). 
+            */
+
+            // Loop though each selected share buy
+            foreach($data->getShares() as $sb){
+                if($sb->getStock() != $stock){
+                    $error = 'One of the selected share buys does not match the selected stock.';
+                }
+            }
+            
+            // Loop though each selected option
+            foreach($data->getOptions() as $o){;
+                if($o->getStock() != $stock){
+                    $error = 'One of the selected options does not match the selected stock.';
+                }
+            }
+
+            if($error === ""){
+                $play->setUser($this->getUser());
+                $em->persist($play);
+                $em->flush();
+                return $this->redirectToRoute('dashboard');
+            }
         }
 
         return $this->render('form/index.html.twig', [
             'form' => $form->createView(),
-            'error' => '',
+            'error' => $error,
             'controller_name' => 'PlaysController',
         ]);
     }
