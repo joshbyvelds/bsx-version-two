@@ -29,9 +29,10 @@ class StockType extends AbstractType
                     'Red Chip' => "RED"
                 ],
             ])
-            ->add('pays_dividend', CheckboxType::class)
-            ->add('save', SubmitType::class, [
+            ->add('pays_dividend', CheckboxType::class, [
                 'required' => false,
+            ])
+            ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'
                 ]    
