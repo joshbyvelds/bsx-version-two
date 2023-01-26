@@ -54,8 +54,8 @@
 
            $('.calc_row').each(function(index, value) {
                 var $s = parseInt($(this).find(".shares_input").val());
-                var $p = parseInt($(this).find(".price_input").val());
-                var $t = parseInt($(this).find(".target_input").val());
+                var $p = parseFloat($(this).find(".price_input").val());
+                var $t = parseFloat($(this).find(".target_input").val());
                 var $profit = $(this).find(".profit_input");
                 var $percent = $(this).find(".percent_input");
                 var fee = 9.95;
