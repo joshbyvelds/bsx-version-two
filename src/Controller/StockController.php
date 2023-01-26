@@ -27,7 +27,7 @@ class StockController extends AbstractController
     {
         if($stock->getCountry() == "CAN"){
             if(!$disable_can){
-                if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 9 && $hour_today < 16) {
+                if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 10 && $hour_today < 16) {
                     dump("No Update, Canadian Stocks can only be updated when market is closed");
                 } else {
                     $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
