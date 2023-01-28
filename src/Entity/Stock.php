@@ -68,7 +68,10 @@ class Stock
     private $options;
 
     #[ORM\Column(type: 'boolean')]
-    private $being_played;
+    private $beingPlayedOption;
+
+    #[ORM\Column(type: 'boolean')]
+    private $beingPlayedShares;
 
     public function __construct()
     {
@@ -371,14 +374,26 @@ class Stock
         return $this;
     }
 
-    public function isBeingPlayed(): ?bool
+    public function isBeingPlayedOption(): ?bool
     {
-        return $this->being_played;
+        return $this->beingPlayedOption;
     }
 
-    public function setBeingPlayed(bool $being_played): self
+    public function setBeingPlayedOption(bool $beingPlayedOption): self
     {
-        $this->being_played = $being_played;
+        $this->beingPlayedOption = $beingPlayedOption;
+
+        return $this;
+    }
+
+    public function isBeingPlayedShares(): ?bool
+    {
+        return $this->beingPlayedShares;
+    }
+
+    public function setBeingPlayedShares(bool $beingPlayedShares): self
+    {
+        $this->$beingPlayedShares = $beingPlayedShares;
 
         return $this;
     }

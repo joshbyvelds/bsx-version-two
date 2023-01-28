@@ -26,7 +26,7 @@ class StockController extends AbstractController
     private function updateStockInfo(Stock $stock, $disable_can, $day_today, $hour_today)
     {
         if($stock->getCountry() == "CAN"){
-            if(!$disable_can){
+            if(!$disable_can && $stock->isBeingPlayedShares()){
                 if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 10 && $hour_today < 16) {
                     dump("No Update, Canadian Stocks can only be updated when market is closed");
                 } else {
@@ -43,18 +43,21 @@ class StockController extends AbstractController
 
         if($stock->getCountry() == "USD"){
             // get current price
-            $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
-            dump("Update:" . $stock->getTicker());
-            //dump($result);
-            $price = json_decode($result)->price->last;
-            $stock->setCurrentPrice($price);
-            $date = new \DateTime();
-            
-            if(count($stock->getOptions()) > 0){
+            if($stock->isBeingPlayedShares()){
+                $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                dump("Update:" . $stock->getTicker());
+                //dump($result);
+                $price = json_decode($result)->price->last;
+                $stock->setCurrentPrice($price);
+            }
+
+            if($stock->isBeingPlayedOption() && count($stock->getOptions()) > 0){
                 foreach ($stock->getOptions() as $option) {
                     if(!$option->isExpired()){
+                        $date = new \DateTime();
                         if($option->getExpiry() < $date){
                             $option->setExpired(true);
+                            $option->getStock()->setBeingPlayedOption(false);
                             continue;
                         }
                         $e = date_format($option->getExpiry(), "Y-m-d");
@@ -86,6 +89,8 @@ class StockController extends AbstractController
             $disable_update = $settings->isStocksDisableUpdateEnabled(); 
             $disable_can = $settings->isStocksDisableCanadianUpdateEnabled(); 
 
+            dump("Check:" . $stock->getTicker());
+
             if($request->query->get('disable_update')){
                 $updated = true;
             }
@@ -97,7 +102,7 @@ class StockController extends AbstractController
                 continue;
             }
             
-            if(!$stock->isBeingPlayed() && !$settings->isStocksUpdateSoldPrice()){
+            if(!$stock->isBeingPlayedShares() && !$stock->isBeingPlayedOption() && !$settings->isStocksUpdateSoldPrice()){
                 continue;
             }
 
@@ -179,7 +184,8 @@ class StockController extends AbstractController
             $stock->setEarned(0);
             $stock->setCurrentPrice(0);
             $stock->setDelisted(false);
-            $stock->setBeingPlayed(false);
+            $stock->setBeingPlayedShares(false);
+            $stock->setBeingPlayedOption(false);
             $date = new \DateTime();
             $stock->setLastPriceUpdate($date);
             $stock->setBgColor("ffffff");
@@ -211,6 +217,7 @@ class StockController extends AbstractController
             $cost = $form->get("cost")->getData();
             $currency = $form->get("payment_currency")->getData();
             $share_buy->setSold(0);
+            $data->get("stock")->setBeingPlayedShares(true);
             $user = $share_buy->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
@@ -260,8 +267,16 @@ class StockController extends AbstractController
             $em = $doctrine->getManager();
 
             $shareBuys = $data->getStock()->getShareBuys()->getValues();
-
             usort($shareBuys, [$this,"sort_buys_by_price"]);
+            $totalSharesLeft = 0;
+
+            foreach($shareBuys as $sb){
+                $bought = $sb->getAmount();
+                $sold = $sb->getSold();
+                if($bought > $sold){
+                    $totalSharesLeft += ($bought - $sold);
+                }
+            }
 
             $amount_to_sell = $data->getAmount();
  
@@ -290,6 +305,11 @@ class StockController extends AbstractController
                     $amount_to_sell -= $a;
                     $current_buy++;
                 }
+            }
+
+            // if we are selling the last amount of shares we own (or all of them), remove stock from the playing list.. 
+            if($amount_to_sell === $totalSharesLeft){
+                $data->get("stock")->setBeingPlayedShares(false);
             }
 
             $user = $share_sell->getStock()->getUser();
@@ -381,6 +401,7 @@ class StockController extends AbstractController
             $transaction->setAmount($cost);
 
             $option->getStock()->subtractEarned($cost);
+            $option->getStock()->setBeingPlayedOption(true);
 
             $em->persist($transaction);
             $em->persist($option);
@@ -446,6 +467,7 @@ class StockController extends AbstractController
             $transaction->setAmount($cost);
 
             $option->getStock()->subtractEarned($cost);
+            $option->getStock()->setBeingPlayedOption(true);
 
             $em->persist($transaction);
             $em->flush();
@@ -503,6 +525,10 @@ class StockController extends AbstractController
             $transaction->setAmount($total);
 
             $option->getStock()->addEarned($total);
+
+            if($option->getContracts() === 0){
+                $option->getStock()->setBeingPlayedOption(false);
+            }
 
 
             $em->persist($transaction);
