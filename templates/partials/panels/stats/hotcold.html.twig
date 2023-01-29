@@ -15,9 +15,36 @@
     </div>
 </div>
 
+{% set hot_money = 0 %}
+{% for play in plays %}
+        {% set total = 0 %}
+        {% for option in play.options %}{% set total = total + option.contracts %}{% endfor %}
+        {% for sb in play.shares %}{% set total = total + sb.amount %}{% endfor %}
+
+        {% if total > 0 %}
+            {% set cost = 0 %}
+            {% set fee = 0 %}
+
+            {% for sb in play.shares %}
+                {% set fee = fee + 9.95 %}
+                {% set cost = cost + (sb.amount * sb.price) %}
+            {% endfor %}
+
+            {% set contractsTotal = 0 %}
+            {% for option in play.options %}
+                {% set fee = fee + 9.95 %}
+                {% set contractsTotal = contractsTotal + option.contracts %}
+                {% set cost = cost + ((option.average * option.contracts) * 100) %}
+            {% endfor %}
+
+            {% if play.options|length > 0 %}{% set fee = fee + (1.25 * contractsTotal) %}{% endif %}
+            {% set hot_money = hot_money + cost + fee %}
+        {% endif %}
+    {% endfor %}
+
 <script>
 const limit = {{ settings.maxPlayMoney }};
-const hot_money = 567;
+const hot_money = {{ hot_money }};
 const cold_money = {{ wallet.CAN + wallet.USD }};
 const free = Math.max(limit - (hot_money + cold_money), 0);
 const percent = Math.floor(((hot_money + cold_money) / limit) * 100);
