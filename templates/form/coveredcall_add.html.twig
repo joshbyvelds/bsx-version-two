@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard{% endblock %}
+
+{% block body %}
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
+
+    <script>
+        $(() => {
+            $("#covered_call_price, #covered_call_contracts").on("change", function(){
+                var cost = ((parseFloat($("#covered_call_price").val()) * parseInt($("#covered_call_contracts").val())) * 100) - (9.95 + (1.25 * parseInt($(" #covered_call_contracts").val()))) ;
+                $("#covered_call_total").val(cost);
+            });
+        });
+    </script>
+{% endblock %}

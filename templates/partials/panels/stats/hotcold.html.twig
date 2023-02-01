@@ -52,7 +52,7 @@ const percent = Math.floor(((hot_money + cold_money) / limit) * 100);
 document.getElementById("hc_percent_used").innerHTML = percent + "%";
 
 if(percent >= 100){
-    document.getElementById("hc_over").innerHTML = "$"+ ((hot_money + cold_money) - limit) + " over limit";
+    document.getElementById("hc_over").innerHTML = "$"+ ((hot_money + cold_money) - limit).toFixed(2) + " over limit";
 }
 
 const hc_ctx = document.getElementById('hotcoldChart').getContext('2d');

@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello StockController!{% endblock %}
+
+{% block body %}
+    <h2>Covered Calls</h2>
+
+    
+    <a href="/stocks/coveredcall/write">Add a Covered Call</a><br />
+
+    <div class="half">
+    <h3>How to Write a Covered Call</h3>
+    <p class="instruct">
+        To write a covered call, purchase 100 shares of stock from whatever ticker/company you want create the contract for. 
+        When you have them, open the option form like you would when buying a regular call/put contract.
+        Select the strike/expiry for your call and then select <strong>Sell to Open</strong>. Make sure you select <strong>covered</strong> from the covered dropdown as well.
+    </p>
+
+    <img src="/assets/images/cc_instructions.png" alt="">
+    <br />
+    <small>BMO Investerline 2.0 orderform for Covered Call Option selling</small>
+    </div><!--
+    --><div class="half">
+        <h3>List of Active Covered Calls</h3>
+        <table>
+            <thead>
+                    <th>Company</th>
+                    <th>Ticker</th>
+                    <th>Price</th>
+                    <th>Strike</th>
+                    <th>Expiry Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set old_cc = [] %}
+                {% for cc in coveredcalls %}
+                    {% if cc.exercised or cc.expired %}
+                       {% set old_cc = old_cc|merge([cc]) %}
+                    {% else %}
+                        <tr>
+                            <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                            <td>{{ cc.stock.ticker }}</td>
+                            <td>{{ cc.price }}</td>
+                            <td>{{ cc.strike }}</td>
+                            <td>{{ cc.expiry|date("m/d/Y") }}</td>
+                            <td><a href="/stocks/coveredcall/exercise/{{ cc.id }}"><button>Exercise</button></a></td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Completed Covered Calls</h3>
+    <table>
+            <thead>
+                <tr>
+                    <th>Company |</th>
+                    <th>Ticker |</th>
+                    <th>Price |</th>
+                    <th>Strike |</th>
+                    <th>Expiry Date |</th>
+                    <th>Exercised |</th>
+                    <th>Diff |</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cc in old_cc %}
+                    {% if cc.exercised %}
+                        {% set diff = cc.strike - cc.stockBuyPrice %}
+                    {% else %}
+                        {% set diff = cc.stockExpiryPrice - cc.stockBuyPrice %}
+                    {% endif %}
+                    <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                    <td>{{ cc.stock.ticker }}</td>
+                    <td>{{ cc.price }}</td>
+                    <td>{{ cc.strike }}</td>
+                    <td>{{ cc.expiry|date("m/d/Y") }}</td>
+                    <td>{% if cc.exercised %}1{% else %}0{% endif %}</td>
+                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% else %}-{% endif %}{{ diff }}</td>
+                    <td>1</td>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    <style>
+        .half{
+            display: inline-block;
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+            vertical-align: top;
+        }
+
+        .instruct{
+            max-width: 438px;
+        }
+
+        .green{
+            color: green;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+{% endblock %}    

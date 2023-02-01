@@ -76,6 +76,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'User', targetEntity: Note::class)]
     private $notes;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CoveredCall::class)]
+    private $coveredCalls;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -88,6 +91,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->options = new ArrayCollection();
         $this->plays = new ArrayCollection();
         $this->notes = new ArrayCollection();
+        $this->coveredCalls = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -524,6 +528,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($note->getUser() === $this) {
                 $note->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CoveredCall>
+     */
+    public function getCoveredCalls(): Collection
+    {
+        return $this->coveredCalls;
+    }
+
+    public function addCoveredCall(CoveredCall $coveredCall): self
+    {
+        if (!$this->coveredCalls->contains($coveredCall)) {
+            $this->coveredCalls[] = $coveredCall;
+            $coveredCall->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCoveredCall(CoveredCall $coveredCall): self
+    {
+        if ($this->coveredCalls->removeElement($coveredCall)) {
+            // set the owning side to null (unless already changed)
+            if ($coveredCall->getUser() === $this) {
+                $coveredCall->setUser(null);
             }
         }
 

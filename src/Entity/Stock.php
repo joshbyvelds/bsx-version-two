@@ -73,12 +73,19 @@ class Stock
     #[ORM\Column(type: 'boolean')]
     private $beingPlayedShares;
 
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: CoveredCall::class)]
+    private $coveredCalls;
+
+    #[ORM\Column(type: 'integer')]
+    private $sharesOwned;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
         $this->shareBuys = new ArrayCollection();
         $this->shareSells = new ArrayCollection();
         $this->options = new ArrayCollection();
+        $this->coveredCalls = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -394,6 +401,48 @@ class Stock
     public function setBeingPlayedShares(bool $beingPlayedShares): self
     {
         $this->$beingPlayedShares = $beingPlayedShares;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CoveredCall>
+     */
+    public function getCoveredCalls(): Collection
+    {
+        return $this->coveredCalls;
+    }
+
+    public function addCoveredCall(CoveredCall $coveredCall): self
+    {
+        if (!$this->coveredCalls->contains($coveredCall)) {
+            $this->coveredCalls[] = $coveredCall;
+            $coveredCall->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCoveredCall(CoveredCall $coveredCall): self
+    {
+        if ($this->coveredCalls->removeElement($coveredCall)) {
+            // set the owning side to null (unless already changed)
+            if ($coveredCall->getStock() === $this) {
+                $coveredCall->setStock(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSharesOwned(): ?int
+    {
+        return $this->sharesOwned;
+    }
+
+    public function setSharesOwned(int $sharesOwned): self
+    {
+        $this->sharesOwned = $sharesOwned;
 
         return $this;
     }
