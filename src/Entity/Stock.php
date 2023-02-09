@@ -70,7 +70,7 @@ class Stock
     #[ORM\Column(type: 'boolean')]
     private $beingPlayedOption;
 
-    #[ORM\Column(type: 'boolean')]
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $beingPlayedShares;
 
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: CoveredCall::class)]

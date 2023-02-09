@@ -201,8 +201,9 @@ class StockController extends AbstractController
             $stock->setEarned(0);
             $stock->setCurrentPrice(0);
             $stock->setDelisted(false);
-            $stock->setBeingPlayedShares(false);
+            $stock->setBeingPlayedShares(true);
             $stock->setBeingPlayedOption(false);
+            $stock->setSharesOwned(0);
             $date = new \DateTime();
             $stock->setLastPriceUpdate($date);
             $stock->setBgColor("ffffff");

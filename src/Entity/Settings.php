@@ -101,6 +101,9 @@ class Settings
     #[ORM\Column(type: 'float')]
     private $futures_data_fee;
 
+    #[ORM\Column(type: 'integer')]
+    private $theme;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -450,6 +453,18 @@ class Settings
     public function setFuturesDataFee(float $futures_data_fee): self
     {
         $this->futures_data_fee = $futures_data_fee;
+
+        return $this;
+    }
+
+    public function getTheme(): ?int
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(int $theme): self
+    {
+        $this->theme = $theme;
 
         return $this;
     }

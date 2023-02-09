@@ -1,5 +1,5 @@
 body{
-    padding-top: 62px;
+    padding: 62px 0;
     background: $page_background_color;
 }
 
@@ -19,4 +19,5 @@ body{
     box-sizing: border-box;
     padding: 30px;
     vertical-align: top;
+    border-radius: 0 24px 24px 0;
 }
