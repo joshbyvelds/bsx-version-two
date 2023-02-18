@@ -87,7 +87,7 @@
                     <td>{{ earned }}</td>
                     <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% else %}-{% endif %}{{ diff|number_format(2) }}</td>
                     <td>1</td>
-                    <td>{{ earned }} | {{ eps }} | {{ cc.stockExpiryPrice }} | {{ cc.stockBuyPrice }}</td>
+                    <td>{{ eps }} | {{ cc.stockExpiryPrice }} | {{ cc.stockBuyPrice }}</td>
                 {% endfor %}
             </tbody>
         </table>
