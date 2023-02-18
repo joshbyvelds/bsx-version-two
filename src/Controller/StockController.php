@@ -571,8 +571,9 @@ class StockController extends AbstractController
 
         //loop though all the calls and see if any have expired
         $today = new \DateTime();
-        $today->modify('-2 day');
+        $today->modify('-1 day');
         $em = $doctrine->getManager();
+
         foreach($coveredCalls as $cc)
         {
             if($today > $cc->getExpiry()){
