@@ -62,16 +62,21 @@
                     <th>Strike |</th>
                     <th>Expiry Date |</th>
                     <th>Exercised |</th>
+                    <th>Earned | </th>
                     <th>Diff |</th>
-                    <th>Status</th>
+                    <th>Status |</th>
+                    <th>Debug (EPS|SBP|SEP)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for cc in old_cc %}
+                    {% set earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                    {% set eps = earned / 100 %}
+
                     {% if cc.exercised %}
-                        {% set diff = cc.strike - cc.stockBuyPrice %}
+                        {% set diff = cc.strike - (cc.stockBuyPrice - eps) %}
                     {% else %}
-                        {% set diff = cc.stockExpiryPrice - cc.stockBuyPrice %}
+                        {% set diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
                     {% endif %}
                     <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
                     <td>{{ cc.stock.ticker }}</td>
@@ -79,8 +84,10 @@
                     <td>{{ cc.strike }}</td>
                     <td>{{ cc.expiry|date("m/d/Y") }}</td>
                     <td>{% if cc.exercised %}1{% else %}0{% endif %}</td>
-                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% else %}-{% endif %}{{ diff }}</td>
+                    <td>{{ earned }}</td>
+                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% else %}-{% endif %}{{ diff|number_format(2) }}</td>
                     <td>1</td>
+                    <td>{{ earned }} | {{ eps }} | {{ cc.stockExpiryPrice }} | {{ cc.stockBuyPrice }}</td>
                 {% endfor %}
             </tbody>
         </table>
