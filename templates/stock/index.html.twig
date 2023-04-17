@@ -17,6 +17,10 @@
     </select>
      | Include Sold: <input type="checkbox" id="include_sold">
 
+     {% if status %}
+        <h3>Status: {{ status }}</h3>
+     {% endif %}
+
     <div class="bubbles" id="bubbles">
     {% for stock in stocks %}
         {% set stock_dividend = 0 %}
@@ -61,7 +65,11 @@
 
         {% if stock_amount > 0 %}
             {% set stock_average = stock_average / stock_amount %}
-            {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+            {% if stock.noFee %}
+                {% set fee = 0 %}
+            {% else %}
+                {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+            {% endif %}
             {% set stock_breakeven = fee + stock_average %}
         {% endif %}
 
@@ -146,7 +154,11 @@
                
                 {% for buy in stock.shareBuys %}
                     {% set d_bought = buy.date %}
-                    {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
+                    {% if stock.noFee %}
+                        {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) %}
+                    {% else %}
+                        {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
+                    {% endif %}
                     {% if buy.sold < buy.amount %}
                         {% set remaining = buy.amount - buy.sold %}
                         {% set buys = buys + 1 %}
@@ -161,7 +173,11 @@
                 
                 {% if stock_amount > 0 %}
                     {% set stock_average = stock_average / stock_amount %}
-                    {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+                    {% if stock.noFee %}
+                        {% set fee = 0 %}
+                    {% else %}
+                        {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+                    {% endif %}
                     {% set stock_breakeven = fee + stock_average %}
                     {% set diff = stock_current - stock_breakeven %}
                     {% set stock_pl = diff * stock_amount %}
@@ -169,7 +185,11 @@
 
                 {% for sell in stock.shareSells %}
                     {% set sells = sells + 1 %}
-                    {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
+                    {% if stock.noFee %}
+                        {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
+                    {% else %}
+                        {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
+                    {% endif %}
                     {% set d_sold = sell.date %}
                 {% endfor %}
 
@@ -178,6 +198,10 @@
                 {% endfor %}
 
                 {% set stock_earned = stock_earned + stock_dividend - stock_buy_cost_total %}
+
+                {% for cc in stock.coveredCalls %}
+                    {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                {% endfor %}
 
                 <tr class="on" id="stock-detail-{{ stock.id }}">
                     <td><img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt=""></td>

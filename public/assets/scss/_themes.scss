@@ -4,7 +4,33 @@ body.theme_dark{
     .navbar.panel{background: #1F1D2B;}
     .page_content {background: #252836;}
 
-    .panel{
-        background: #2D303E;
+    header .user_panel .user_text { color: white; }
+
+    header .page_title { color: white; }
+
+    .panel{ background: #2D303E;}
+
+    .panel.portfolio.futures .stat{color: white;}
+}
+
+body.theme_light{
+    //#3628B6
+    .page_content {background: #fff;}
+    .navbar.panel{background: #F6F8FD;}
+
+    header .user_panel .user_text { color: #3628B6; }
+    header .page_title { color: #3628B6; }
+
+    .cash {
+        background: #fff;
+        box-shadow: -10px 10px 30px rgba(70,70,70,0.2);
+
+        .title{
+            color: #4958B4;
+        }
+
+        .amount{
+            color: #4958B4;
+        }
     }
 }

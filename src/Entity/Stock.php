@@ -79,6 +79,9 @@ class Stock
     #[ORM\Column(type: 'integer')]
     private $sharesOwned;
 
+    #[ORM\Column(type: 'boolean')]
+    private $no_fee;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -443,6 +446,18 @@ class Stock
     public function setSharesOwned(int $sharesOwned): self
     {
         $this->sharesOwned = $sharesOwned;
+
+        return $this;
+    }
+
+    public function isNoFee(): ?bool
+    {
+        return $this->no_fee;
+    }
+
+    public function setNoFee(bool $no_fee): self
+    {
+        $this->no_fee = $no_fee;
 
         return $this;
     }

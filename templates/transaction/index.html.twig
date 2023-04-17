@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello TransactionController!{% endblock %}
+
+{% block body %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Currency</th>
+        </tr>
+
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.id }}</td>
+                <td>{{ transaction.name }}</td>
+                <td><div class="transaction"><div class="type" data-type="{{ transaction.type }}"></div></div></td>
+                <td>{{ transaction.date|date("m/d/Y") }}</td>
+                <td>{{ transaction.amount|number_format(2) }}</td>
+                <td>{{ transaction.currency }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

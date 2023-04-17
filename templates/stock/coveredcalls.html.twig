@@ -26,6 +26,7 @@
             <thead>
                     <th>Company</th>
                     <th>Ticker</th>
+                    <th>Contracts</th>
                     <th>Price</th>
                     <th>Strike</th>
                     <th>Expiry Date</th>
@@ -41,6 +42,7 @@
                         <tr>
                             <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
                             <td>{{ cc.stock.ticker }}</td>
+                            <td>{{ cc.contracts }}</td>
                             <td>{{ cc.price }}</td>
                             <td>{{ cc.strike }}</td>
                             <td>{{ cc.expiry|date("m/d/Y") }}</td>
@@ -59,6 +61,7 @@
                     <th>Company |</th>
                     <th>Ticker |</th>
                     <th>Price |</th>
+                    <th>Contracts |</th>
                     <th>Strike |</th>
                     <th>Expiry Date |</th>
                     <th>Exercised |</th>
@@ -78,16 +81,19 @@
                     {% else %}
                         {% set diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
                     {% endif %}
+                    <tr>
                     <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
                     <td>{{ cc.stock.ticker }}</td>
                     <td>{{ cc.price }}</td>
+                    <td>{{ cc.contracts }}</td>
                     <td>{{ cc.strike }}</td>
                     <td>{{ cc.expiry|date("m/d/Y") }}</td>
                     <td>{% if cc.exercised %}1{% else %}0{% endif %}</td>
                     <td>{{ earned }}</td>
-                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% else %}-{% endif %}{{ diff|number_format(2) }}</td>
+                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% endif %}{{ diff|number_format(2) }}</td>
                     <td>1</td>
                     <td>{{ eps }} | {{ cc.stockExpiryPrice }} | {{ cc.stockBuyPrice }}</td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>

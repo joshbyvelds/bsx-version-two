@@ -34,7 +34,7 @@ class StockController extends AbstractController
                 } else {
                     $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
                     dump("Update:" . $stock->getTicker());
-                    //dump($json);
+                    dump($json);
                     $data = json_decode($json,true);
                     $c_date = $data["Meta Data"]["3. Last Refreshed"];
                     $price = $data["Time Series (Daily)"][$c_date]["4. close"];
@@ -84,106 +84,126 @@ class StockController extends AbstractController
         $user = $this->getUser();
         $stocks = $user->getStocks();
         $settings = $user->getSettings();
+        $update_status = "";
+        $update_status_stock = "";
+        $manual_update = $settings->isStocksManualUpdateEnabled(); // use this when the script is not working or you need a quick update.. 
+        $disable_can = $settings->isStocksDisableCanadianUpdateEnabled(); 
+        $disable_update = $settings->isStocksDisableUpdateEnabled();
 
-        foreach($stocks as $stock){
-            $updated = false;
-            $manual_update = $settings->isStocksManualUpdateEnabled(); // use this when the script is not working or you need a quick update..
-            $disable_update = $settings->isStocksDisableUpdateEnabled(); 
-            $disable_can = $settings->isStocksDisableCanadianUpdateEnabled(); 
-
-            $owned = 0;
-
-            foreach($stock->getShareBuys() as $buy){
-                if($buy->getSold() < $buy->getAmount()){
-                    $owned += $buy->getAmount() - $buy->getSold();
-                }
-            }
-            
-            dump("Owned:" . $owned);
-            $stock->setSharesOwned($owned);
-
-
-            dump("Check:" . $stock->getTicker());
-
-            if($request->query->get('disable_update')){
-                $updated = true;
-            }
-
-            if($disable_update){$updated = true;}
-
-            // check if stock has been delisted..
-            if($stock->isDelisted()){
-                continue;
-            }
-            
-            if(!$stock->isBeingPlayedShares() && !$stock->isBeingPlayedOption() && !$settings->isStocksUpdateSoldPrice()){
-                continue;
-            }
-
-
-            // check to see if has been 2 days or longer since last update
-            $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
-            $timeDiff = abs(time() - $lasttimestamp);
-            $numberDays = $timeDiff/86400;  // 86400 seconds in one day
-
-            // and you might want to convert to integer
-            $numberDays = intval($numberDays);
-            $day = date('D', $lasttimestamp);
-            $hour = date('H', $lasttimestamp);
-
-            $day_today = date('D');
-            $hour_today = date('H');
-            
-            if(!$updated && $numberDays > 2){
-                $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
-                $date = new \DateTime();
-                $stock->setLastPriceUpdate($date);
-                $em = $doctrine->getManager();
-                $em->flush();
-                $updated = true;
-            }
-
-            if(!$updated && $day != "Sat" && $day != "Sun") {
-                // get current price
-                
-                if(!$updated && $hour >= 4 && $hour < 20) {
-                    $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
-                    $date = new \DateTime();
-                    $stock->setLastPriceUpdate($date);
-                    $em = $doctrine->getManager();
-                    $em->flush();
-                    $updated = true;
-                }
-            }
-            
-            // if the price was last checked on a weekend.. make sure the current time is during market hours..
-            if(!$updated && $day_today != "Sat" && $day_today != "Sun") {
-                if($hour_today >= 4 && $hour_today < 20) {
-                    $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
-                    $date = new \DateTime();
-                    $stock->setLastPriceUpdate($date);
-                    $em = $doctrine->getManager();
-                    $em->flush();
-                    $updated = true;
-                }
-            }
-            
-            // manual update
-            if(!$updated && $manual_update) {
-                $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
-                $date = new \DateTime();
-                $stock->setLastPriceUpdate($date);
-                $em = $doctrine->getManager();
-                $em->flush();
-                $updated = true;
-            }
+        if($request->query->get('disable_update')){
+            $disable_update = true;
+            $update_status = "Update Disabled by URI variable.";
         }
+
+        if(!$disable_update) {
+
+            if($manual_update) {$update_status .= "Manual Update.";}
+            if($disable_can){$update_status .= "CAN disabled in settings.";}
+
+            foreach($stocks as $stock){
+                $updated = false;
+                $owned = 0;
+
+                foreach($stock->getShareBuys() as $buy){
+                    if($buy->getSold() < $buy->getAmount()){
+                        $owned += $buy->getAmount() - $buy->getSold();
+                    }
+                }
+                
+                dump("Owned:" . $owned);
+                $stock->setSharesOwned($owned);
+
+
+                dump("Check:" . $stock->getTicker());
+
+
+
+                // check if stock has been delisted..
+                if($stock->isDelisted()){
+                    continue;
+                }
+                
+                if(!$stock->isBeingPlayedShares() && !$stock->isBeingPlayedOption() && !$settings->isStocksUpdateSoldPrice()){
+                    continue;
+                }
+
+
+                // check to see if has been 2 days or longer since last update
+                $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
+                $timeDiff = abs(time() - $lasttimestamp);
+                $numberDays = $timeDiff/86400;  // 86400 seconds in one day
+
+                // and you might want to convert to integer
+                $numberDays = intval($numberDays);
+                $day = date('D', $lasttimestamp);
+                $hour = date('H', $lasttimestamp);
+
+                $day_today = date('D');
+                $hour_today = date('H');
+                
+                if(!$updated && $numberDays > 2){
+                    $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
+                    $date = new \DateTime();
+                    $stock->setLastPriceUpdate($date);
+                    $em = $doctrine->getManager();
+                    $em->flush();
+                    $updated = true;
+                } else {
+                    $update_status_stock = "It been less than 2 days since last update";
+                }
+
+                if(!$updated && $day != "Sat" && $day != "Sun") {
+                    // get current price
+                    
+                    if(!$updated && $hour >= 4 && $hour < 20) {
+                        $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
+                        $date = new \DateTime();
+                        $stock->setLastPriceUpdate($date);
+                        $em = $doctrine->getManager();
+                        $em->flush();
+                        $updated = true;
+                    }
+                } else {
+                    $update_status_stock = "You are trying to update during market hours (includes Pre & Post Market)";
+                }
+                
+                // if the price was last checked on a weekend.. make sure the current time is during market hours..
+                if(!$updated && $day_today != "Sat" && $day_today != "Sun") {
+                    if($hour_today >= 4 && $hour_today < 20) {
+                        $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
+                        $date = new \DateTime();
+                        $stock->setLastPriceUpdate($date);
+                        $em = $doctrine->getManager();
+                        $em->flush();
+                        $updated = true;
+                    }
+                } else {
+                    $update_status_stock = "Last Updated on weekend and it's still the weekend, so prices have not changed";
+                }
+                
+                // manual update
+                if(!$updated && $manual_update) {
+                    $this->updateStockInfo($stock,$disable_can,$day_today,$hour_today);
+                    $date = new \DateTime();
+                    $stock->setLastPriceUpdate($date);
+                    $em = $doctrine->getManager();
+                    $em->flush();
+                    $updated = true;
+                    $update_status_stock = "";
+                }
+            }
+        } else {
+            $update_status = "Update Disabled by Settings";
+        }
+
+        $update_status .= $update_status_stock;
         
         $em = $doctrine->getManager();
         $em->flush();
 
         return $this->render('stock/index.html.twig', [
             'controller_name' => 'StockController',
+            'status' => $update_status,
             'stocks' => $stocks,
         ]);
     }
@@ -232,10 +252,15 @@ class StockController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
             $data = $form->getData();
-            $cost = $form->get("cost")->getData();
+            
+            if($share_buy->getStock()->isNoFee()){
+                $cost = $share_buy->getAmount() * $share_buy->getPrice();
+            } else {
+                $cost = $form->get("cost")->getData();
+            }
             $currency = $form->get("payment_currency")->getData();
             $share_buy->setSold(0);
-            $share_buy->getStock()->setBeingPlayedShares(true);
+            $share_buy->getStock()->setBeingPlayedShares(1);
             $user = $share_buy->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
@@ -245,6 +270,7 @@ class StockController extends AbstractController
             $transaction->setDate($date);
             $transaction->setUser($user);
             $word = ($share_buy->getAmount() === 1) ? 'Share' : 'Shares';
+            
             $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getTicker() . ' ' . $word);
             
             if ($currency == 'can'){
@@ -324,12 +350,15 @@ class StockController extends AbstractController
                     $current_buy++;
                 }
             }
+            
+            dump($amount_to_sell);
+            dump($totalSharesLeft);
 
             // if we are selling the last amount of shares we own (or all of them), remove stock from the playing list.. 
             if($amount_to_sell === $totalSharesLeft){
-                $data->get("stock")->setBeingPlayedShares(false);
+                $data->getStock()->setBeingPlayedShares(false);
             } else {
-                $data->get("stock")->setSharesOwned($totalSharesLeft - $amount_to_sell);
+                $data->getStock()->setSharesOwned($totalSharesLeft - $amount_to_sell);
             }
 
             $user = $share_sell->getStock()->getUser();

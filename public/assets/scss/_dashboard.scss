@@ -300,7 +300,7 @@
 
 .graph{
     position: relative;
-    height: 270px;
+    height: 322px;
     padding-top: 0;
 
     .label_wrapper{
@@ -311,6 +311,10 @@
         padding-top: 34px;
         padding-right: 4px;
         text-align: right;
+    }
+
+    canvas{
+        margin-top: 24px;
     }
 
     .graph_label {

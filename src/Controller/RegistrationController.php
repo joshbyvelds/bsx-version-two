@@ -40,12 +40,17 @@ class RegistrationController extends AbstractController
             $settings->setDashboardTransactions(6);
             $settings->setMaxPlayMoney(1000);
             $settings->setMaxPlays(6);
+            $settings->setStocksUpdateSoldPrice(false);
+            $settings->setStocksManualUpdateEnabled(false);
+            $settings->setStocksDisableUpdateEnabled(false);
+            $settings->setStocksDisableCanadianUpdateEnabled(false);
             $settings->setFuturesPlayBucketMax(1000);
             $settings->setFuturesProfitBucketMax(1000);
             $settings->setFuturesUseBrokerMargin(false);
             $settings->setFuturesBrokerMarginAmount(0);
             $settings->setFuturesUseSplitProfits(false);
             $settings->setFuturesWeeklyGoal(125);
+            $settings->setFuturesDataFee(13);
             $settings->setFuturesProfitSplitLevel1Amount(0);
             $settings->setFuturesProfitSplitLevel2Amount(0);
             $settings->setFuturesProfitSplitLevel3Amount(0);
@@ -60,6 +65,7 @@ class RegistrationController extends AbstractController
             $settings->setFuturesProfitSplitLevel5Ratio(0);
             $settings->setFuturesProfitSplitLevel6Ratio(0);
             $settings->setFuturesProfitSplitLevel7Ratio(0);
+            $settings->setTheme(1);
 
             // Create a Wallet
             $wallet->setUser($user);
