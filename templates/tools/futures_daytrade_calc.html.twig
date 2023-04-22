@@ -6,6 +6,7 @@
     <table id="dt_table">
         <tr>
             <th>Win Loss</th>
+            <th>Index</th>
             <th>Amount Price</th>
             <th>Contracts</th>
             <th>Fees</th>
@@ -14,8 +15,11 @@
         </tr>
 
         <tr class="calc_row">
-            <td>
+            <td style="width:100px;">
                 Win<input type="radio" name="wl_1" value="win" id=""> | Loss <input type="radio" name="wl_1" value="loss" id="">
+            </td>
+            <td style="width:100px;">
+                ES<input type="radio" name="index_1" value="es" id=""> | NQ <input type="radio" name="index_1" value="nq" id="">
             </td>
             <td>
                 <input class="amount_input" type="text">
@@ -70,8 +74,13 @@
                var $f = $(this).find(".fee_trade_input");
                var $p = $(this).find(".pl_input");
                var $t = $(this).find(".total_input");
-               var side_fee = 0.78;
+               var side_fee = 0.90;
                var trade_fee = (side_fee * 2) * parseInt($c.val());
+
+                if ($(this).find("input[type='radio'][value='nq']").prop("checked")){
+                    var side_fee = 0.90;
+                    var trade_fee = (side_fee * 2) * parseInt($c.val());
+                }
 
                if ($(this).find("input[type='radio'][value='loss']").prop("checked")){
                    amount = parseFloat($a.val()) + trade_fee;
@@ -101,6 +110,7 @@
             row++;
             var rowHTML = "";
             rowHTML += "<tr class=\"calc_row\"><td>Win<input type=\"radio\" name=\"wl_" + row + "\" value=\"win\"> | Lose <input type=\"radio\" name=\"wl_" + row + "\" value=\"loss\"></td>";
+            rowHTML += "<td>ES<input type=\"radio\" name=\"index_"+ row +"\" value=\"es\" id=\"\"> | NQ <input type=\"radio\" name=\"index_"+ row +"\" value=\"nq\" id=\"\"></td>";
             rowHTML += "<td><input class=\"amount_input\" type=\"text\"></td>";
             rowHTML += "<td><input class=\"contracts_input\" type=\"text\"></td>";
             rowHTML += "<td><input class=\"fee_trade_input\" type=\"text\" readonly></td>";
