@@ -1,0 +1,69 @@
+<div class="statsgraph hotcold">
+    <ul class="legend">
+        <li>Cash</li>
+        <li>Equities</li>
+    </ul>
+
+    <div class="center_percent">
+        <div class="amount" id="hc_percent_used">0%</div>
+        <div class="text">Cash/Equity Balance</div>
+        <div class="warning" id="hc_over">20% Minimum</div>
+    </div>
+    <div class="hcChartWrapper">
+        <canvas id="cebChart" width="230" height="230"></canvas>
+    </div>
+</div>
+
+{% set total = 0 %}
+{% for stock in stocks %}
+    {% for buy in stock.shareBuys %}
+            {% set d_buy = buy.date|date('U') %}
+            {% if buy.sold < buy.amount %}
+                {% set total = total + (buy.amount * buy.price) %}
+            {% endif %}
+        {% endfor %}
+{% endfor %}
+
+<script>
+const cash = {{ wallet.CAN }};
+const equities = {{ total }};
+const percent = Math.floor((cash / (cash + equities)) * 100);
+
+document.getElementById("hc_percent_used").innerHTML = percent + "%";
+
+const hc_ctx = document.getElementById('cebChart').getContext('2d');
+const hc_chart = new Chart(hc_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+        'Equities',
+        'Cash',
+    
+    ],
+    datasets: [{
+        label: 'Cash/Equity Balance',
+        data: [equities, cash],
+        backgroundColor: [
+            '#448bcc',
+            '#62b93c',
+        ],
+        hoverOffset: 0,
+        borderWidth: 0,
+        borderJoinStyle: 'bevel',
+        borderRadius: 20, // how round thge edges of the sections are
+        cutout:104, // thinkness of the ring..
+        spacing: -30,
+    }]
+  },
+  options: {
+    maintainAspectRatio: false,
+    plugins:{
+        legend: {
+            display: false //This will do the task
+        },
+    },
+
+
+  }
+});
+</script>

@@ -104,6 +104,15 @@ class Settings
     #[ORM\Column(type: 'integer')]
     private $theme;
 
+    #[ORM\Column(type: 'integer')]
+    private $cash_equity_balance;
+
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_use_hot_cold_meter;
+
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_use_cash_equity_balance;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -465,6 +474,42 @@ class Settings
     public function setTheme(int $theme): self
     {
         $this->theme = $theme;
+
+        return $this;
+    }
+
+    public function getCashEquityBalance(): ?int
+    {
+        return $this->cash_equity_balance;
+    }
+
+    public function setCashEquityBalance(int $cash_equity_balance): self
+    {
+        $this->cash_equity_balance = $cash_equity_balance;
+
+        return $this;
+    }
+
+    public function isDashboardUseHotColdMeter(): ?bool
+    {
+        return $this->dashboard_use_hot_cold_meter;
+    }
+
+    public function setDashboardUseHotColdMeter(bool $dashboard_use_hot_cold_meter): self
+    {
+        $this->dashboard_use_hot_cold_meter = $dashboard_use_hot_cold_meter;
+
+        return $this;
+    }
+
+    public function isDashboardUseCashEquityBalance(): ?bool
+    {
+        return $this->dashboard_use_cash_equity_balance;
+    }
+
+    public function setDashboardUseCashEquityBalance(bool $dashboard_use_cash_equity_balance): self
+    {
+        $this->dashboard_use_cash_equity_balance = $dashboard_use_cash_equity_balance;
 
         return $this;
     }

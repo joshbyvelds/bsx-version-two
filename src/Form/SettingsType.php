@@ -9,6 +9,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class SettingsType extends AbstractType
 {
@@ -22,6 +23,10 @@ class SettingsType extends AbstractType
                 ],
             ])
             ->add('dashboard_transactions')
+            ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_use_cash_equity_balance', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('stocks_update_sold_price', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('cash_equity_balance', TextType::class, ['label' => 'Cash - Equity Balance Minimum (Percentage)'])
             ->add('max_play_money')
             ->add('max_plays')
             ->add('stocks_update_sold_price', CheckboxType::class, ['mapped' => true, 'required' => false])

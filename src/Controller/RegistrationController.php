@@ -66,6 +66,9 @@ class RegistrationController extends AbstractController
             $settings->setFuturesProfitSplitLevel6Ratio(0);
             $settings->setFuturesProfitSplitLevel7Ratio(0);
             $settings->setTheme(1);
+            $settings->setCashEquityBalance(0);
+            $settings->setDashboardUseHotColdMeter(false);
+            $settings->setDashboardUseCashEquityBalance(false);
 
             // Create a Wallet
             $wallet->setUser($user);

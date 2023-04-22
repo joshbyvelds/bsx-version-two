@@ -18,12 +18,6 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'dashboard')]
     public function index(ManagerRegistry $doctrine): Response
     {
-        // $locale = "en_US";
-        // \Locale::setDefault($locale);
-        // setlocale(LC_ALL, 'en_US');
-        // setlocale(LC_MESSAGES, $locale);
-        // setlocale(LC_TIME, $locale);
-
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
         $transactions_limit = $user->getSettings()->getDashboardTransactions();
@@ -54,6 +48,12 @@ class DashboardController extends AbstractController
 
         // check if ten percent plan needs to be updated
         ToolsController::updateTenPercentPlan( $user, $doctrine );
+
+        // check if we need stock infomation
+        $stocks = null;
+        if($settings->isDashboardUseCashEquityBalance()) {
+            $stocks = $user->getStocks();
+        }
         
         return $this->render('dashboard/index.html.twig', [
             'page_title' => 'Dashboard',
@@ -62,6 +62,7 @@ class DashboardController extends AbstractController
             'futures' => $buckets,
             'current_futures_week' => $current_futures_week,
             'settings' => $settings,
+            'stocks' => $stocks,
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
         ]);

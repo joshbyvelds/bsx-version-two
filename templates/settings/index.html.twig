@@ -24,6 +24,15 @@
             </div>
 
             <div class="form switches">
+                <div class="switches row">
+                    <div class="round inline">{{ form_widget(form.dashboard_use_hot_cold_meter) }}<div class="back"><label class="but" for="settings_dashboard_use_hot_cold_meter"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Hot/Cold Meter</div></div>
+                    <div class="round inline">{{ form_widget(form.dashboard_use_cash_equity_balance) }}<div class="back"><label class="but" for="settings_dashboard_use_cash_equity_balance"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">C/E Balance</div></div>
+                </div>
+
+                <div id="ceb_settings">
+                    {{ form_row(form.cash_equity_balance) }}
+                    <small>Set this to zero for no limit</small><br /><br />
+                </div>
                 {{ form_row(form.max_play_money) }}
                 {{ form_row(form.max_plays) }}
                 <h3>Stock - Price Update Options</h3>
@@ -117,6 +126,25 @@
 
     <script>
         $(() => {
+
+            if($("#settings_dashboard_use_cash_equity_balance").prop('checked')){
+                $("#ceb_settings").css("opacity", "1");
+                $("#ceb_settings input").removeAttr("readonly");
+            } else {
+                $("#ceb_settings").css("opacity", "0.5");
+                $("#ceb_settings input").attr("readonly", true);
+            }
+
+            $("#settings_dashboard_use_cash_equity_balance").on("click", function(){
+                if($(this).prop('checked')){
+                    $("#ceb_settings").css("opacity", "1");
+                    $("#ceb_settings input").removeAttr("readonly");
+                } else {
+                    $("#ceb_settings").css("opacity", "0.5");
+                    $("#ceb_settings input").attr("readonly", true);
+                }
+            });
+
             if($("#settings_futures_use_broker_margin").prop('checked')){
                 $(".settings_broker_margin_input_wrapper").css("opacity", "1");
                 $(".settings_broker_margin_input_wrapper input").removeAttr("readonly");
