@@ -29,6 +29,9 @@ class Play
     #[ORM\ManyToMany(targetEntity: Option::class)]
     private $options;
 
+    #[ORM\Column(type: 'boolean')]
+    private $finished;
+
     public function __construct()
     {
         $this->shares = new ArrayCollection();
@@ -108,6 +111,18 @@ class Play
     public function removeOption(Option $option): self
     {
         $this->options->removeElement($option);
+
+        return $this;
+    }
+
+    public function isFinished(): ?bool
+    {
+        return $this->finished;
+    }
+
+    public function setFinished(bool $finished): self
+    {
+        $this->finished = $finished;
 
         return $this;
     }

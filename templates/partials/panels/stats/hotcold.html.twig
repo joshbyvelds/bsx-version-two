@@ -21,7 +21,7 @@
         {% for option in play.options %}{% set total = total + option.contracts %}{% endfor %}
         {% for sb in play.shares %}{% set total = total + sb.amount %}{% endfor %}
 
-        {% if total > 0 %}
+        {% if total > 0 and play.finished == 0 %}
             {% set cost = 0 %}
             {% set fee = 0 %}
 
