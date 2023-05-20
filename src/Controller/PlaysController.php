@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 use App\Form\PlayType;
 use App\Entity\Play;
@@ -61,6 +63,8 @@ class PlaysController extends AbstractController
             }
 
             if($error === ""){
+                $play->setFinished(false);
+                $play->setEarned(0);
                 $play->setUser($this->getUser());
                 $em->persist($play);
                 $em->flush();
@@ -73,5 +77,54 @@ class PlaysController extends AbstractController
             'error' => $error,
             'controller_name' => 'PlaysController',
         ]);
+    }
+
+    #[Route('/plays/update', name: 'app_plays_update')]
+    public function update(ManagerRegistry $doctrine, Request $request): Response
+    {
+        // get play from database..
+        $id = $request->get('playid');
+        $play = $doctrine->getRepository(Play::class)->find($id);
+
+        $shares = $play->getShares();
+        $options = $play->getOptions();
+        $contracts = 0;
+        $shareBuys = 0;
+
+        foreach ($options as $option) {
+            $contracts += (int)$option->getContracts();
+        }
+
+        foreach ($options as $shareBuy) {
+            $shareBuys += ((int)$shareBuy->getAmount() - (int)$shareBuy->getSold());
+        }
+
+        dump($shares);
+        dump($options);
+
+
+        // get if it's a share or option play
+
+        // if share
+            // get new price
+            // get bought price
+            // see if us to canada currency
+            // calculate new profit amount..
+
+        // if option
+            // get new price
+            // get bought price
+            // see if us to canada currency
+            // calculate new profit amount..
+
+        
+        $response = new JsonResponse();
+        $response->setData([
+            "id" => $id,
+            "profit" => 123,
+        ]);
+
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 }

@@ -14,6 +14,11 @@
             <div class="form">
                 {{ form_row(form.theme) }}
                 {{ form_row(form.dashboard_transactions) }}
+                <div class="form switches">
+                    <div class="switches row">
+                        <div class="round inline">{{ form_widget(form.dashboard_portfolio_large) }}<div class="back"><label class="but" for="settings_dashboard_portfolio_large"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Large Portfolio</div></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -35,7 +40,11 @@
                 </div>
                 {{ form_row(form.max_play_money) }}
                 {{ form_row(form.max_plays) }}
+                
                 <h3>Stock - Price Update Options</h3>
+                {{ form_row(form.stocks_canadian_update_amount_limit) }}
+                {{ form_row(form.stocks_canadian_update_limit_timeout) }}
+
                 <div class="switches row">
                     <div class="round inline">{{ form_widget(form.stocks_manual_update_enabled) }}<div class="back"><label class="but" for="settings_stocks_manual_update_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Manual</div></div>
                     <div class="round inline">{{ form_widget(form.stocks_update_sold_price) }}<div class="back"><label class="but" for="settings_stocks_update_sold_price"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Sold</div></div>

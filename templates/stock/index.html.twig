@@ -22,6 +22,7 @@
      {% endif %}
 
     <div class="bubbles" id="bubbles">
+    {% set stock_update_ids = "" %}
     {% for stock in stocks %}
         {% set stock_dividend = 0 %}
         {% set stock_amount = 0 %}
@@ -104,7 +105,7 @@
             {% set stock_class = "loss" %}
         {% endif %}
 
-        <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+        <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
             <div class="inside">
                 <div class="inside_content">
                     {{ stock.name }}<br />
@@ -114,6 +115,8 @@
                 </div>
             </div>    
         </div>
+        
+        {% if stock_amount > 0 or option_amount > 0 %}{% set stock_update_ids = stock_update_ids ~ stock.id ~ ", " %}{% endif %}
     {% endfor %}
     </div>
 
@@ -269,6 +272,12 @@
 
 <script>
     $(() => {
+
+        let stock_ids_array = [{{ stock_update_ids }}];
+        let stockUpdateCounter = 0;
+        let updateDisabled = {% if update_disabled %}1{% else %}0{% endif %};
+        console.log(stock_ids_array);
+
         $(".stock_bubble").on("click", function(){open_stock_detail($(this).attr("data-id"));});
         $(".buy_sell_switch").on("click", function(){
             if($(this).hasClass("up")){
@@ -292,6 +301,37 @@
         $("#show_details").on("click", function(){
 
         });
+
+        function updateStocks(){
+            if(updateDisabled === 1){return;}
+            stockUpdateCounter = 0;
+            updateStock(stock_ids_array[stockUpdateCounter]);
+        }
+
+        function updateStock(stock_id){
+            $(".stock_bubble[data-id="+stock_id+"]").removeClass("waiting").addClass("updating");
+            $.post("/stocks/update", {"stock_id":stock_id}, function(json){
+                $(".stock_bubble[data-id="+stock_id+"]").removeClass("updating");
+                stockUpdateCounter++;
+
+                if(json.success){
+                    console.log(json.data);
+                    // update bubble info..
+
+                    // update table info..
+
+                    // move on to next stock on the list and repeat..
+                    if(stockUpdateCounter < stock_ids_array.length){
+                        updateStock(stock_ids_array[stockUpdateCounter]);
+                    } else {
+                        //since we are now done, an easy way to see the new updates to is just refresh the page with updates disabled..
+                        //window.location.replace('/stocks?disable_update=1');
+                    }
+                }
+            });
+        }
+    
+        updateStocks();
     });
 
     function open_stock_detail(stock_id){

@@ -443,6 +443,13 @@ class Stock
         return $this->sharesOwned;
     }
 
+    public function addSharesOwned(int $newShares): self
+    {
+        $this->sharesOwned += $newShares;
+
+        return $this;
+    }
+
     public function setSharesOwned(int $sharesOwned): self
     {
         $this->sharesOwned = $sharesOwned;

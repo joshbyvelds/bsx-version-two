@@ -37,6 +37,7 @@ class RegistrationController extends AbstractController
 
             // Set Default Settings for User..
             $settings->setUser($user);
+            $settings->setDashboardPortfolioLarge(false);
             $settings->setDashboardTransactions(6);
             $settings->setMaxPlayMoney(1000);
             $settings->setMaxPlays(6);
@@ -69,6 +70,8 @@ class RegistrationController extends AbstractController
             $settings->setCashEquityBalance(0);
             $settings->setDashboardUseHotColdMeter(false);
             $settings->setDashboardUseCashEquityBalance(false);
+            $settings->setStocksCanadianUpdateAmountLimit(5);
+            $settings->setStocksCanadianUpdateLimitTimeout(10);
 
             // Create a Wallet
             $wallet->setUser($user);

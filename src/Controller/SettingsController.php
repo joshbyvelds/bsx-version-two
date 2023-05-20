@@ -24,6 +24,7 @@ class SettingsController extends AbstractController
         if(empty($settings)){
             $settings = new Settings();
             $settings->setUser($user);
+            $settings->setDashboardPortfolioLarge(false);
             $settings->setDashboardTransactions(6);
             $settings->setCashEquityBalance(0);
             $settings->setMaxPlayMoney(1000);
@@ -57,6 +58,8 @@ class SettingsController extends AbstractController
             $settings->setCashEquityBalance(0);
             $settings->setDashboardUseHotColdMeter(false);
             $settings->setDashboardUseCashEquityBalance(false);
+            $settings->setStocksCanadianUpdateAmountLimit(5);
+            $settings->setStocksCanadianUpdateLimitTimeout(10);
             $em->persist($settings);
             $em->flush();
         }

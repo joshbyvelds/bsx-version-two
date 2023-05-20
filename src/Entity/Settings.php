@@ -113,6 +113,15 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $dashboard_use_cash_equity_balance;
 
+    #[ORM\Column(type: 'integer')]
+    private $stocks_canadian_update_amount_limit;
+
+    #[ORM\Column(type: 'integer')]
+    private $stocks_canadian_update_limit_timeout;
+
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_portfolio_large;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -510,6 +519,42 @@ class Settings
     public function setDashboardUseCashEquityBalance(bool $dashboard_use_cash_equity_balance): self
     {
         $this->dashboard_use_cash_equity_balance = $dashboard_use_cash_equity_balance;
+
+        return $this;
+    }
+
+    public function getStocksCanadianUpdateAmountLimit(): ?int
+    {
+        return $this->stocks_canadian_update_amount_limit;
+    }
+
+    public function setStocksCanadianUpdateAmountLimit(int $stocks_canadian_update_amount_limit): self
+    {
+        $this->stocks_canadian_update_amount_limit = $stocks_canadian_update_amount_limit;
+
+        return $this;
+    }
+
+    public function getStocksCanadianUpdateLimitTimeout(): ?int
+    {
+        return $this->stocks_canadian_update_limit_timeout;
+    }
+
+    public function setStocksCanadianUpdateLimitTimeout(int $stocks_canadian_update_limit_timeout): self
+    {
+        $this->stocks_canadian_update_limit_timeout = $stocks_canadian_update_limit_timeout;
+
+        return $this;
+    }
+
+    public function isDashboardPortfolioLarge(): ?bool
+    {
+        return $this->dashboard_portfolio_large;
+    }
+
+    public function setDashboardPortfolioLarge(bool $dashboard_portfolio_large): self
+    {
+        $this->dashboard_portfolio_large = $dashboard_portfolio_large;
 
         return $this;
     }

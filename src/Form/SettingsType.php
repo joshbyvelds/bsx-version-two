@@ -23,6 +23,7 @@ class SettingsType extends AbstractType
                 ],
             ])
             ->add('dashboard_transactions')
+            ->add('dashboard_portfolio_large', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_cash_equity_balance', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_update_sold_price', CheckboxType::class, ['mapped' => true, 'required' => false])
@@ -33,6 +34,8 @@ class SettingsType extends AbstractType
             ->add('stocks_manual_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_disable_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_disable_canadian_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('stocks_canadian_update_amount_limit')
+            ->add('stocks_canadian_update_limit_timeout')
             ->add('futures_data_fee')
             ->add('futures_play_bucket_max')
             ->add('futures_profit_bucket_max')

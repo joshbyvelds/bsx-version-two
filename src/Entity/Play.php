@@ -32,6 +32,9 @@ class Play
     #[ORM\Column(type: 'boolean')]
     private $finished;
 
+    #[ORM\Column(type: 'float')]
+    private $earned;
+
     public function __construct()
     {
         $this->shares = new ArrayCollection();
@@ -123,6 +126,18 @@ class Play
     public function setFinished(bool $finished): self
     {
         $this->finished = $finished;
+
+        return $this;
+    }
+
+    public function getEarned(): ?float
+    {
+        return $this->earned;
+    }
+
+    public function setEarned(float $earned): self
+    {
+        $this->earned = $earned;
 
         return $this;
     }

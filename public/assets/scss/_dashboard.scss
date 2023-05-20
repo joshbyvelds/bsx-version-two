@@ -59,6 +59,10 @@
     border-radius: 10px;
     vertical-align: top;
 
+    &.large{
+        width: 660px;
+    }
+
     &.futures{
         .title{
             padding-top: 0;
