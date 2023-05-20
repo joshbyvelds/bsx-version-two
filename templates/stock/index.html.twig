@@ -21,8 +21,10 @@
         <h3>Status: {{ status }}</h3>
      {% endif %}
 
+     <h3>Shares</h3>
+
     <div class="bubbles" id="bubbles">
-    {% set stock_update_ids = "" %}
+    {% set share_update_ids = "" %}
     {% for stock in stocks %}
         {% set stock_dividend = 0 %}
         {% set stock_amount = 0 %}
@@ -52,18 +54,6 @@
             {% endif %}
         {% endfor %}
 
-        {% for option in stock.options %}
-            {% if option.expired == false and option.contracts > 1 %}
-                {% set option_amount = option_amount + 1 %}
-                {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
-                {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
-                {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
-                {% set option_average = (option.average * 100 * option.contracts) + option_buy_fee %}
-                {% set option_cost = option_cost + option_average %}
-                {% set option_total_worth = max(option_total_worth + option_current, 0) %}
-            {% endif %}
-        {% endfor %}
-
         {% if stock_amount > 0 %}
             {% set stock_average = stock_average / stock_amount %}
             {% if stock.noFee %}
@@ -81,19 +71,10 @@
         {% if stock_amount == 0 and option_amount == 0 %}
             {% set percent = 0 %}
             {% set diff = 0 %}
-        {% elseif stock_amount != 0 and option_amount != 0 %} 
-            {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
-            {% set diff = ((option_total_worth + (stock_current * stock_amount)) - (option_cost + (stock_breakeven * stock_amount))) %}
         {% else %}
             {% if stock_amount != 0 %}
                 {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
                 {% set diff = (stock_current - stock_breakeven) * stock_amount %}
-            {% endif %}
-
-            {% if option_amount != 0 %}
-                {% set percent = ((option_total_worth / option_cost) * 100) - 100 %}
-                {% set diff = option_total_worth - option_cost %}
-
             {% endif %}
         {% endif %}
 
@@ -105,18 +86,89 @@
             {% set stock_class = "loss" %}
         {% endif %}
 
-        <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
-            <div class="inside">
-                <div class="inside_content">
-                    {{ stock.name }}<br />
-                    <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
-                    <small>${{ diff|number_format(2) }}</small><br />
-                    {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
-                </div>
-            </div>    
-        </div>
-        
-        {% if stock_amount > 0 or option_amount > 0 %}{% set stock_update_ids = stock_update_ids ~ stock.id ~ ", " %}{% endif %}
+        {% if stock_amount > 0 %}
+            <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+                <div class="inside">
+                    <div class="inside_content">
+                        {{ stock.name }}<br />
+                        <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
+                        <small>${{ diff|number_format(2) }}</small><br />
+                        {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
+                    </div>
+                </div>    
+            </div>
+            {% set share_update_ids = share_update_ids ~ stock.id ~ ", " %}
+        {% endif %}
+    {% endfor %}
+    </div>
+
+    <h3>Options</h3>
+
+    <div class="bubbles" id="bubbles">
+    {% set option_update_ids = "" %}
+    {% for stock in stocks %}
+        {% set stock_dividend = 0 %}
+        {% set stock_amount = 0 %}
+        {% set option_amount = 0 %}
+        {% set stock_average = 0 %}
+        {% set option_diff = 0 %}
+        {% set stock_current = stock.currentPrice %}
+        {% set stock_breakeven = 0 %}
+        {% set stock_pl = 0 %}
+        {% set stock_sold = 0 %}
+        {% set buys = 0 %}
+        {% set fees = 0 %}
+        {% set d_buy = 0 %}
+        {% set d_sold = 0 %}
+        {% set total = 0 %}
+        {% set option_cost = 0 %}
+        {% set option_total_worth = 0 %}
+        {% set option_buy_fee = 0 %}
+        {% set option_sell_fee = 0 %}
+
+        {% for option in stock.options %}
+            {% if option.expired == false and option.contracts > 1 %}
+                {% set option_amount = option_amount + 1 %}
+                {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
+                {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
+                {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
+                {% set option_average = (option.average * 100 * option.contracts) + option_buy_fee %}
+                {% set option_cost = option_cost + option_average %}
+                {% set option_total_worth = max(option_total_worth + option_current, 0) %}
+                {% set option_update_ids = option_update_ids ~ option.id ~ ", " %}
+            {% endif %}
+        {% endfor %}
+
+        {% if stock_amount == 0 and option_amount == 0 %}
+            {% set percent = 0 %}
+            {% set diff = 0 %}
+        {% else %}
+            {% if option_amount != 0 %}
+                {% set percent = ((option_total_worth / option_cost) * 100) - 100 %}
+                {% set diff = option_total_worth - option_cost %}
+            {% endif %}
+        {% endif %}
+
+        {% if diff > 0 %}
+            {% set stock_class = "win" %}
+        {% elseif diff - ((option_buy_fee + option_sell_fee)) < (option_buy_fee + option_sell_fee) %}
+            {% set stock_class = "loss" %}
+        {% else %}
+            {% set stock_class = "fee_loss" %}
+        {% endif %}
+
+        {% if option_amount > 0 %}
+            <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+                <div class="inside">
+                    <div class="inside_content">
+                        {{ stock.name }}<br />
+                        <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
+                        <small>${{ diff|number_format(2) }}</small><br />
+                        {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
+                    </div>
+                </div>    
+            </div>
+        {% endif %}
     {% endfor %}
     </div>
 
@@ -273,7 +325,7 @@
 <script>
     $(() => {
 
-        let stock_ids_array = [{{ stock_update_ids }}];
+        let stock_ids_array = [{{ share_update_ids }}];
         let stockUpdateCounter = 0;
         let updateDisabled = {% if update_disabled %}1{% else %}0{% endif %};
         console.log(stock_ids_array);
