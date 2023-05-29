@@ -1,23 +1,104 @@
-<div class="panel portfolio {% if settings.dashboardPortfolioLarge %}large{% endif %}">
+{% for port in portfolios %}
+<div class="panel portfolio {% if port.largeType %}large{% endif %}" data-id="{{ port.id }}">
+    <span class="update_btn material-icons" data-port="{{ port.id }}">sync</span>
     <div class="status">
-        <div class="money">{{ amount }}</div>
-        <div class="gainbox">
-            <span class="title">Gain</span>
-            <div class="amount_wrapper">
-                <div class="amount">+${{ gain_total }}</div>
-                <div class="amount">&#129045;{{ gain_total_percent }}%</div>
+        <div class="money">${{ port.worth }}</div>
+        <div class="gainbox_wrapper">
+            <div class="gainbox">
+                <span class="title">Gain</span>
+                <div class="amount_wrapper">
+                    <div class="amount gain">+$0</div>
+                    <div class="amount gainP">&#129045;0%</div>
+                </div>
             </div>
         </div><!--
-     --><div class="gainbox">
-            <span class="title">Gain Today</span>
-            <div class="amount_wrapper">
-                <div class="amount">-${{ gain_day }}</div>
-                <div class="amount">&#129047;{{ gain_day_percent }}%</div>
+     --><div class="gainbox_wrapper">
+            <div class="gainbox page open" data-port="{{ port.id }}" data-page="1">
+                <span class="title">Gain Today</span>
+                <div class="amount_wrapper">
+                    <div class="amount today">+$0</div>
+                    <div class="amount todayP">&#129045;0%</div>
+                </div>
+            </div>
+            <div class="gainbox page" data-port="{{ port.id }}" data-page="2">
+                <span class="title">Gain Week</span>
+                <div class="amount_wrapper">
+                    <div class="amount week">+$0</div>
+                    <div class="amount weekP">&#129045;0%</div>                    
+                </div>
+            </div>
+            <div class="gainbox page" data-port="{{ port.id }}" data-page="3">
+                <span class="title">Gain Month</span>
+                <div class="amount_wrapper">
+                    <div class="amount month">+$0</div>
+                    <div class="amount monthP">&#129045;0%</div>
+                </div>
+            </div>
+            <div class="gainbox page" data-port="{{ port.id }}" data-page="4">
+                <span class="title">Gain Year</span>
+                <div class="amount_wrapper">
+                    <div class="amount year">+$0</div>
+                    <div class="amount yearP">&#129045;0%</div>
+                </div>
+            </div>
+            <div class="page_nav">
+                <span data-port="{{ port.id }}" data-page="1" title="Gain Today"></span> - 
+                <span data-port="{{ port.id }}" data-page="2" title="Gain Week"></span> -
+                <span data-port="{{ port.id }}" data-page="3" title="Gain Month"></span> - 
+                <span data-port="{{ port.id }}" data-page="4" title="Gain Year"></span>
+            </div>
+        </div>
+        <div class="gainbox_wrapper">
+            <div class="gainbox">
+                <span class="title">Gain Total (Divi Inc.)</span>
+                <div class="amount_wrapper">
+                    <div class="amount total">+$0</div>
+                    <div class="amount totalP">&#129045;0%</div>
+                </div>
             </div>
         </div>
     </div>
     <div class="info">
-        <div class="name"><span class="info_label">Name:</span><br />Swing Trade Portfolio</div><!-- 
-     --><div class="updated"><span class="info_label">Updated:</span><br />12/29/2021</div>
+        <div class="name"><span class="info_label">Name:</span><br />{{ port.name }}</div><!-- 
+     --><div class="updated"><span class="info_label">Updated:</span><br />{{ port.updated|date("m/d/Y") }}</div>
     </div>
 </div>
+{% endfor %}
+
+<script>
+    $(() => {
+        $(".page_nav span").on("click", (event) => {
+            let $this = $(event.currentTarget);
+            let port = parseInt($this.attr("data-port"));
+            let page = parseInt($this.attr("data-page"));
+
+            $(".page_nav span[data-port="+port+"]").removeClass("open");
+            $(".gainbox.page[data-port="+port+"]").removeClass("open");
+            $(".page_nav span[data-page="+page+"]").addClass("open");
+            $(".gainbox.page[data-page="+page+"]").addClass("open");
+
+        });
+
+        $(".update_btn").on("click", (event) => {
+            let $this = $(event.currentTarget);
+            let port = parseInt($this.attr("data-port"));
+
+            $.post("/portfolio/update/" + port, {}, (json) => {
+                let j = json;
+                $(".portfolio[data-id="+port+"] .money").html("$" + j.port.worth);
+                $(".portfolio[data-id="+port+"] .gain").html(((j.port.gain >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.gain));
+                $(".portfolio[data-id="+port+"] .gainP").html(((j.port.gainP >= 0) ? "+" : "-" ) + Math.abs(j.port.gainP) + "%");
+                $(".portfolio[data-id="+port+"] .today").html(((j.port.day >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.day));
+                $(".portfolio[data-id="+port+"] .todayP").html(((j.port.dayP >= 0) ? "+" : "-" ) + Math.abs(j.port.dayP) + "%");
+                $(".portfolio[data-id="+port+"] .week").html(((j.port.week >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.week));
+                $(".portfolio[data-id="+port+"] .weekP").html(((j.port.weekP >= 0) ? "+" : "-" ) + Math.abs(j.port.weekP) + "%");
+                $(".portfolio[data-id="+port+"] .month").html(((j.port.month >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.month));
+                $(".portfolio[data-id="+port+"] .monthP").html(((j.port.monthP >= 0) ? "+" : "-" ) + Math.abs(j.port.monthP) + "%");
+                $(".portfolio[data-id="+port+"] .year").html(((j.port.year >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.year));
+                $(".portfolio[data-id="+port+"] .yearP").html(((j.port.yearP >= 0) ? "+" : "-" ) + Math.abs(j.port.yearP) + "%");
+                $(".portfolio[data-id="+port+"] .total").html(((j.port.total >= 0) ? "+" : "-" ) + "$" + Math.abs(j.port.total));
+                $(".portfolio[data-id="+port+"] .totalP").html(((j.port.totalP >= 0) ? "+" : "-" ) + Math.abs(j.port.totalP) + "%");
+            });
+        });
+    });
+</script>

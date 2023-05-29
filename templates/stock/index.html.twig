@@ -127,7 +127,7 @@
         {% set option_sell_fee = 0 %}
 
         {% for option in stock.options %}
-            {% if option.expired == false and option.contracts > 1 %}
+            {% if option.expired == false and option.contracts >= 1 %}
                 {% set option_amount = option_amount + 1 %}
                 {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
                 {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}

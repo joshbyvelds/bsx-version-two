@@ -79,6 +79,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CoveredCall::class)]
     private $coveredCalls;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Portfolio::class, orphanRemoval: true)]
+    private $portfolios;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -92,6 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->plays = new ArrayCollection();
         $this->notes = new ArrayCollection();
         $this->coveredCalls = new ArrayCollection();
+        $this->portfolios = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -558,6 +562,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($coveredCall->getUser() === $this) {
                 $coveredCall->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Portfolio>
+     */
+    public function getPortfolios(): Collection
+    {
+        return $this->portfolios;
+    }
+
+    public function addPortfolio(Portfolio $portfolio): self
+    {
+        if (!$this->portfolios->contains($portfolio)) {
+            $this->portfolios[] = $portfolio;
+            $portfolio->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePortfolio(Portfolio $portfolio): self
+    {
+        if ($this->portfolios->removeElement($portfolio)) {
+            // set the owning side to null (unless already changed)
+            if ($portfolio->getUser() === $this) {
+                $portfolio->setUser(null);
             }
         }
 

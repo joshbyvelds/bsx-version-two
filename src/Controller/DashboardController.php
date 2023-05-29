@@ -41,6 +41,7 @@ class DashboardController extends AbstractController
         }
 
         $plays = $user->getPlays();
+        $portfolios = $user->getPortfolios();
 
 
         //TODO: limit this to the last 6..
@@ -63,6 +64,7 @@ class DashboardController extends AbstractController
             'current_futures_week' => $current_futures_week,
             'settings' => $settings,
             'stocks' => $stocks,
+            'portfolios' => $portfolios,
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
         ]);
