@@ -33,9 +33,13 @@ class StockController extends AbstractController
     private $can_count = 0;
     private $settings;
     private $update_price = 0;
+    private $can_updated = false;
+    private $update_function = false;
+    private $test_string = "";
 
     private function updateStockInfo($doctrine, Stock $stock, $disable_can, $day_today, $hour_today)
     {
+        $this->update_function = true;
         if($stock->getCountry() == "CAN"){
             if(!$disable_can && $stock->isBeingPlayedShares()){
                 if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 10 && $hour_today < 16) {
@@ -49,7 +53,7 @@ class StockController extends AbstractController
                     // check how long it has been since last update
 
                     if($this->can_count <= $this->settings->getStocksCanadianUpdateAmountLimit()){
-     
+                        $this->can_updated = true;
                         // Call API, to get info..
                         $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
                         dump("Update:" . $stock->getTicker());
@@ -121,7 +125,7 @@ class StockController extends AbstractController
                             continue;
                         }
                         $e = date_format($option->getExpiry(), "Y-m-d");
-                        $t = ($stock->getType() === 1) ? "c":"p";
+                        $t = ((int)$stock->getType() === 1) ? "c":"p";
                         $s = number_format($option->getStrike(), 2);
                         $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getTicker() . '&reqId=1'), true);
                         $option_data = $option_data['options'];
@@ -751,9 +755,8 @@ class StockController extends AbstractController
         $id = $request->get('stock_id');
         $user = $this->getUser();
         $disable_can = false; // $request->get('disable_can');
-        $forceUpdate = false;
-
         $this->settings = $user->getSettings();
+        $forceUpdate = $this->settings->isStocksManualUpdateEnabled();
 
         if ($request->isXMLHttpRequest()) {    
             $stock = $doctrine->getRepository(Stock::class)->find($id);
@@ -766,15 +769,28 @@ class StockController extends AbstractController
 
              // and you might want to convert to integer
              $numberDays = intval($numberDaysSec);
-             $day = date('D', $lasttimestamp);
-             $hour = date('H', $lasttimestamp);
+             $update_day = date('D', $lasttimestamp);
+             $update_hour = date('H', $lasttimestamp);
 
+             // todays date and time
              $day_today = date('D');
              $hour_today = date('H');
+             $updatedToday = ($stock->getLastPriceUpdate()->format('Y-m-d') === date('Y-m-d'));
 
-             $ustatus = "Start Check..";
+            // check if it's the weekend today
+            $weekend_today = ($day_today === "Sat" || $day_today === "Sun" || ($day_today === "Fri" && $hour_today > 16) || ($day_today === "Mon" && $hour_today < 9));
 
-             if($forceUpdate){
+            // check if we last updated during the weekend..
+            $updated_on_weekend = ($update_day === "Sat" || $update_hour === "Sun" || ($update_day === "Fri" && $update_hour > 16) || ($update_day === "Mon" && $update_hour < 9));
+
+            $marketOpen = (!$weekend_today && $hour_today >= 10 && $hour_today < 16);
+
+            $ustatus = "Start Check..";
+            $this->test_string = "1";
+
+            // check if force update is enabled in settings..
+            if($forceUpdate){
+                $this->test_string = "2 - Force Update";
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -785,21 +801,9 @@ class StockController extends AbstractController
                 }
              }
 
-             // check if it's the weekend
-             $weekend = ($day === "Sat" || $day === "Sun");
-
-             // check if it's the same day as previous update date
-             $updatedToday = ($stock->getLastPriceUpdate()->format('Y-m-d') == date('Y-m-d'));
-             $updateHour = $stock->getLastPriceUpdate()->format('H');
-
-             // check if market is still open
-             $marketOpen = (!$weekend && $hour >= 9 && $hour < 16);
-
-             // check if todays last update was during todays market hours..
-             $updatedOpen = ($updatedToday && $updateHour > 16);
-
-             // first check if it's been over 2 days since the last update..
-             if($numberDays >= 2){
+             // first check if it's been over 3 days since the last update..
+             if($numberDays >= 3){
+                $this->test_string = "3 - Over 3 Days since last update";
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -807,12 +811,61 @@ class StockController extends AbstractController
                     $em = $doctrine->getManager();
                     $em->flush();
                     $updated = true;
+                }
+             }
+
+             // now check if it's now the weekend and if we already updated this weekend
+             if($weekend_today){
+                if(!$updated_on_weekend){
+                    $this->test_string = "3.1 - Weekend Update";
+                    $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                    if($ustatus === "U"){
+                        $date = new \DateTime();
+                        $stock->setLastPriceUpdate($date);
+                        $em = $doctrine->getManager();
+                        $em->flush();
+                        $updated = true;
+                    }
+                } else {
+                    $this->test_string = "3.2 - Trying to update again this weekend when we already have";
+                    $updated = true;
+                    $status_code = 1;
+                    $update_status_stock = "You already updated this stock this weekend, price will not change.";
                 }
              }
              
-            
-             // so if we are just getting a mid-day update..
-             if($updatedToday && $marketOpen){
+             // if we are trying to do a mid-day update..
+             if(!$updated && !$weekend_today && $updatedToday){
+
+                // so if we are just getting a mid-day update..
+                if($marketOpen){
+                    $this->test_string = "4 - Mid Day Update";
+                    $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                    if($ustatus === "U"){
+                        $date = new \DateTime();
+                        $stock->setLastPriceUpdate($date);
+                        $em = $doctrine->getManager();
+                        $em->flush();
+                        $updated = true;
+                    }
+                } else {
+                    if($hour_today >= 9){
+                        $this->test_string = "5.1 - Trying to update again before Pre-Market";
+                        $updated = true;
+                        $status_code = 1;
+                        $update_status_stock = "You already updated this stock today before open.. price will not change.";
+                    } else {
+                        $this->test_string = "5.1 - Trying to update again after Post-Market";
+                        $updated = true;
+                        $status_code = 1;
+                        $update_status_stock = "You already updated this stock today after close.. price will not change.";
+                    }
+                }
+             }
+
+             // no other condistions.. update please..
+             if(!$updated){
+                $this->test_string = "6 - Normal Update";
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -821,52 +874,8 @@ class StockController extends AbstractController
                     $em->flush();
                     $updated = true;
                 }
-             }
-
-             // next check to see if market was closed when we updated today..
-             if(!$updatedOpen){
-                $updated = true;
-                $status_code = 1;
-                $update_status_stock = "You already updated this stock today after close.. price will not change.";
-             }
-
-             // next check if we are tring to update during a weekend..
-
-
-             if(!$updated && $day != "Sat" && $day != "Sun") {
-                // get current price
-                
-                if(!$updated && $hour >= 4 && $hour < 20) {
-                    $ustatus = $this->updateStockInfo($doctrine, $stock, $disable_can, $day_today, $hour_today);
-                    if($ustatus === "U"){
-                        $date = new \DateTime();
-                        $stock->setLastPriceUpdate($date);
-                        $em = $doctrine->getManager();
-                        $em->flush();
-                        $updated = true;
-                    }
-                }
-            } else {
-                $status_code = 1;
-                $update_status_stock = "You are trying to update during market hours (includes Pre & Post Market)";
             }
 
-            // if the price was last checked on a weekend.. make sure the current time is during market hours..
-            if(!$updated && ($day_today != "Sat" && $day_today != "Sun")) {
-                if($hour_today >= 4 && $hour_today < 20) {
-                    $ustatus = $this->updateStockInfo($doctrine, $stock, $disable_can, $day_today, $hour_today);
-                    if($ustatus === "U"){
-                        $date = new \DateTime();
-                        $stock->setLastPriceUpdate($date);
-                        $em = $doctrine->getManager();
-                        $em->flush();
-                        $updated = true;
-                    }
-                }
-            } else {
-                $status_code = 1;
-                $update_status_stock = "Last Updated on weekend and it's still the weekend, so prices have not changed";
-            }
 
             if($ustatus !== "U")
             {
@@ -888,14 +897,13 @@ class StockController extends AbstractController
 
                 $status_code = 1;
                 $status_message = $update_status_stock;
-            }
-
-            if($updated) {
+            } else {
                 $status_code = 2;
                 $status_message = "Stock Price Updated";
             }
+        
 
-            return new JsonResponse(array('success' => true, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price, 'data' => 'this is a json response:' . $stock->getTicker()));
+            return new JsonResponse(array('success' => true,'ticker' => $stock->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
         }
     }
 
