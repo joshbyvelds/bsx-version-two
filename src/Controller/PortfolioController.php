@@ -170,9 +170,14 @@ class PortfolioController extends AbstractController
             $today_year = $today->format('Y');
 
             $weekend_today = ($today_day === "Sat" || $today_day === "Sun" || ($today_day === "Mon" && $today_hour < 9));
-            $marketClosedForDay = (!$weekend_today && $today_hour < 16);
+            $marketClosedForDay = (!$weekend_today && $today_hour > 16);
+
+            // $test['closedforday'] = $marketClosedForDay;
+            // $test['weekend'] = $weekend_today;
+            // $test['hour'] = $today_hour;
 
             if($marketClosedForDay){
+                $test['today'] = 'abc';
                 if($last_day !== $today_day){
                     $portfolio->setYesterday($portfolio->getWorth());
                 }
@@ -189,12 +194,11 @@ class PortfolioController extends AbstractController
                     $portfolio->setLastYear($portfolio->getWorth());
                 }
 
+                $portfolio->setUpdated($today);
                 $portfolio->setWorth($worth);
                 $em = $doctrine->getManager();
                 $em->flush();
             }
-
-
 
             $portStats = [
                 'worth' => number_format($worth,2),

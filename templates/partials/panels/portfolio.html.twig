@@ -4,37 +4,51 @@
     <div class="status">
         <div class="money">${{ port.worth }}</div>
         <div class="gainbox_wrapper">
-            <div class="gainbox">
+            <div class="gainbox page open" data-port="{{ port.id }}" data-wrapper="1" data-page="1">
                 <span class="title">Gain</span>
                 <div class="amount_wrapper">
                     <div class="amount gain">+$0</div>
                     <div class="amount gainP">&#129045;0%</div>
                 </div>
             </div>
+            {% if port.largeType == false %}
+            <div class="gainbox page" data-port="{{ port.id }}" data-wrapper="1" data-page="2">
+                <span class="title">Gain /w Divi Inc.</span>
+                <div class="amount_wrapper">
+                    <div class="amount total">+$0</div>
+                    <div class="amount totalP">&#129045;0%</div>
+                </div>
+            </div>
+            <div class="page_nav">
+                <span data-port="{{ port.id }}" data-wrapper="1" data-page="1" title="Gain"></span> - 
+                <span data-port="{{ port.id }}" data-wrapper="1" data-page="2" title="Gain Total /w dividends"></span>
+            </div>
+            {% endif %}
+
         </div><!--
      --><div class="gainbox_wrapper">
-            <div class="gainbox page open" data-port="{{ port.id }}" data-page="1">
+            <div class="gainbox page open" data-port="{{ port.id }}" data-wrapper="2" data-page="1">
                 <span class="title">Gain Today</span>
                 <div class="amount_wrapper">
                     <div class="amount today">+$0</div>
                     <div class="amount todayP">&#129045;0%</div>
                 </div>
             </div>
-            <div class="gainbox page" data-port="{{ port.id }}" data-page="2">
+            <div class="gainbox page" data-port="{{ port.id }}" data-wrapper="2" data-page="2">
                 <span class="title">Gain Week</span>
                 <div class="amount_wrapper">
                     <div class="amount week">+$0</div>
                     <div class="amount weekP">&#129045;0%</div>                    
                 </div>
             </div>
-            <div class="gainbox page" data-port="{{ port.id }}" data-page="3">
+            <div class="gainbox page" data-port="{{ port.id }}" data-wrapper="2" data-page="3">
                 <span class="title">Gain Month</span>
                 <div class="amount_wrapper">
                     <div class="amount month">+$0</div>
                     <div class="amount monthP">&#129045;0%</div>
                 </div>
             </div>
-            <div class="gainbox page" data-port="{{ port.id }}" data-page="4">
+            <div class="gainbox page" data-port="{{ port.id }}" data-wrapper="2" data-page="4">
                 <span class="title">Gain Year</span>
                 <div class="amount_wrapper">
                     <div class="amount year">+$0</div>
@@ -42,21 +56,23 @@
                 </div>
             </div>
             <div class="page_nav">
-                <span data-port="{{ port.id }}" data-page="1" title="Gain Today"></span> - 
-                <span data-port="{{ port.id }}" data-page="2" title="Gain Week"></span> -
-                <span data-port="{{ port.id }}" data-page="3" title="Gain Month"></span> - 
-                <span data-port="{{ port.id }}" data-page="4" title="Gain Year"></span>
+                <span data-port="{{ port.id }}" data-wrapper="2" data-page="1" title="Gain Today"></span> - 
+                <span data-port="{{ port.id }}" data-wrapper="2" data-page="2" title="Gain Week"></span> -
+                <span data-port="{{ port.id }}" data-wrapper="2" data-page="3" title="Gain Month"></span> - 
+                <span data-port="{{ port.id }}" data-wrapper="2" data-page="4" title="Gain Year"></span>
             </div>
         </div>
+        {% if port.largeType %}
         <div class="gainbox_wrapper">
             <div class="gainbox">
-                <span class="title">Gain Total (Divi Inc.)</span>
+                <span class="title">Gain Total with Diviends</span>
                 <div class="amount_wrapper">
                     <div class="amount total">+$0</div>
                     <div class="amount totalP">&#129045;0%</div>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
     <div class="info">
         <div class="name"><span class="info_label">Name:</span><br />{{ port.name }}</div><!-- 
@@ -70,12 +86,13 @@
         $(".page_nav span").on("click", (event) => {
             let $this = $(event.currentTarget);
             let port = parseInt($this.attr("data-port"));
+            let wrapper = parseInt($this.attr("data-wrapper"));
             let page = parseInt($this.attr("data-page"));
 
-            $(".page_nav span[data-port="+port+"]").removeClass("open");
-            $(".gainbox.page[data-port="+port+"]").removeClass("open");
-            $(".page_nav span[data-page="+page+"]").addClass("open");
-            $(".gainbox.page[data-page="+page+"]").addClass("open");
+            $(".page_nav span[data-port="+port+"][data-wrapper="+wrapper+"]").removeClass("open");
+            $(".gainbox.page[data-port="+port+"][data-wrapper="+wrapper+"]").removeClass("open");
+            $(".page_nav span[data-port="+port+"][data-wrapper="+wrapper+"][data-page="+page+"]").addClass("open");
+            $(".gainbox.page[data-port="+port+"][data-wrapper="+wrapper+"][data-page="+page+"]").addClass("open");
 
         });
 
