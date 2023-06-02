@@ -190,7 +190,7 @@ class PortfolioController extends AbstractController
                     $portfolio->setLastMonth($portfolio->getWorth());
                 }
 
-                if($last_month !== $today_month){
+                if($last_year !== $today_year){
                     $portfolio->setLastYear($portfolio->getWorth());
                 }
 

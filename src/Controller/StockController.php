@@ -789,7 +789,8 @@ class StockController extends AbstractController
             $this->test_string = "1";
 
             // check if force update is enabled in settings..
-            if($forceUpdate){
+            if($forceUpdate)
+            {
                 $this->test_string = "2 - Force Update";
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
@@ -849,7 +850,7 @@ class StockController extends AbstractController
                         $updated = true;
                     }
                 } else {
-                    if($hour_today >= 9){
+                    if($hour_today <= 9){
                         $this->test_string = "5.1 - Trying to update again before Pre-Market";
                         $updated = true;
                         $status_code = 1;
