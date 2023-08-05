@@ -3,12 +3,17 @@
 {% block title %}Hello StockController!{% endblock %}
 
 {% block body %}
-    <h2>Covered Calls</h2>
 
-    
+    <style>
+        td {
+            text-align: center;
+        }
+    </style>
+
+    <h2>Covered Calls</h2>
     <a href="/stocks/coveredcall/write">Add a Covered Call</a><br />
 
-    <div class="half">
+    <div style="width:35%;" class="half">
     <h3>How to Write a Covered Call</h3>
     <p class="instruct">
         To write a covered call, purchase 100 shares of stock from whatever ticker/company you want create the contract for. 
@@ -16,36 +21,62 @@
         Select the strike/expiry for your call and then select <strong>Sell to Open</strong>. Make sure you select <strong>covered</strong> from the covered dropdown as well.
     </p>
 
-    <img src="/assets/images/cc_instructions.png" alt="">
+    <img style="width:99%" src="/assets/images/cc_instructions.png" alt="">
     <br />
     <small>BMO Investerline 2.0 orderform for Covered Call Option selling</small>
     </div><!--
-    --><div class="half">
+    --><div style="width:65%;" class="half">
         <h3>List of Active Covered Calls</h3>
         <table>
             <thead>
-                    <th>Company</th>
-                    <th>Ticker</th>
-                    <th>Contracts</th>
-                    <th>Price</th>
-                    <th>Strike</th>
-                    <th>Expiry Date</th>
+                    <th>Company | </th>
+                    <th>Ticker | </th>
+                    <th>Total |</th>
+                    <th>Contracts | </th>
+                    <th>Price | </th>
+                    <th>Strike | </th>
+                    <th>🎯% |</th>
+                    <th>Expiry Date | </th>
+                    <th>Days Left | </th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
+                {% set total_earned = 0 %}
                 {% set old_cc = [] %}
                 {% for cc in coveredcalls %}
                     {% if cc.exercised or cc.expired %}
                        {% set old_cc = old_cc|merge([cc]) %}
                     {% else %}
+                        {% set datePost = cc.expiry|date('d-m-Y') %}
+                        {% set today = "now"|date('d-m-Y') %}
+                        {% set difference = date(today).diff(date(datePost))%}
+                        {% set leftDays = difference.days %}
+                        {% set earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                        {% set current_per = ((cc.stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                        {% set ab_per = current_per|abs %}
+                        {% set away_from_target = 100 - ab_per %}
+                        {% set total_earned = total_earned + earned %}
+
+
                         <tr>
                             <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
                             <td>{{ cc.stock.ticker }}</td>
+                            <td>${{ earned|number_format(2) }}</td>
                             <td>{{ cc.contracts }}</td>
                             <td>{{ cc.price }}</td>
                             <td>{{ cc.strike }}</td>
+                            <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}</td>
                             <td>{{ cc.expiry|date("m/d/Y") }}</td>
+                            <td>
+                                {% if datePost == today %}
+                                    Today
+                                {% elseif leftDays == 2 %}
+                                    Tomorrow
+                                {% else %}
+                                    {{ leftDays }}
+                                {% endif %}
+                            </td>
                             <td><a href="/stocks/coveredcall/exercise/{{ cc.id }}"><button>Exercise</button></a></td>
                         </tr>
                     {% endif %}
@@ -66,13 +97,15 @@
                     <th>Expiry Date |</th>
                     <th>Exercised |</th>
                     <th>Earned | </th>
-                    <th>Diff |</th>
-                    <th>Status |</th>
-                    <th>Stats (EPS|SBP|SEP)</th>
+                    <th><small>Buy/Expire +/-</small> | </th>
+                    <th><small>Strike +/-</small> | </th>
+                    <th>🎯% |</th>
+                    <th>Stats <small>(EPS|SBP|SEP)</small></th>
                 </tr>
             </thead>
             <tbody>
-                {% for cc in old_cc %}
+
+            {% for cc in old_cc %}
                     {% set earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
                     {% set eps = earned / 100 %}
 
@@ -81,22 +114,40 @@
                     {% else %}
                         {% set diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
                     {% endif %}
+
+                    {% set be_diff = (cc.stockBuyPrice - cc.stockExpiryPrice) * -1 %}
+                    {% set se_diff = (cc.stockExpiryPrice - cc.strike) %}
+                    {% set se_per = ((cc.stockExpiryPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                    {% set ab_per = se_per|abs %}
+                    {% set away_from_target = 100 - ab_per %}
+
+                    {% set total_earned = total_earned + earned %}
+
                     <tr>
-                    <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
-                    <td>{{ cc.stock.ticker }}</td>
-                    <td>{{ cc.price }}</td>
-                    <td>{{ cc.contracts }}</td>
-                    <td>{{ cc.strike }}</td>
-                    <td>{{ cc.expiry|date("m/d/Y") }}</td>
-                    <td>{% if cc.exercised %}1{% else %}0{% endif %}</td>
-                    <td>{{ earned }}</td>
-                    <td class="{% if diff > 0 %}green{% else %}red{% endif %}">{% if diff > 0 %}+{% endif %}{{ diff|number_format(2) }}</td>
-                    <td>1</td>
-                    <td>{{ eps }} | {{ cc.stockExpiryPrice }} | {{ cc.stockBuyPrice }}</td>
+                        <td><img src="/assets/images/company_logos/{{ cc.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                        <td>{{ cc.stock.ticker }}</td>
+                        <td>{{ cc.price }}</td>
+                        <td>{{ cc.contracts }}</td>
+                        <td>{{ cc.strike }}</td>
+                        <td>{{ cc.expiry|date("m/d/Y") }}</td>
+                        <td>{% if cc.exercised %}1{% else %}0{% endif %}</td>
+                        <td>${{ earned|number_format(2) }}</td>
+                        <td class="{% if be_diff > 0 %}green{% else %}red{% endif %}">
+                            <span class="{% if be_diff > 0 %}green{% else %}red{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>
+                        </td>
+                        <td class="{% if se_diff < 0 %}green{% else %}red{% endif %}">
+                            <span>{% if se_diff > 0 %}+{% endif %}{{ se_diff|number_format(2) }}</span>
+                        </td>
+                        <td class="{% if se_per < 0 %}green{% else %}red{% endif %}">
+                            <span>{{ away_from_target|number_format(2) }}%</span>
+                        </td>
+                        <td>{{ eps }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <h3>Covered Calls - Total Earned: ${{ total_earned|number_format(2) }}</h3>
 
     <style>
         .half{

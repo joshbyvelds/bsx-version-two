@@ -55,7 +55,7 @@ class StockController extends AbstractController
                     if($this->can_count <= $this->settings->getStocksCanadianUpdateAmountLimit()){
                         $this->can_updated = true;
                         // Call API, to get info..
-                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
                         dump("Update:" . $stock->getTicker());
                         $this->can_count++;
                         $date = new \DateTime('now');
@@ -747,6 +747,8 @@ class StockController extends AbstractController
         $em->persist($transaction);
         $em->persist($share_sell);
         $em->flush();
+
+        return new JsonResponse(array('success' => true));
     }
 
     #[Route('/stocks/update', name: 'stock_update')]
@@ -904,7 +906,7 @@ class StockController extends AbstractController
             }
         
 
-            return new JsonResponse(array('success' => true,'ticker' => $stock->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
+            return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
         }
     }
 

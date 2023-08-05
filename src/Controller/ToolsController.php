@@ -55,6 +55,14 @@ class ToolsController extends AbstractController
         ]);
     }
 
+    #[Route('/tools/coveredcallcalc', name: 'tools_cc_calc')]
+    public function coveredCallCalc(): Response
+    {
+        return $this->render('tools/covered_call_write_calculator.html.twig', [
+            'controller_name' => 'ToolsController',
+        ]);
+    }
+
     #[Route('/tools/articles', name: 'tools_articles')]
     public function articles(): Response
     {

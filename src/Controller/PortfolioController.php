@@ -123,8 +123,10 @@ class PortfolioController extends AbstractController
                         $stock_shares += $buy_shares;
                     }
                 }
-
-                $stock_average = $stock_total_cost / $stock_shares;
+                
+                if ($stock_shares > 0) {
+                    $stock_average = $stock_total_cost / $stock_shares;
+                }
                 
 
                 if(!$stock->isNoFee()){
