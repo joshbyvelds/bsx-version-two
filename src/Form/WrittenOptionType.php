@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\CoveredCall;
+use App\Entity\WrittenOption;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -14,7 +14,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Security\Core\Security;
 
-class CoveredCallType extends AbstractType
+class WrittenOptionType extends AbstractType
 {
     public function __construct(Security $security)
     {
@@ -66,7 +66,7 @@ class CoveredCallType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => CoveredCall::class,
+            'data_class' => WrittenOption::class,
         ]);
     }
 }

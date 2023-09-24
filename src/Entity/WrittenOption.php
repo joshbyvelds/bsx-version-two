@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\CoveredCallRepository;
+use App\Repository\WrittenOptionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CoveredCallRepository::class)]
-class CoveredCall
+#[ORM\Entity(repositoryClass: WrittenOptionRepository::class)]
+class WrittenOption
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -23,6 +23,9 @@ class CoveredCall
 
     #[ORM\Column(type: 'integer')]
     private $contracts;
+
+    #[ORM\Column(type: 'integer')]
+    private $contract_type;
     
     #[ORM\Column(type: 'float')]
     private $strike;
@@ -169,4 +172,18 @@ class CoveredCall
 
         return $this;
     }
+
+    public function getContractType(): ?int
+    {
+        return $this->contract_type;
+    }
+
+    public function setContractType(float $contract_type): self
+    {
+        $this->contract_type = $contract_type;
+
+        return $this;
+    }
+
+
 }

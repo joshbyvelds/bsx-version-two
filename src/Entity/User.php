@@ -76,8 +76,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'User', targetEntity: Note::class)]
     private $notes;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: CoveredCall::class)]
-    private $coveredCalls;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: WrittenOption::class)]
+    private $writtenOptions;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Portfolio::class, orphanRemoval: true)]
     private $portfolios;
@@ -94,7 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->options = new ArrayCollection();
         $this->plays = new ArrayCollection();
         $this->notes = new ArrayCollection();
-        $this->coveredCalls = new ArrayCollection();
+        $this->writtenOptions = new ArrayCollection();
         $this->portfolios = new ArrayCollection();
     }
 
@@ -539,26 +539,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, CoveredCall>
+     * @return Collection<int, WrittenOption>
      */
-    public function getCoveredCalls(): Collection
+    public function getWrittenOptions(): Collection
     {
-        return $this->coveredCalls;
+        return $this->writtenOptions;
     }
 
-    public function addCoveredCall(CoveredCall $coveredCall): self
+    public function addCoveredCall(WrittenOption $coveredCall): self
     {
-        if (!$this->coveredCalls->contains($coveredCall)) {
-            $this->coveredCalls[] = $coveredCall;
+        if (!$this->writtenOptions->contains($coveredCall)) {
+            $this->writtenOptions[] = $coveredCall;
             $coveredCall->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeCoveredCall(CoveredCall $coveredCall): self
+    public function removeCoveredCall(WrittenOption $coveredCall): self
     {
-        if ($this->coveredCalls->removeElement($coveredCall)) {
+        if ($this->writtenOptions->removeElement($coveredCall)) {
             // set the owning side to null (unless already changed)
             if ($coveredCall->getUser() === $this) {
                 $coveredCall->setUser(null);

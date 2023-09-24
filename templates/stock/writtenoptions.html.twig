@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello StockController!{% endblock %}
+
+{% block body %}
+
+    <style>
+        td {
+            text-align: center;
+        }
+    </style>
+
+    <h2>Covered Calls</h2>
+    <a href="/stocks/coveredcall/write">Add a Covered Call</a><br />
+
+    <div style="width:35%;" class="half">
+        <h3>How to Write a Covered Call</h3>
+        <p class="instruct">
+            To write a covered call, purchase 100 shares of stock from whatever ticker/company you want create the contract for.
+            When you have them, open the option form like you would when buying a regular call/put contract.
+            Select the strike/expiry for your call and then select <strong>Sell to Open</strong>. Make sure you select <strong>covered</strong> from the covered dropdown as well.
+        </p>
+
+        <img style="width:99%" src="/assets/images/cc_instructions.png" alt="">
+        <br />
+        <small>BMO Investerline 2.0 orderform for Covered Call Option selling</small>
+    </div><!--
+    --><div style="width:65%;" class="half">
+    <h3>List of Active Written Option Contracts</h3>
+    <table>
+        <thead>
+        <th>Company | </th>
+        <th>Type | </th>
+        <th>Total |</th>
+        <th>Contracts | </th>
+        <th>Price | </th>
+        <th>Strike | </th>
+        <th>🎯% |</th>
+        <th>Expiry Date | </th>
+        <th>Days Left | </th>
+        <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set total_earned = 0 %}
+        {% set old_wo = [] %}
+        {% for wo in written_options|sort((a, b) => a.expiry <=> b.expiry) %}
+            {% if wo.exercised or wo.expired %}
+                {% set old_wo = old_wo|merge([wo]) %}
+            {% else %}
+                {% set datePost = wo.expiry|date('d-m-Y') %}
+                {% set today = "now"|date('d-m-Y') %}
+                {% set difference = date(today).diff(date(datePost))%}
+                {% set leftDays = difference.days %}
+                {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
+                {% set current_per = ((wo.stock.currentPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
+                {% set ab_per = current_per %}
+                {% set away_from_target = 100 + ab_per %}
+
+
+                <tr>
+                    <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                    <td>{{ (wo.contractType == 1) ? "CC" : "CSP" }}</td>
+                    <td>${{ earned|number_format(2) }}</td>
+                    <td>{{ wo.contracts }}</td>
+                    <td>{{ wo.price }}</td>
+                    <td>{{ wo.strike }}</td>
+                    <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
+                    <td>{{ wo.expiry|date("m/d/Y") }}</td>
+                    <td>
+                        {{ (datePost == today) ? 'Today' : (leftDays == 2) ? 'Tomorrow' : leftDays }}
+                    </td>
+                    <td>
+                        <a href="/stocks/coveredcall/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
+                        <br />
+                        <a href="/stocks/coveredcall/expire/{{ wo.id }}"><button style="width:100%;">Expire</button></a>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% set total_earned = 0 %}
+<table style="width: 100%;">
+    <tr>
+        <td colspan="2">
+            <h3>Completed Covered Calls</h3>
+            <table style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>Company |</th>
+                    <th>Price |</th>
+                    <th>Contracts |</th>
+                    <th>Strike |</th>
+                    <th>Expiry Date |</th>
+                    <th>Exercised |</th>
+                    <th>Earned | </th>
+                    <th><small>Buy/Expire +/-</small> | </th>
+                    <th><small>Strike +/-</small> | </th>
+                    <th>🎯% |</th>
+                    <th>Stats <small>(EPS|SBP|SEP)</small></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for wo in old_wo|sort((a, b) => a.expiry <=> b.expiry) %}
+                    {% if wo.contractType == 1 %}
+                        {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
+                        {% set eps = earned / (wo.contracts * 100)  %}
+
+                        {% if wo.exercised %}
+                            {% set diff = wo.strike - (wo.stockBuyPrice - eps) %}
+                        {% else %}
+                            {% set diff = wo.stockExpiryPrice - (wo.stockBuyPrice - eps) %}
+                        {% endif %}
+
+                        {% set be_diff = (wo.stockBuyPrice - wo.stockExpiryPrice) * -1 %}
+                        {% set se_diff = (wo.stockExpiryPrice - wo.strike) %}
+                        {% set se_per = ((wo.stockExpiryPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
+                        {% set ab_per = se_per %}
+                        {% set away_from_target = 100 + ab_per %}
+
+                        {% set total_earned = total_earned + earned %}
+
+                        <tr>
+                            <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                            <td>{{ wo.price }}</td>
+                            <td>{{ wo.contracts }}</td>
+                            <td>{{ wo.strike }}</td>
+                            <td>{{ wo.expiry|date("m/d/Y") }}</td>
+                            <td>{% if wo.exercised %}1{% else %}0{% endif %}</td>
+                            <td>${{ earned|number_format(2) }}</td>
+                            <td class="{% if be_diff > 0 %}green{% else %}red{% endif %}">
+                                <span class="{% if be_diff > 0 %}green{% else %}red{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>
+                            </td>
+                            <td class="{% if se_diff < 0 %}green{% else %}red{% endif %}">
+                                <span>{% if se_diff > 0 %}+{% endif %}{{ se_diff|number_format(2) }}</span>
+                            </td>
+                            <td class="{% if se_per < 0 %}green{% else %}red{% endif %}">
+                                <span>{{ away_from_target|number_format(2) }}%</span>
+                            </td>
+                            <td>{{ eps|number_format(3) }} | {{ wo.stockBuyPrice }} | {{ wo.stockExpiryPrice }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h3>Completed Cash Secured Puts</h3>
+            <table style="width: 100%;">
+                <thead>
+                <tr>
+                    <th>Company |</th>
+                    <th>Price |</th>
+                    <th>Contracts |</th>
+                    <th>Strike |</th>
+                    <th>Expiry Date |</th>
+                    <th>Exercised |</th>
+                    <th>Earned | </th>
+                    <th><small>Buy/Expire +/-</small> | </th>
+                    <th><small>Strike +/-</small> | </th>
+                    <th>🎯% |</th>
+                    <th>Stats <small>(EPS|SBP|SEP)</small></th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for wo in old_wo|sort((a, b) => a.expiry <=> b.expiry) %}
+                    {% if wo.contractType == 2 %}
+                        {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
+                        {% set eps = earned / (wo.contracts * 100)  %}
+
+                        {% if wo.exercised %}
+                            {% set diff = wo.strike - (wo.stockBuyPrice - eps) %}
+                        {% else %}
+                            {% set diff = wo.stockExpiryPrice - (wo.stockBuyPrice - eps) %}
+                        {% endif %}
+
+                        {% set be_diff = (wo.stockBuyPrice - wo.stockExpiryPrice) * -1 %}
+                        {% set se_diff = (wo.stockExpiryPrice - wo.strike) %}
+                        {% set se_per = ((wo.stockExpiryPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
+                        {% set ab_per = se_per %}
+                        {% set away_from_target = 100 + ab_per %}
+
+                        {% set total_earned = total_earned + earned %}
+
+                        <tr>
+                            <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                            <td>{{ wo.price }}</td>
+                            <td>{{ wo.contracts }}</td>
+                            <td>{{ wo.strike }}</td>
+                            <td>{{ wo.expiry|date("m/d/Y") }}</td>
+                            <td>{% if wo.exercised %}1{% else %}0{% endif %}</td>
+                            <td>${{ earned|number_format(2) }}</td>
+                            <td class="{% if be_diff > 0 %}green{% else %}red{% endif %}">
+                                <span class="{% if be_diff > 0 %}green{% else %}red{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>
+                            </td>
+                            <td class="{% if se_diff < 0 %}green{% else %}red{% endif %}">
+                                <span>{% if se_diff > 0 %}+{% endif %}{{ se_diff|number_format(2) }}</span>
+                            </td>
+                            <td class="{% if se_per < 0 %}green{% else %}red{% endif %}">
+                                <span>{{ away_from_target|number_format(2) }}%</span>
+                            </td>
+                            <td>{{ eps|number_format(3) }} | {{ wo.stockBuyPrice }} | {{ wo.stockExpiryPrice }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+
+    <h3 style="text-align: center;">Written Options - Total Earned: ${{ total_earned|number_format(2) }}</h3>
+
+    <style>
+        .half{
+            display: inline-block;
+            width: 50%;
+            padding: 10px;
+            box-sizing: border-box;
+            vertical-align: top;
+        }
+
+        .instruct{
+            max-width: 438px;
+        }
+
+        .green{
+            color: green;
+        }
+
+        .red {
+            color: red;
+        }
+    </style>
+{% endblock %}

@@ -73,7 +73,7 @@ class Stock
     #[ORM\Column(type: 'boolean', nullable: true)]
     private $beingPlayedShares;
 
-    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: CoveredCall::class)]
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: WrittenOption::class)]
     private $coveredCalls;
 
     #[ORM\Column(type: 'integer')]
@@ -409,14 +409,14 @@ class Stock
     }
 
     /**
-     * @return Collection<int, CoveredCall>
+     * @return Collection<int, WrittenOption>
      */
     public function getCoveredCalls(): Collection
     {
         return $this->coveredCalls;
     }
 
-    public function addCoveredCall(CoveredCall $coveredCall): self
+    public function addCoveredCall(WrittenOption $coveredCall): self
     {
         if (!$this->coveredCalls->contains($coveredCall)) {
             $this->coveredCalls[] = $coveredCall;
@@ -426,7 +426,7 @@ class Stock
         return $this;
     }
 
-    public function removeCoveredCall(CoveredCall $coveredCall): self
+    public function removeCoveredCall(WrittenOption $coveredCall): self
     {
         if ($this->coveredCalls->removeElement($coveredCall)) {
             // set the owning side to null (unless already changed)

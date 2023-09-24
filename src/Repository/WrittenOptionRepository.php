@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\CoveredCall;
+use App\Entity\WrittenOption;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<CoveredCall>
+ * @extends ServiceEntityRepository<WrittenOption>
  *
- * @method CoveredCall|null find($id, $lockMode = null, $lockVersion = null)
- * @method CoveredCall|null findOneBy(array $criteria, array $orderBy = null)
- * @method CoveredCall[]    findAll()
- * @method CoveredCall[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method WrittenOption|null find($id, $lockMode = null, $lockVersion = null)
+ * @method WrittenOption|null findOneBy(array $criteria, array $orderBy = null)
+ * @method WrittenOption[]    findAll()
+ * @method WrittenOption[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CoveredCallRepository extends ServiceEntityRepository
+class WrittenOptionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, CoveredCall::class);
+        parent::__construct($registry, WrittenOption::class);
     }
 
-    public function add(CoveredCall $entity, bool $flush = false): void
+    public function add(WrittenOption $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class CoveredCallRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(CoveredCall $entity, bool $flush = false): void
+    public function remove(WrittenOption $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 

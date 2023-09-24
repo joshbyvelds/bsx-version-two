@@ -15,9 +15,9 @@ use App\Form\OptionSellType;
 use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
-use App\Form\CoveredCallType;
+use App\Form\WrittenOptionType;
 use App\Entity\Atom;
-use App\Entity\CoveredCall;
+use App\Entity\WrittenOption;
 use App\Entity\Option;
 use App\Entity\Settings;
 use App\Entity\Stock;
@@ -569,6 +569,7 @@ class StockController extends AbstractController
         ]);
     }
 
+    /*
     #[Route('stocks/coveredcalls', name: 'stocks_coveredcalls')]
     public function coveredCalls(ManagerRegistry $doctrine, Request $request): Response
     {
@@ -593,14 +594,40 @@ class StockController extends AbstractController
             'coveredcalls' => $coveredCalls,
         ]);
     }
+    */
+
+    #[Route('stocks/writtenoptions', name: 'stocks_written_options')]
+    public function writtenOptions(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $options = $user->getWrittenOptions();
+
+        //loop though all the calls and see if any have expired
+        $today = new \DateTime();
+        $today->modify('-1 day');
+        $em = $doctrine->getManager();
+
+//        foreach($coveredCalls as $cc)
+//        {
+//            if($today > $cc->getExpiry()){
+//                $cc->setExpired(true);
+//                $em->flush();
+//            }
+//        }
+
+        return $this->render('stock/writtenoptions.html.twig', [
+            'controller_name' => 'StockController',
+            'written_options' => $options,
+        ]);
+    }
 
     #[Route('/stocks/coveredcall/write', name: 'stocks_coveredcall_write')]
     public function sellCoveredCall(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
         $error = "";
-        $cc = new CoveredCall();
-        $form = $this->createForm(CoveredCallType::class, $cc);
+        $cc = new WrittenOption();
+        $form = $this->createForm(WrittenOptionType::class, $cc);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -655,7 +682,7 @@ class StockController extends AbstractController
     {
         // get cc from id..
         $em = $doctrine->getManager();
-        $cc = $em->getRepository(CoveredCall::class)->find($id);
+        $cc = $em->getRepository(WrittenOption::class)->find($id);
         $cc->setExercised(true);
 
         // get stock from cc..

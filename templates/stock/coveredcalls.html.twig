@@ -44,7 +44,7 @@
             <tbody>
                 {% set total_earned = 0 %}
                 {% set old_cc = [] %}
-                {% for cc in coveredcalls %}
+                {% for cc in coveredcalls|sort((a, b) => a.expiry <=> b.expiry) %}
                     {% if cc.exercised or cc.expired %}
                        {% set old_cc = old_cc|merge([cc]) %}
                     {% else %}
@@ -54,9 +54,8 @@
                         {% set leftDays = difference.days %}
                         {% set earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
                         {% set current_per = ((cc.stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
-                        {% set ab_per = current_per|abs %}
-                        {% set away_from_target = 100 - ab_per %}
-                        {% set total_earned = total_earned + earned %}
+                        {% set ab_per = current_per %}
+                        {% set away_from_target = 100 + ab_per %}
 
 
                         <tr>
@@ -66,7 +65,7 @@
                             <td>{{ cc.contracts }}</td>
                             <td>{{ cc.price }}</td>
                             <td>{{ cc.strike }}</td>
-                            <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}</td>
+                            <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
                             <td>{{ cc.expiry|date("m/d/Y") }}</td>
                             <td>
                                 {% if datePost == today %}
@@ -105,9 +104,9 @@
             </thead>
             <tbody>
 
-            {% for cc in old_cc %}
+            {% for cc in old_cc|sort((a, b) => a.expiry <=> b.expiry) %}
                     {% set earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
-                    {% set eps = earned / 100 %}
+                    {% set eps = earned / (cc.contracts * 100)  %}
 
                     {% if cc.exercised %}
                         {% set diff = cc.strike - (cc.stockBuyPrice - eps) %}
@@ -118,8 +117,8 @@
                     {% set be_diff = (cc.stockBuyPrice - cc.stockExpiryPrice) * -1 %}
                     {% set se_diff = (cc.stockExpiryPrice - cc.strike) %}
                     {% set se_per = ((cc.stockExpiryPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
-                    {% set ab_per = se_per|abs %}
-                    {% set away_from_target = 100 - ab_per %}
+                    {% set ab_per = se_per %}
+                    {% set away_from_target = 100 + ab_per %}
 
                     {% set total_earned = total_earned + earned %}
 
@@ -141,7 +140,7 @@
                         <td class="{% if se_per < 0 %}green{% else %}red{% endif %}">
                             <span>{{ away_from_target|number_format(2) }}%</span>
                         </td>
-                        <td>{{ eps }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
+                        <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
