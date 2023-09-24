@@ -59,7 +59,7 @@
 
 
                 <tr>
-                    <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                    <td><div alt="{{ wo.stock.ticker }}" style="margin: 0 auto; background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
                     <td>{{ (wo.contractType == 1) ? "CC" : "CSP" }}</td>
                     <td>${{ earned|number_format(2) }}</td>
                     <td>{{ wo.contracts }}</td>
@@ -68,7 +68,8 @@
                     <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
                     <td>{{ wo.expiry|date("m/d/Y") }}</td>
                     <td>
-                        {{ (datePost == today) ? 'Today' : (leftDays == 2) ? 'Tomorrow' : leftDays }}
+                        {% set dl = (datePost == today) ? 'Today' : (leftDays == 2) ? 'Tomorrow' : (leftDays < 1) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
+                        {{ dl|raw }}
                     </td>
                     <td>
                         <a href="/stocks/coveredcall/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
@@ -125,7 +126,7 @@
                         {% set total_earned = total_earned + earned %}
 
                         <tr>
-                            <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                            <td><div alt="{{ wo.stock.ticker }}" style="margin: 0 auto; background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
                             <td>{{ wo.price }}</td>
                             <td>{{ wo.contracts }}</td>
                             <td>{{ wo.strike }}</td>
@@ -190,7 +191,7 @@
                         {% set total_earned = total_earned + earned %}
 
                         <tr>
-                            <td><div alt="{{ wo.stock.ticker }}" style="background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
+                            <td><div alt="{{ wo.stock.ticker }}" style="margin: 0 auto; background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
                             <td>{{ wo.price }}</td>
                             <td>{{ wo.contracts }}</td>
                             <td>{{ wo.strike }}</td>
