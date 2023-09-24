@@ -16,9 +16,12 @@ use App\Entity\Play;
 class PlaysController extends AbstractController
 {
     #[Route('/plays', name: 'app_plays')]
-    public function index(): Response
+    public function index(ManagerRegistry $doctrine): Response
     {
+        $user = $this->getUser();
+        $plays = $user->getPlays();
         return $this->render('plays/index.html.twig', [
+            'plays' => $plays,
             'controller_name' => 'PlaysController',
         ]);
     }

@@ -9,13 +9,33 @@
 </style>
 
 <div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/src/Controller/PlaysController.php'|file_link(0) }}">src/Controller/PlaysController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'D:/wamp64/www/bsx-version-two/templates/plays/index.html.twig'|file_link(0) }}">templates/plays/index.html.twig</a></code></li>
-    </ul>
     <a href="/plays/add/">Add Play</a>
+
+    <h3>List of Finished Plays</h3>
+    <table>
+        <thead>
+            <th>Company | </th>
+            <th>Ticker | </th>
+            <th>Earned</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set total_earned = 0 %}
+        {% set old_cc = [] %}
+        {% for play in plays %}
+            {% if play.finished %}
+                {% set total_earned = total_earned + play.earned %}
+                <tr>
+                    <td><img src="/assets/images/company_logos/{{ play.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
+                    <td>{{ play.stock.ticker }}</td>
+                    <td>${{ play.earned|number_format(2) }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td colspan="3">TOTAL = {{ total_earned|number_format(2) }}</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 {% endblock %}
