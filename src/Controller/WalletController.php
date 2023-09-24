@@ -194,6 +194,7 @@ class WalletController extends AbstractController
 
         return $this->render('form/index.html.twig', [
             'page_title' => 'Convert Currency',
+            'error' => false,
             'form' => $form->createView(),
         ]);
     }
