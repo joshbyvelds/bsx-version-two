@@ -23,6 +23,12 @@ class Wallet
     #[ORM\Column(type: 'float')]
     private $USD;
 
+    #[ORM\Column(type: 'float')]
+    private $locked_cdn;
+
+    #[ORM\Column(type: 'float')]
+    private $locked_usd;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -88,6 +94,56 @@ class Wallet
         }
     
         
+        return $this;
+    }
+
+    public function getLockedCdn(): ?float
+    {
+        return $this->locked_cdn;
+    }
+
+    public function setLockedCdn(float $locked_cdn): self
+    {
+        $this->locked_cdn = $locked_cdn;
+
+        return $this;
+    }
+
+    public function getLockedUsd(): ?float
+    {
+        return $this->locked_usd;
+    }
+
+    public function setLockedUsd(float $locked_usd): self
+    {
+        $this->locked_usd = $locked_usd;
+
+        return $this;
+    }
+
+    public function lock(string $currency, float $amount): self
+    {
+        if($currency === "CAN"){
+            $this->locked_cdn += $amount;
+        }
+        
+        if($currency === "USD"){
+            $this->locked_usd += $amount;
+        }
+    
+        return $this;
+    }
+
+    public function unlock(string $currency, float $amount): self
+    {
+        if($currency === "CAN"){
+            $this->locked_cdn -= $amount;
+        }
+        
+        if($currency === "USD"){
+            $this->locked_usd -= $amount;
+        }
+    
         return $this;
     }
     

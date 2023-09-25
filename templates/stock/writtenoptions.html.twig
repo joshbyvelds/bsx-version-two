@@ -10,10 +10,10 @@
         }
     </style>
 
-    <h2>Covered Calls</h2>
-    <a href="/stocks/coveredcall/write">Add a Covered Call</a><br />
+    <h2>Written Options</h2>
+    <a href="/stocks/writtenoptions/write">Write a New Option</a><br />
 
-    <div style="width:35%;" class="half">
+    <div style="width:50%;" class="half">
         <h3>How to Write a Covered Call</h3>
         <p class="instruct">
             To write a covered call, purchase 100 shares of stock from whatever ticker/company you want create the contract for.
@@ -25,7 +25,19 @@
         <br />
         <small>BMO Investerline 2.0 orderform for Covered Call Option selling</small>
     </div><!--
-    --><div style="width:65%;" class="half">
+    --><div style="width:50%;" class="half">
+        <h3>How to Write a Cash Secured Put</h3>
+        <p class="instruct">
+            To write a Cash Secured Put, you have the cash on hand to purchase 100 shares of stock you are contracting for at the strike you have selected.
+            When you have the money, open the option form like you would when buying a regular call/put contract.
+            Select the strike/expiry for your put and then select <strong>Sell to Open</strong>. Make sure you select <strong>covered</strong> from the covered dropdown as well.
+        </p>
+
+        <img style="width:99%" src="/assets/images/csp_instructions.png" alt="">
+        <br />
+        <small>BMO Investerline 2.0 orderform for Cash Secured Put Option selling</small>
+    </div>
+
     <h3>List of Active Written Option Contracts</h3>
     <table>
         <thead>
@@ -72,16 +84,15 @@
                         {{ dl|raw }}
                     </td>
                     <td>
-                        <a href="/stocks/coveredcall/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
+                        <a href="/stocks/writtenoption/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
                         <br />
-                        <a href="/stocks/coveredcall/expire/{{ wo.id }}"><button style="width:100%;">Expire</button></a>
+                        <a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;">Expire</button></a>
                     </td>
                 </tr>
             {% endif %}
         {% endfor %}
         </tbody>
     </table>
-</div>
 
 {% set total_earned = 0 %}
 <table style="width: 100%;">

@@ -48,6 +48,9 @@ class WrittenOption
     #[ORM\Column(type: 'float', nullable: true)]
     private $stock_expiry_price;
 
+    #[ORM\Column(type: 'string', length: 3)]
+    private $payment_currency;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -181,6 +184,18 @@ class WrittenOption
     public function setContractType(float $contract_type): self
     {
         $this->contract_type = $contract_type;
+
+        return $this;
+    }
+
+    public function getPaymentCurrency(): ?string
+    {
+        return $this->payment_currency;
+    }
+
+    public function setPaymentCurrency(string $payment_currency): self
+    {
+        $this->payment_currency = $payment_currency;
 
         return $this;
     }

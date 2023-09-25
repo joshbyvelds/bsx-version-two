@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard{% endblock %}
+
+{% block body %}
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
+
+    <script>
+        $(() => {
+            $("#written_option_price, #written_option_contracts").on("change", function(){
+                var cost = floor10(((parseFloat($("#written_option_price").val()) * parseInt($("#written_option_contracts").val())) * 100) - (9.95 + (1.25 * parseInt($(" #written_option_contracts").val()))), -2) ;
+                $("#written_option_total").val(cost);
+            });
+        });
+
+        function decimalAdjust(type, value, exp) {
+            type = String(type);
+            if (!["round", "floor", "ceil"].includes(type)) {
+                throw new TypeError("The type of decimal adjustment must be one of 'round', 'floor', or 'ceil'.",);
+            }
+
+            exp = Number(exp);
+            value = Number(value);
+            
+            if (exp % 1 !== 0 || Number.isNaN(value)) {
+                return NaN;
+            } else if (exp === 0) {
+                return Math[type](value);
+            }
+            
+            const [magnitude, exponent = 0] = value.toString().split("e");
+            const adjustedValue = Math[type](`${magnitude}e${exponent - exp}`);
+            // Shift back
+            const [newMagnitude, newExponent = 0] = adjustedValue.toString().split("e");
+            return Number(`${newMagnitude}e${+newExponent + exp}`);
+        }
+
+        // Decimal round
+        const round10 = (value, exp) => decimalAdjust("round", value, exp);
+        // Decimal floor
+        const floor10 = (value, exp) => decimalAdjust("floor", value, exp);
+        // Decimal ceil
+        const ceil10 = (value, exp) => decimalAdjust("ceil", value, exp);   
+    </script>
+{% endblock %}

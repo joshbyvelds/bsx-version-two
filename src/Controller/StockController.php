@@ -569,33 +569,6 @@ class StockController extends AbstractController
         ]);
     }
 
-    /*
-    #[Route('stocks/coveredcalls', name: 'stocks_coveredcalls')]
-    public function coveredCalls(ManagerRegistry $doctrine, Request $request): Response
-    {
-        $user = $this->getUser();
-        $coveredCalls = $user->getCoveredCalls();
-
-        //loop though all the calls and see if any have expired
-        $today = new \DateTime();
-        $today->modify('-1 day');
-        $em = $doctrine->getManager();
-
-        foreach($coveredCalls as $cc)
-        {
-            if($today > $cc->getExpiry()){
-                $cc->setExpired(true);
-                $em->flush();
-            }
-        }
-
-        return $this->render('stock/coveredcalls.html.twig', [
-            'controller_name' => 'StockController',
-            'coveredcalls' => $coveredCalls,
-        ]);
-    }
-    */
-
     #[Route('stocks/writtenoptions', name: 'stocks_written_options')]
     public function writtenOptions(ManagerRegistry $doctrine, Request $request): Response
     {
@@ -621,30 +594,35 @@ class StockController extends AbstractController
         ]);
     }
 
-    #[Route('/stocks/coveredcall/write', name: 'stocks_coveredcall_write')]
-    public function sellCoveredCall(ManagerRegistry $doctrine, Request $request): Response
+    #[Route('/stocks/writtenoptions/write', name: 'stocks_writtenoptions_write')]
+    public function sellWrittenOption(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
         $error = "";
-        $cc = new WrittenOption();
-        $form = $this->createForm(WrittenOptionType::class, $cc);
+        $wo = new WrittenOption();
+        $form = $this->createForm(WrittenOptionType::class, $wo);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
-            $cc->setUser($user);
-            $cc->setExercised(false);
-            $cc->setExpired(false);
-            $cc->setStockExpiryPrice(0.00);
-            $cc_expiry = date_format($cc->getExpiry(), 'Y-m-d');
+            $wo->setUser($user);
+            $wo->setExercised(false);
+            $wo->setExpired(false);
+            $wo->setStockExpiryPrice(0.00);
+            $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             
-            //create transaction for sale of call contract ( you did make money right?? )
+            //create transaction for sale of option contract ( you did make money right?? )
             $transaction = new Transaction();
             $date = new \DateTime();
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
-            $transaction->setName("Sold " . $cc->getContracts() . " " . $cc->getStock()->getTicker(). " " . $cc->getStrike() . " " . $cc_expiry . " Covered Call");
+
+            if($wo->getContractType() === 1){
+                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Covered Call");
+            } else {
+                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Cash Secured Put");
+            }
 
             // Update Wallet
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
@@ -661,118 +639,176 @@ class StockController extends AbstractController
                 $wallet->deposit('USD', $total);
                 $transaction->setCurrency(2);
             }
+            
+            $lock_amount = (100 * $wo->getContracts() * $wo->getStrike());
+            if($wo->getContractType() === 2){
+                if ($currency == 'can'){
+                    $wallet->lock('CAN', $lock_amount);
+                }
+    
+                if ($currency == 'usd'){
+                    $wallet->lock('USD', $lock_amount);
+                }
+            }
 
-            $cc->getStock()->addEarned($total);
+            $wo->getStock()->addEarned($total);
 
             $em->persist($transaction);
-            $em->persist($cc);
+            $em->persist($wo);
             $em->flush();
 
-            return $this->redirectToRoute('stocks_coveredcalls');
+            return $this->redirectToRoute('stocks_written_options');
         }
 
-        return $this->render('form/coveredcall_add.html.twig', [
+        return $this->render('form/write_option.html.twig', [
             'error' => "",
             'form' => $form->createView(),
         ]);
     }
 
-    #[Route('/stocks/coveredcall/exercise/{id}', name: 'stocks_coveredcall_exercise')]
-    public function exerciseCoveredCall(ManagerRegistry $doctrine, Request $request, int $id): Response
+    #[Route('/stocks/writtenoption/exercise/{id}', name: 'stocks_writtenoption_exercise')]
+    public function exerciseWrittenOption(ManagerRegistry $doctrine, Request $request, int $id): Response
     {
         // get cc from id..
         $em = $doctrine->getManager();
-        $cc = $em->getRepository(WrittenOption::class)->find($id);
-        $cc->setExercised(true);
+        $wo = $em->getRepository(WrittenOption::class)->find($id);
+        $wo->setExercised(true);
 
         // get stock from cc..
-        $stock = $cc->getStock();
+        $stock = $wo->getStock();
 
-        // remove shares from shareBuy Objects
-        $shareBuys = $stock->getShareBuys()->getValues();
-        usort($shareBuys, [$this,"sort_buys_by_price"]);
-        $totalSharesLeft = 0;
+        // EXERCISE COVERED CALL ..
+        if($wo->getContractType() === 1){
+            // remove shares from shareBuy Objects
+            $shareBuys = $stock->getShareBuys()->getValues();
+            usort($shareBuys, [$this,"sort_buys_by_price"]);
+            $totalSharesLeft = 0;
 
-        foreach($shareBuys as $sb){
-            $bought = $sb->getAmount();
-            $sold = $sb->getSold();
-            if($bought > $sold){
-                $totalSharesLeft += ($bought - $sold);
+            foreach($shareBuys as $sb){
+                $bought = $sb->getAmount();
+                $sold = $sb->getSold();
+                if($bought > $sold){
+                    $totalSharesLeft += ($bought - $sold);
+                }
             }
-        }
-
-        $amount_to_sell = 100;
-
-        $buys_length = count($shareBuys);
-        $current_buy = 0;
-
-        //loop though share buys and remove 
-        while($amount_to_sell > 0){
-            if($current_buy == $buys_length){
-                $amount_to_sell = 0;
-                // TODO:: Show an Error message here..
+    
+            $amount_to_sell = 100;
+    
+            $buys_length = count($shareBuys);
+            $current_buy = 0;
+    
+            //loop though share buys and remove 
+            while($amount_to_sell > 0){
+                if($current_buy == $buys_length){
+                    $amount_to_sell = 0;
+                    // TODO:: Show an Error message here..
+                    
+                    // return $this->render('form/index.html.twig', [
+                    //     'error' => 'You dont own enough of these shares',
+                    //     'form' => $form->createView(),
+                    // ]);
+                }
+    
+                $a = (int)$shareBuys[$current_buy]->getAmount() - $shareBuys[$current_buy]->getSold();
                 
-                // return $this->render('form/index.html.twig', [
-                //     'error' => 'You dont own enough of these shares',
-                //     'form' => $form->createView(),
-                // ]);
+                // if we have enough shares in the earlist buy to cover sell
+                if($a >= $amount_to_sell){
+                    $shareBuys[$current_buy]->addSold($amount_to_sell);
+                    $amount_to_sell = 0;
+                    $em->persist($shareBuys[$current_buy]);
+                } else {
+                    $shareBuys[$current_buy]->addSold($a);
+                    $amount_to_sell -= $a;
+                    $current_buy++;
+                }
             }
-
-            $a = (int)$shareBuys[$current_buy]->getAmount() - $shareBuys[$current_buy]->getSold();
-            
-            // if we have enough shares in the earlist buy to cover sell
-            if($a >= $amount_to_sell){
-                $shareBuys[$current_buy]->addSold($amount_to_sell);
-                $amount_to_sell = 0;
-                $em->persist($shareBuys[$current_buy]);
+    
+            // if we are selling the last amount of shares we own (or all of them), remove stock from the playing list.. 
+            if($amount_to_sell === $totalSharesLeft){
+                $stock->setBeingPlayedShares(false);
             } else {
-                $shareBuys[$current_buy]->addSold($a);
-                $amount_to_sell -= $a;
-                $current_buy++;
+                $stock->setSharesOwned($totalSharesLeft - $amount_to_sell);
             }
-        }
-
-        // if we are selling the last amount of shares we own (or all of them), remove stock from the playing list.. 
-        if($amount_to_sell === $totalSharesLeft){
-            $stock->setBeingPlayedShares(false);
+    
+            // sell 100 shares of stock at strike
+            $date = new \DateTime();
+            $share_sell = new ShareSell();
+            $share_sell->setStock($stock);
+            $share_sell->setPrice($wo->getStrike());
+            $share_sell->setAmount(100);
+            $share_sell->setDate($date);
+            
+            $user = $share_sell->getStock()->getUser();
+            $transaction = new Transaction();
+            $transaction->setType(1);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $transaction->setName($stock->getTicker() . ' - $' . $wo->getStrike() . ' Covered Call Exercised');
+    
+            $cost = ($wo->getStrike() * 100) - 9.95;
+            $currency = $wo->getPaymentCurrency();
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+    
+            if ($currency == 'can'){
+                $wallet->deposit('CAN', $cost);
+                $transaction->setCurrency(1);
+            }
+    
+            if ($currency == 'usd'){
+                $wallet->deposit('USD', $cost);
+                $transaction->setCurrency(2);
+            }
+            
+            $transaction->setAmount($cost);
+            $em->persist($transaction);
+            $em->persist($share_sell);
+        
+        
+        // EXERCISE CSP...
         } else {
-            $stock->setSharesOwned($totalSharesLeft - $amount_to_sell);
+            $date = new \DateTime();
+            $share_buy = new ShareBuy();
+            $share_buy->setStock($stock);
+            $share_buy->setPrice($wo->getStrike());
+            $share_buy->setAmount($wo->getContracts() * 100);
+            $share_buy->setAmount($wo->getContracts() * 100);
+            $share_buy->setDate($date);
+            $user = $share_buy->getStock()->getUser();
+            $cost = $share_buy->getAmount() * $share_buy->getPrice();
+            $currency = $wo->getPaymentCurrency();
+
+            $share_buy->setSold(0);
+            $share_buy->getStock()->setBeingPlayedShares(1);
+            $share_buy->getStock()->addSharesOwned($share_buy->getAmount());
+            
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            $transaction = new Transaction();
+            $transaction->setType(2);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $word = ($share_buy->getAmount() === 1) ? 'Share' : 'Shares';
+            
+            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getTicker() . ' ' . $word);
+            
+            if ($currency == 'can'){
+                $wallet->unlock('CAN', $cost);
+                $wallet->withdraw('CAN', $cost);
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                $wallet->unlock('USD', $cost);
+                $wallet->withdraw('USD', $cost);
+                $transaction->setCurrency(2);
+            }
+            
+            $transaction->setAmount($cost);
+
+            $em->persist($transaction);
+            $em->persist($share_buy);
         }
 
-        // sell 100 shares of stock at strike
-        $date = new \DateTime();
-        $share_sell = new ShareSell();
-        $share_sell->setStock($stock);
-        $share_sell->setPrice($cc->getStrike());
-        $share_sell->setAmount(100);
-        $share_sell->setDate($date);
-        
-        $user = $share_sell->getStock()->getUser();
-        $transaction = new Transaction();
-        $transaction->setType(1);
-        $transaction->setDate($date);
-        $transaction->setUser($user);
-        $transaction->setName($stock->getTicker() . ' - $' . $cc->getStrike() . ' Covered Call Exercised');
-
-        $cost = ($cc->getStrike() * 100) - 9.95;
-        $currency = 'usd'; //$form->get("payment_currency")->getData();
-
-        // SETTING Currency to USD for now as i don't know what currency BMO well payout as when CC is exercised..
-        $wallet = $em->getRepository(Wallet::class)->find($user->getId());
-
-        if ($currency == 'can'){
-            $wallet->deposit('CAN', $cost);
-            $transaction->setCurrency(1);
-        }
-
-        if ($currency == 'usd'){
-            $wallet->deposit('USD', $cost);
-            $transaction->setCurrency(2);
-        }
-        
-        $transaction->setAmount($cost);
-        $em->persist($transaction);
-        $em->persist($share_sell);
         $em->flush();
 
         return new JsonResponse(array('success' => true));
