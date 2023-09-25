@@ -14,7 +14,7 @@
     </div><!--
 
  --><div class="narrow_column">
-        {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD} %}
+        {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD, 'locked_cdn': wallet.lockedCdn, 'locked_usd': wallet.lockedUsd} %}
         {% include "partials/panels/stats.html.twig" %}
         {% include "partials/panels/transactions.html.twig" with {'transactions': transactions} %}
     </div>

@@ -37,6 +37,13 @@ class WrittenOptionType extends AbstractType
                 ->setParameter('user', $user_id);
             },
         ])
+            ->add('contract_type',ChoiceType::class,[
+                'choices' => array(
+                    'Covered Call' => 1,
+                    'Cash Secured Put' => 2
+                ),
+                'multiple'=>false,
+            ])
             ->add('contracts')
             ->add('strike')
             ->add('price')
@@ -49,7 +56,7 @@ class WrittenOptionType extends AbstractType
                     'CAN' => 'can',
                     'USD' => 'usd'
                 ),
-                'mapped' => false,
+                'mapped' => true,
                 'multiple'=>false,
                 'expanded'=>true
             ])
