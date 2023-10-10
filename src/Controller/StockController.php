@@ -266,7 +266,7 @@ class StockController extends AbstractController
             $em->persist($share_buy);
             $em->flush();
 
-            return $this->redirectToRoute('stocks');
+            return $this->redirectToRoute('dashboard');
         }
 
         return $this->render('form/share_buy.html.twig', [
@@ -813,6 +813,19 @@ class StockController extends AbstractController
 
         return new JsonResponse(array('success' => true));
     }
+
+    #[Route('/stocks/writtenoption/expire/{id}', name: 'stocks_writtenoption_expire')]
+    public function WrittenOptionExpired(ManagerRegistry $doctrine, Request $request, int $id): Response
+    {
+        // get cc from id..
+        $em = $doctrine->getManager();
+        $wo = $em->getRepository(WrittenOption::class)->find($id);
+        $wo->setExpired(true);
+        $em->flush();
+
+        return $this->redirectToRoute('stocks_written_options');
+    }
+
 
     #[Route('/stocks/update', name: 'stock_update')]
     public function updateStock(Request $request, ManagerRegistry $doctrine): JsonResponse
