@@ -80,7 +80,7 @@
                     <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
                     <td>{{ wo.expiry|date("m/d/Y") }}</td>
                     <td>
-                        {% set dl = (datePost == today) ? 'Today' : (leftDays == 2) ? 'Tomorrow' : (leftDays < 1) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
+                        {% set dl = (datePost == today) ? 'Today' : (leftDays == 1) ? 'Tomorrow' : (datePost > today) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
                         {{ dl|raw }}
                     </td>
                     <td>

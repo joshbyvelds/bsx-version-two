@@ -174,6 +174,9 @@ class PortfolioController extends AbstractController
             $weekend_today = ($today_day === "Sat" || $today_day === "Sun" || ($today_day === "Mon" && $today_hour < 9));
             $marketClosedForDay = (!$weekend_today && $today_hour > 16);
 
+            // Hack for weekends
+            //$marketClosedForDay = true;
+
             // $test['closedforday'] = $marketClosedForDay;
             // $test['weekend'] = $weekend_today;
             // $test['hour'] = $today_hour;
