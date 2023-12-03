@@ -72,6 +72,7 @@ class RegistrationController extends AbstractController
             $settings->setDashboardUseCashEquityBalance(false);
             $settings->setStocksCanadianUpdateAmountLimit(5);
             $settings->setStocksCanadianUpdateLimitTimeout(10);
+            $settings->setPortfolioUpdateOnWeekend(false);
 
             // Create a Wallet
             $wallet->setUser($user);

@@ -60,6 +60,7 @@ class SettingsController extends AbstractController
             $settings->setDashboardUseCashEquityBalance(false);
             $settings->setStocksCanadianUpdateAmountLimit(5);
             $settings->setStocksCanadianUpdateLimitTimeout(10);
+            $settings->setPortfolioUpdateOnWeekend(false);
             $em->persist($settings);
             $em->flush();
         }

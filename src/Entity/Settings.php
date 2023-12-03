@@ -122,6 +122,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $dashboard_portfolio_large;
 
+    #[ORM\Column(type: 'boolean')]
+    private $portfolio_update_on_weekend;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -555,6 +558,18 @@ class Settings
     public function setDashboardPortfolioLarge(bool $dashboard_portfolio_large): self
     {
         $this->dashboard_portfolio_large = $dashboard_portfolio_large;
+
+        return $this;
+    }
+
+    public function isPortfolioUpdateOnWeekend(): ?bool
+    {
+        return $this->portfolio_update_on_weekend;
+    }
+
+    public function setPortfolioUpdateOnWeekend(bool $portfolio_update_on_weekend): self
+    {
+        $this->portfolio_update_on_weekend = $portfolio_update_on_weekend;
 
         return $this;
     }

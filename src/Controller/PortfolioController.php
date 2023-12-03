@@ -89,6 +89,8 @@ class PortfolioController extends AbstractController
 
             $portfolio = $doctrine->getRepository(Portfolio::class)->find($id);
             $user = $this->getUser();
+
+            $settings = $user->getSettings();
     
             if( $portfolio === null ){
                 return new JsonResponse(array('success' => false, 'message' => "Portfolio not found."));
@@ -172,10 +174,7 @@ class PortfolioController extends AbstractController
             $today_year = $today->format('Y');
 
             $weekend_today = ($today_day === "Sat" || $today_day === "Sun" || ($today_day === "Mon" && $today_hour < 9));
-            $marketClosedForDay = (!$weekend_today && $today_hour > 16);
-
-            // Hack for weekends
-            //$marketClosedForDay = true;
+            $marketClosedForDay = (($weekend_today && $settings->isPortfolioUpdateOnWeekend()) || (!$weekend_today && $today_hour > 16));
 
             // $test['closedforday'] = $marketClosedForDay;
             // $test['weekend'] = $weekend_today;
