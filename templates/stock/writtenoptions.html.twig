@@ -64,6 +64,7 @@
                 {% set today = "now"|date('d-m-Y') %}
                 {% set difference = date(today).diff(date(datePost))%}
                 {% set leftDays = difference.days %}
+                {% set pastExpiry = difference.invert %}
                 {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
                 {% set current_per = ((wo.stock.currentPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
                 {% set ab_per = current_per %}
@@ -80,13 +81,13 @@
                     <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
                     <td>{{ wo.expiry|date("m/d/Y") }}</td>
                     <td>
-                        {% set dl = (datePost == today) ? 'Today' : (leftDays == 1) ? 'Tomorrow' : (datePost > today) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
+                        {% set dl = (datePost == today) ? 'Today' : (leftDays == 1) ? 'Tomorrow' : (pastExpiry) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
                         {{ dl|raw }}
                     </td>
                     <td>
                         <a href="/stocks/writtenoption/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
                         <br />
-                        <a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;">Expire</button></a>
+                        <a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;" {% if pastExpiry == false %}disabled{% endif %}>Expire</button></a>
                     </td>
                 </tr>
             {% endif %}
