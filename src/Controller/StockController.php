@@ -66,6 +66,10 @@ class StockController extends AbstractController
                         $em->flush();
                         
                         $data = json_decode($json,true);
+                        if(!$md = $data["Meta Data"]){
+                            return "C3";
+                        }
+
                         $c_date = $data["Meta Data"]["3. Last Refreshed"];
 
 
@@ -77,7 +81,7 @@ class StockController extends AbstractController
                             $em->flush();
                             return "U";
                         } else {
-                            return "C3";
+                            return "C4";
                         }
                         
                     } else {
@@ -970,6 +974,11 @@ class StockController extends AbstractController
                     case("C3"):
                         $update_status_stock = "Something wrong with the API metadata";
                         break;
+
+                    case("C4"):
+                        $update_status_stock = "Something wrong with the API metadata";
+                        break;
+
                     default:
                         $update_status_stock = "UStatus:" . $ustatus;
                 }
