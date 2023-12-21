@@ -189,13 +189,34 @@
                 <th>Current Price</th>
                 <th>Break Even</th>
                 <th>P/L</th>
+                <th>% Total</th>
                 <th>Days Since Last Buy</th>
             </tr>
+
+            {% set portfolio_total = 0 %}
+            {% for stock in stocks %}
+                {% set stock_amount = 0 %}
+                {% set stock_average = 0 %}
+
+                {% for buy in stock.shareBuys %}
+                    {% if buy.sold < buy.amount %}
+                        {% set remaining = buy.amount - buy.sold %}
+                        {% set stock_amount = stock_amount + remaining %}
+                        {% set buy_average = remaining * buy.price %}
+                        {% set stock_average = stock_average + buy_average %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if stock_amount > 0 %}
+                    {% set portfolio_total = portfolio_total + stock_average %}
+                {% endif %}
+            {% endfor %}
 
               {% for stock in stocks %}
                 {% set stock_dividend = 0 %}
                 {% set stock_amount = 0 %}
                 {% set stock_average = 0 %}
+                {% set stock_money_total = 0 %}
                 {% set stock_earned = stock.earned %}
                 {% set stock_current = stock.currentPrice %}
                 {% set stock_breakeven = 0 %}
@@ -224,6 +245,7 @@
                         {% set stock_amount = stock_amount + remaining %}
                         {% set buy_average = remaining * buy.price %}
                         {% set stock_average = stock_average + buy_average %}
+                        {% set stock_money_total = stock_money_total + buy_average %}
                         {% set lastBuyDate = buy.date|date('d-m-Y') %}
                     {% endif %}
 
@@ -282,7 +304,9 @@
                     <td>${{ stock_current|number_format(2) }}</td>
                     <td>${{ stock_breakeven|number_format(2) }}</td>
                     <td>${{ stock_pl|number_format(2) }}</td>
+                    <td>{{ ((stock_money_total / portfolio_total) * 100)|number_format(2) }}%</td>
                     <td>{{ daySinceLastBuy }}</td>
+
                 </tr>
                 <tr>
                     <td colspan="12" style="text-align: center; border-bottom: solid 1px black;" class="buy_sell_switch down">
