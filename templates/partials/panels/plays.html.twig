@@ -9,7 +9,7 @@
             <div class="play">
                 <div class="logo" style="background-image: url('/assets/images/company_logos/{{ play.stock.ticker }}.jpg')"></div>
                 <div class="info">
-                    <div class="playname">{{ play.stock.name }}</div>
+                    <div class="playname">{{ play.stock.name }} | <small><a href="/plays/edit/{{ play.id }}">Edit</a></small></div>
                     <div class="playdetails">
                         {% set profit = 0 %}
                         {% set fee = 0 %}

@@ -82,6 +82,38 @@ class PlaysController extends AbstractController
         ]);
     }
 
+    #[Route('/plays/edit/{id}', name: 'edit_plays')]
+    public function edit(int $id, ManagerRegistry $doctrine, Request $request): Response
+    {
+        $play = $doctrine->getRepository(Play::class)->find($id);
+        $user = $this->getUser();
+
+        if( $play === null ){
+            return $this->redirectToRoute('dashboard');
+        }
+
+        if( $user->getId() !== $play->getUser()->getId() ){
+            return $this->redirectToRoute('dashboard');
+        }
+
+        $form = $this->createForm(PlayType::class, $play);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $now = new \DateTime();
+            $em = $doctrine->getManager();
+            $em->persist($play);
+            $em->flush();
+            return $this->redirectToRoute('dashboard');
+        }
+
+        return $this->render('form/index.html.twig', [
+            'page_title' => 'Create New Portfolio',
+            'form' => $form->createView(),
+            'error' => "",
+        ]);
+    }
+
     #[Route('/plays/update', name: 'app_plays_update')]
     public function update(ManagerRegistry $doctrine, Request $request): Response
     {
