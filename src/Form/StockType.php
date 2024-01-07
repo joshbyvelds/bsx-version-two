@@ -35,6 +35,14 @@ class StockType extends AbstractType
             ->add('no_fee', CheckboxType::class, [
                 'required' => false,
             ])
+            ->add('current_price')
+            ->add('price_yesterday')
+            ->add('price_week')
+            ->add('price_month')
+            ->add('price_year')
+            ->add('no_fee', CheckboxType::class, [
+                'required' => false,
+            ])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

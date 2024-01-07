@@ -77,6 +77,49 @@ class StockController extends AbstractController
                             $price = $data["Time Series (Daily)"][$c_date]["4. close"];
                             $stock->setCurrentPrice($price);
                             $this->update_price = $price;
+
+                            $old_price = $stock->getCurrentPrice();
+                            $stock->setCurrentPrice($price);
+                            $this->update_price = $price;
+
+                            $last = $stock->getLastPriceUpdate();
+                            $today = new \DateTime();
+
+                            $today_hour = $today->format('H');
+
+                            $last_day = $last->format('D');
+                            $today_day = $today->format('D');
+
+                            $last_week = $last->format('W');
+                            $today_week = $today->format('W');
+
+                            $last_month = $last->format('M');
+                            $today_month = $today->format('M');
+
+                            $last_year = $last->format('Y');
+                            $today_year = $today->format('Y');
+
+                            $weekend_today = ($today_day === "Sat" || $today_day === "Sun" || ($today_day === "Mon" && $today_hour < 9));
+                            $marketClosedForDay = (($weekend_today && $this->settings->isStockUpdateOnWeekend()) || (!$weekend_today && $today_hour > 16));
+
+                            if($marketClosedForDay) {
+                                if ($last_day !== $today_day) {
+                                    $stock->setPriceYesterday($old_price);
+                                }
+
+                                if ($last_week !== $today_week) {
+                                    $stock->setPriceWeek($old_price);
+                                }
+
+                                if ($last_month !== $today_month) {
+                                    $stock->setPriceMonth($old_price);
+                                }
+
+                                if ($last_year !== $today_year) {
+                                    $stock->setPriceYear($old_price);
+                                }
+                            }
+
                             $em = $doctrine->getManager();
                             $em->flush();
                             return "U";
@@ -115,8 +158,47 @@ class StockController extends AbstractController
                 dump("Update:" . $stock->getTicker());
                 //dump($result);
                 $price = json_decode($result)->price->last;
+                $old_price = $stock->getCurrentPrice();
                 $stock->setCurrentPrice($price);
                 $this->update_price = $price;
+
+                $last = $stock->getLastPriceUpdate();
+                $today = new \DateTime();
+
+                $today_hour = $today->format('H');
+
+                $last_day = $last->format('D');
+                $today_day = $today->format('D');
+
+                $last_week = $last->format('W');
+                $today_week = $today->format('W');
+
+                $last_month = $last->format('M');
+                $today_month = $today->format('M');
+
+                $last_year = $last->format('Y');
+                $today_year = $today->format('Y');
+
+                $weekend_today = ($today_day === "Sat" || $today_day === "Sun" || ($today_day === "Mon" && $today_hour < 9));
+                $marketClosedForDay = (($weekend_today && $this->settings->isStockUpdateOnWeekend()) || (!$weekend_today && $today_hour > 16));
+
+                if($marketClosedForDay) {
+                    if ($last_day !== $today_day) {
+                        $stock->setPriceYesterday($old_price);
+                    }
+
+                    if ($last_week !== $today_week) {
+                        $stock->setPriceWeek($old_price);
+                    }
+
+                    if ($last_month !== $today_month) {
+                        $stock->setPriceMonth($old_price);
+                    }
+
+                    if ($last_year !== $today_year) {
+                        $stock->setPriceYear($old_price);
+                    }
+                }
             }
 
             if($stock->isBeingPlayedOption() && count($stock->getOptions()) > 0){
@@ -144,6 +226,8 @@ class StockController extends AbstractController
 
             return "U";
         }
+
+
     }
 
     #[Route('/stocks', name: 'stocks')]

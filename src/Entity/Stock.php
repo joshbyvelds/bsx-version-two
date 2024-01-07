@@ -49,6 +49,18 @@ class Stock
     #[ORM\Column(type: 'float')]
     private $current_price;
 
+    #[ORM\Column(type: 'float')]
+    private $price_yesterday;
+
+    #[ORM\Column(type: 'float')]
+    private $price_week;
+
+    #[ORM\Column(type: 'float')]
+    private $price_month;
+
+    #[ORM\Column(type: 'float')]
+    private $price_year;
+
     #[ORM\Column(type: 'datetime')]
     private $last_price_update;
 
@@ -272,6 +284,54 @@ class Stock
     public function setCurrentPrice(float $current_price): self
     {
         $this->current_price = $current_price;
+
+        return $this;
+    }
+
+    public function getPriceYesterday(): ?float
+    {
+        return $this->price_yesterday;
+    }
+
+    public function setPriceYesterday(float $price_yesterday): self
+    {
+        $this->price_yesterday = $price_yesterday;
+
+        return $this;
+    }
+
+    public function getPriceWeek(): ?float
+    {
+        return $this->price_week;
+    }
+
+    public function setPriceWeek(float $price_week): self
+    {
+        $this->price_week = $price_week;
+
+        return $this;
+    }
+
+    public function getPriceMonth(): ?float
+    {
+        return $this->price_month;
+    }
+
+    public function setPriceMonth(float $price_month): self
+    {
+        $this->price_month = $price_month;
+
+        return $this;
+    }
+
+    public function getPriceYear(): ?float
+    {
+        return $this->price_year;
+    }
+
+    public function setPriceYear(float $price_year): self
+    {
+        $this->price_year = $price_year;
 
         return $this;
     }

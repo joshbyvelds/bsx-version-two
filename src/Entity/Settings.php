@@ -125,6 +125,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $portfolio_update_on_weekend;
 
+    #[ORM\Column(type: 'boolean')]
+    private $stock_update_on_weekend;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -570,6 +573,18 @@ class Settings
     public function setPortfolioUpdateOnWeekend(bool $portfolio_update_on_weekend): self
     {
         $this->portfolio_update_on_weekend = $portfolio_update_on_weekend;
+
+        return $this;
+    }
+
+    public function isStockUpdateOnWeekend(): ?bool
+    {
+        return $this->stock_update_on_weekend;
+    }
+
+    public function setStockUpdateOnWeekend(bool $StockUpdateOnWeekend): self
+    {
+        $this->stock_update_on_weekend = $StockUpdateOnWeekend;
 
         return $this;
     }
