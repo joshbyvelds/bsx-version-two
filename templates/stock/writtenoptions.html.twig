@@ -139,9 +139,9 @@
 
                         <tr>
                             <td><div alt="{{ wo.stock.ticker }}" style="margin: 0 auto; background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
-                            <td>{{ wo.price }}</td>
+                            <td>{{ wo.price|number_format(2) }}</td>
                             <td>{{ wo.contracts }}</td>
-                            <td>{{ wo.strike }}</td>
+                            <td>{{ wo.strike|number_format(2) }}</td>
                             <td>{{ wo.expiry|date("m/d/Y") }}</td>
                             <td>{% if wo.exercised %}1{% else %}0{% endif %}</td>
                             <td>${{ earned|number_format(2) }}</td>
@@ -204,9 +204,9 @@
 
                         <tr>
                             <td><div alt="{{ wo.stock.ticker }}" style="margin: 0 auto; background: url(/assets/images/company_logos/{{ wo.stock.ticker }}.jpg); width: 60px; height: 60px; border-radius: 12px; background-size: 100%;"></div></td>
-                            <td>{{ wo.price }}</td>
+                            <td>{{ wo.price|number_format(2) }}</td>
                             <td>{{ wo.contracts }}</td>
-                            <td>{{ wo.strike }}</td>
+                            <td>{{ wo.strike|number_format(2) }}</td>
                             <td>{{ wo.expiry|date("m/d/Y") }}</td>
                             <td>{% if wo.exercised %}1{% else %}0{% endif %}</td>
                             <td>${{ earned|number_format(2) }}</td>
