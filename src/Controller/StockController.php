@@ -75,10 +75,11 @@ class StockController extends AbstractController
 
                         if($c_date){
                             $price = $data["Time Series (Daily)"][$c_date]["4. close"];
+                            $old_price = $stock->getCurrentPrice();
                             $stock->setCurrentPrice($price);
                             $this->update_price = $price;
 
-                            $old_price = $stock->getCurrentPrice();
+
                             $stock->setCurrentPrice($price);
                             $this->update_price = $price;
 
