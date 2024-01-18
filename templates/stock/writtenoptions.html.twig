@@ -76,8 +76,8 @@
                     <td>{{ (wo.contractType == 1) ? "CC" : "CSP" }}</td>
                     <td>${{ earned|number_format(2) }}</td>
                     <td>{{ wo.contracts }}</td>
-                    <td>{{ wo.price }}</td>
-                    <td>{{ wo.strike }}</td>
+                    <td>{{ wo.price|number_format(2) }}</td>
+                    <td>{{ wo.strike|number_format(2)  }}</td>
                     <td class="{% if current_per < 0 %}green{% else %}red{% endif %}">{{ away_from_target|number_format(2) }}%</td>
                     <td>{{ wo.expiry|date("m/d/Y") }}</td>
                     <td>
