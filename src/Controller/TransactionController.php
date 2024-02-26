@@ -15,10 +15,12 @@ class TransactionController extends AbstractController
     {
 
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $transactions = $stocks = $user->getTransactions();
 
         return $this->render('transaction/index.html.twig', [
             'transactions' => $transactions,
+            'settings' => $settings,
         ]);
     }
 }

@@ -22,6 +22,7 @@ class PortfolioController extends AbstractController
     {
         $portfolio = new Portfolio();
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $form = $this->createForm(PortfolioType::class, $portfolio);
         $form->handleRequest($request);
 
@@ -46,6 +47,7 @@ class PortfolioController extends AbstractController
             'page_title' => 'Create New Portfolio',
             'form' => $form->createView(),
             'error' => "",
+            'settings' => $settings,
         ]);
     }
 
@@ -54,6 +56,7 @@ class PortfolioController extends AbstractController
     {
         $portfolio = $doctrine->getRepository(Portfolio::class)->find($id);
         $user = $this->getUser();
+        $settings = $user->getSettings();
 
         if( $portfolio === null ){
             return $this->redirectToRoute('dashboard');
@@ -79,6 +82,7 @@ class PortfolioController extends AbstractController
             'page_title' => 'Create New Portfolio',
             'form' => $form->createView(),
             'error' => "",
+            'settings' => $settings,
         ]);
     }
 

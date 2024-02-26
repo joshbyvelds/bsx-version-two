@@ -19,16 +19,20 @@ class PlaysController extends AbstractController
     public function index(ManagerRegistry $doctrine): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $plays = $user->getPlays();
         return $this->render('plays/index.html.twig', [
             'plays' => $plays,
             'controller_name' => 'PlaysController',
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/plays/add', name: 'app_plays_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $play = new Play();
         $form = $this->createForm(PlayType::class, $play);
@@ -68,7 +72,7 @@ class PlaysController extends AbstractController
             if($error === ""){
                 $play->setFinished(false);
                 $play->setEarned(0);
-                $play->setUser($this->getUser());
+                $play->setUser($user);
                 $em->persist($play);
                 $em->flush();
                 return $this->redirectToRoute('dashboard');
@@ -79,6 +83,7 @@ class PlaysController extends AbstractController
             'form' => $form->createView(),
             'error' => $error,
             'controller_name' => 'PlaysController',
+            'settings' => $settings,
         ]);
     }
 
@@ -87,6 +92,7 @@ class PlaysController extends AbstractController
     {
         $play = $doctrine->getRepository(Play::class)->find($id);
         $user = $this->getUser();
+        $settings = $user->getSettings();
 
         if( $play === null ){
             return $this->redirectToRoute('dashboard');
@@ -111,6 +117,7 @@ class PlaysController extends AbstractController
             'page_title' => 'Create New Portfolio',
             'form' => $form->createView(),
             'error' => "",
+            'settings' => $settings,
         ]);
     }
 

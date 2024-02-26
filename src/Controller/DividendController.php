@@ -17,12 +17,14 @@ class DividendController extends AbstractController
     #[Route('/dividends', name: 'dividends')]
     public function index(): Response
     {
-        $user = $this->getUser();
+        $user = $user = $this->getUser();
+        $settings = $user->getSettings();
         $payments = $user->getDividends();
         dump($payments);
 
         return $this->render('dividend/index.html.twig', [
             'dividend_payments' => $payments,
+            'settings' => $settings
         ]);
     }
 
@@ -31,10 +33,12 @@ class DividendController extends AbstractController
     {
         $user = $this->getUser();
         $stocks = $user->getStocks();
+        $settings = $user->getSettings();
         dump($stocks);
 
         return $this->render('dividend/stock.html.twig', [
             'stocks' => $stocks,
+            'settings' => $settings
         ]);
     }
 
@@ -43,10 +47,12 @@ class DividendController extends AbstractController
     {
         $user = $this->getUser();
         $payments = $user->getDividends();
+        $settings = $user->getSettings();
         dump($payments);
 
         return $this->render('dividend/month.html.twig', [
             'dividend_payments' => $payments,
+            'settings' => $settings
         ]);
     }
 
@@ -55,10 +61,12 @@ class DividendController extends AbstractController
     {
         $user = $this->getUser();
         $payments = $user->getDividends();
+        $settings = $user->getSettings();
         dump($payments);
 
         return $this->render('dividend/quarter.html.twig', [
             'dividend_payments' => $payments,
+            'settings' => $settings
         ]);
     }
 
@@ -67,16 +75,20 @@ class DividendController extends AbstractController
     {
         $user = $this->getUser();
         $payments = $user->getDividends();
+        $settings = $user->getSettings();
         dump($payments);
 
         return $this->render('dividend/year.html.twig', [
             'dividend_payments' => $payments,
+            'settings' => $settings
         ]);
     }
 
     #[Route('/dividends/add', name: 'dividends_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $dividend = new Dividend();
         $transaction = new Transaction();
@@ -113,6 +125,7 @@ class DividendController extends AbstractController
         return $this->render('form/index.html.twig', [
             'form' => $form->createView(),
             'error' => $error,
+            'settings' => $settings
         ]);
     }
 }

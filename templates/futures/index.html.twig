@@ -6,6 +6,14 @@
 
 <div class="futures_wrapper">
 
+    {{ enabled }}
+
+    {% if enabled != true %}
+        <h1>FUTURES DISABLED</h1>
+        <p>Please enable futures in settings in order to track and record your futures accounts.</p>
+        <p><a href="/settings">Settings</a></p>
+    {% else %}
+
     {% if buckets == "NO BUCKETS" %}
 
     {{ form(form) }}
@@ -22,7 +30,7 @@
     {% set savings_debt = buckets.savingsDebt %}
     {% set fees_paid = buckets.dataFees %}
     {% set broker = play + profit %}
-        
+
     <h2>Data Output</h2>
     <p>
         Broker Account: ${{ broker|number_format(2) }}<br />
@@ -178,181 +186,184 @@
             <button class="close_x">X</button>
         </div>
     </div>
+
+        <script>
+
+            $(".close_x").on('click', function(){
+                $(".modal_bg, .modal").hide();
+            });
+
+            $("#empty_bucket_btn").on('click', function(){
+                $(".modal_bg, .modal").show();
+            });
+
+            $("#cdn_submit").on("click", function(){
+
+                var cdn = $("#cdn_amount").val();
+                $.post("/futures/emptyprofitbucket/" + cdn, {}, function(json){
+                    alert("Empty Complete");
+                    // result complete... refresh page here..
+
+                });
+            });
+
+            $("#pay_data_fee").on("click", function(){
+
+                var cdn = $("#cdn_amount").val();
+                $.post("/futures/paydatafee", {}, function(json){
+                    alert("Data Fee Paid. Please Refresh to see updated buckets.");
+                });
+            });
+
+            {% if buckets != "NO BUCKETS" %}
+            const play_limit = {{ play_max }};
+            const play_amount = {% if use_broker_margin %}{{ play - broker_margin_amount }}{% else %}{{ play }}{% endif %};
+            //const play_amount = {{ play }};
+            const profit = {{ profit }};
+            const profit_limit = {{ profit_max }};
+            const withdrawl = {{ saved }};
+            const withdrawl_used = {{ used }};
+            const play_percent = Math.floor((play_amount/play_limit) * 100);
+            const profit_percent = Math.floor((profit/profit_limit) * 100)
+            const withdrawn_used_percent = 100 - Math.floor((withdrawl_used/withdrawl) * 100);
+
+            document.getElementById("f1_percent").innerHTML = play_percent + "%";
+            document.getElementById("f2_percent").innerHTML = profit_percent + "%";
+            document.getElementById("f3_percent").innerHTML = withdrawn_used_percent + "%";
+            document.getElementById("f1_small").innerHTML = "$" + play_amount + "/$" + play_limit;
+            document.getElementById("f2_small").innerHTML = "$" + profit + "/$" + profit_limit;
+            document.getElementById("f3_small").innerHTML = "$" + withdrawl + "<br />$" + withdrawl_used + " Used";
+
+            const play_colors = ['#209e3b', '#deeb2a', '#c9101c'];
+            const play_color = play_colors[(play_amount / play_limit > 0.75) ? 0 : (play_amount / play_limit > 0.50) ? 1 : 2];
+
+            const f1_ctx = document.getElementById('f1Chart').getContext('2d');
+            const f2_ctx = document.getElementById('f2Chart').getContext('2d');
+            const f3_ctx = document.getElementById('f3Chart').getContext('2d');
+
+            const f1_chart = new Chart(f1_ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Free Space',
+                        'Play Amount',
+                    ],
+                    datasets: [{
+                        label: 'Play Account Bucket',
+                        data: [play_limit - play_amount, play_amount],
+                        backgroundColor: [
+                            '#DBE2F4',
+                            play_color,
+                        ],
+                        hoverOffset: 0,
+                        borderWidth: 0,
+                        borderJoinStyle: 'bevel',
+                        borderRadius: [0, 20], // how round thge edges of the sections are
+                        cutout:104, // thinkness of the ring..
+                        spacing: -30,
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins:{
+                        legend: {
+                            display: false //This will do the task
+                        },
+                    },
+
+
+                }
+            });
+
+
+            const f2_chart = new Chart(f2_ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Free Space',
+                        'Profit',
+                    ],
+                    datasets: [{
+                        label: 'Profit Bucket',
+                        data: [profit_limit - profit, profit],
+                        backgroundColor: [
+                            '#DBE2F4',
+                            '#209e3b',
+                        ],
+                        hoverOffset: 0,
+                        borderWidth: 0,
+                        borderJoinStyle: 'bevel',
+                        borderRadius: [0, 20], // how round thge edges of the sections are
+                        cutout:104, // thinkness of the ring..
+                        spacing: -30,
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins:{
+                        legend: {
+                            display: false //This will do the task
+                        },
+                    },
+
+
+                }
+            });
+
+
+            const f3_chart = new Chart(f3_ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Used Withdrawl Amount',
+                        'Saved Money',
+                    ],
+
+                    datasets: [{
+                        label: 'Withdrawn/Saved Profit',
+                        data: [withdrawl_used, withdrawl - withdrawl_used],
+                        backgroundColor: [
+                            '#DBE2F4',
+                            '#209e3b',
+                        ],
+                        hoverOffset: 0,
+                        borderWidth: 0,
+                        borderJoinStyle: 'bevel',
+                        borderRadius: [20, 0], // how round the edges of the sections are
+                        cutout:104, // thinkness of the ring..
+                        spacing: -30,
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins:{
+                        legend: {
+                            display: false //This will do the task
+                        },
+                    },
+
+
+                }
+            });
+            {% endif %}
+
+            $("#create_buckets").on("click", function(){
+                var play = parseFloat($("#new_buckets_start_play").val());
+                var profit = parseFloat($("#new_buckets_start_profit").val());
+                var withdrawn = parseFloat($("#new_buckets_start_withdrawn").val());
+                var used = parseFloat($("#new_buckets_start_used").val());
+
+                if(isNaN(play)){console.error("play value is: NaN"); return;}
+                if(isNaN(profit)){console.error("profit value is: NaN"); return;}
+                if(isNaN(withdrawn)){console.error("withdrawn value is: NaN"); return;}
+                if(isNaN(used)){console.error("used value is: NaN"); return;}
+
+                $.post("/futures/createbuckets", {'play':play,'profit':profit,'widthdrawn':withdrawn,'used':used});
+            });
+
+        </script>
+    {% endif %}
 </div>
 
-<script>
 
-$(".close_x").on('click', function(){
-    $(".modal_bg, .modal").hide();
-});
-
-$("#empty_bucket_btn").on('click', function(){
-    $(".modal_bg, .modal").show();
-});
-
-$("#cdn_submit").on("click", function(){
-    
-    var cdn = $("#cdn_amount").val();
-    $.post("/futures/emptyprofitbucket/" + cdn, {}, function(json){
-        alert("Empty Complete");
-        // result complete... refresh page here..
-
-    });
-});
-
-$("#pay_data_fee").on("click", function(){
-    
-    var cdn = $("#cdn_amount").val();
-    $.post("/futures/paydatafee", {}, function(json){
-        alert("Data Fee Paid. Please Refresh to see updated buckets.");
-    });
-});
-
-{% if buckets != "NO BUCKETS" %}
-const play_limit = {{ play_max }};
-const play_amount = {% if use_broker_margin %}{{ play - broker_margin_amount }}{% else %}{{ play }}{% endif %};
-//const play_amount = {{ play }};
-const profit = {{ profit }};
-const profit_limit = {{ profit_max }};
-const withdrawl = {{ saved }};
-const withdrawl_used = {{ used }};
-const play_percent = Math.floor((play_amount/play_limit) * 100);
-const profit_percent = Math.floor((profit/profit_limit) * 100)
-const withdrawn_used_percent = 100 - Math.floor((withdrawl_used/withdrawl) * 100);
-
-document.getElementById("f1_percent").innerHTML = play_percent + "%";
-document.getElementById("f2_percent").innerHTML = profit_percent + "%";
-document.getElementById("f3_percent").innerHTML = withdrawn_used_percent + "%";
-document.getElementById("f1_small").innerHTML = "$" + play_amount + "/$" + play_limit;
-document.getElementById("f2_small").innerHTML = "$" + profit + "/$" + profit_limit;
-document.getElementById("f3_small").innerHTML = "$" + withdrawl + "<br />$" + withdrawl_used + " Used";
-
-const play_colors = ['#209e3b', '#deeb2a', '#c9101c'];
-const play_color = play_colors[(play_amount / play_limit > 0.75) ? 0 : (play_amount / play_limit > 0.50) ? 1 : 2];
-
-const f1_ctx = document.getElementById('f1Chart').getContext('2d');
-const f2_ctx = document.getElementById('f2Chart').getContext('2d');
-const f3_ctx = document.getElementById('f3Chart').getContext('2d');
-
-const f1_chart = new Chart(f1_ctx, {
-  type: 'doughnut',
-  data: {
-    labels: [
-        'Free Space',
-        'Play Amount',        
-    ],
-    datasets: [{
-        label: 'Play Account Bucket',
-        data: [play_limit - play_amount, play_amount],
-        backgroundColor: [
-            '#DBE2F4',
-            play_color, 
-        ],
-        hoverOffset: 0,
-        borderWidth: 0,
-        borderJoinStyle: 'bevel',
-        borderRadius: [0, 20], // how round thge edges of the sections are
-        cutout:104, // thinkness of the ring..
-        spacing: -30,
-    }]
-  },
-  options: {
-    maintainAspectRatio: false,
-    plugins:{
-        legend: {
-            display: false //This will do the task
-        },
-    },
-
-
-  }
-});
-
-
-  const f2_chart = new Chart(f2_ctx, {
-  type: 'doughnut',
-  data: {
-    labels: [
-        'Free Space',
-        'Profit',        
-    ],
-    datasets: [{
-        label: 'Profit Bucket',
-        data: [profit_limit - profit, profit],
-        backgroundColor: [
-            '#DBE2F4',
-            '#209e3b', 
-        ],
-        hoverOffset: 0,
-        borderWidth: 0,
-        borderJoinStyle: 'bevel',
-        borderRadius: [0, 20], // how round thge edges of the sections are
-        cutout:104, // thinkness of the ring..
-        spacing: -30,
-    }]
-  },
-  options: {
-    maintainAspectRatio: false,
-    plugins:{
-        legend: {
-            display: false //This will do the task
-        },
-    },
-
-
-  }
-  });
-
-
-  const f3_chart = new Chart(f3_ctx, {
-  type: 'doughnut',
-  data: {
-    labels: [
-        'Used Withdrawl Amount',   
-        'Saved Money',
-    ],
-
-    datasets: [{
-        label: 'Withdrawn/Saved Profit',
-        data: [withdrawl_used, withdrawl - withdrawl_used],
-        backgroundColor: [
-            '#DBE2F4',
-            '#209e3b', 
-        ],
-        hoverOffset: 0,
-        borderWidth: 0,
-        borderJoinStyle: 'bevel',
-        borderRadius: [20, 0], // how round the edges of the sections are
-        cutout:104, // thinkness of the ring..
-        spacing: -30,
-    }]
-  },
-  options: {
-    maintainAspectRatio: false,
-    plugins:{
-        legend: {
-            display: false //This will do the task
-        },
-    },
-
-
-  }
-});
-{% endif %}
-
-$("#create_buckets").on("click", function(){
-    var play = parseFloat($("#new_buckets_start_play").val());
-    var profit = parseFloat($("#new_buckets_start_profit").val());
-    var withdrawn = parseFloat($("#new_buckets_start_withdrawn").val());
-    var used = parseFloat($("#new_buckets_start_used").val());
-
-    if(isNaN(play)){console.error("play value is: NaN"); return;}
-    if(isNaN(profit)){console.error("profit value is: NaN"); return;}
-    if(isNaN(withdrawn)){console.error("withdrawn value is: NaN"); return;}
-    if(isNaN(used)){console.error("used value is: NaN"); return;}
-
-    $.post("/futures/createbuckets", {'play':play,'profit':profit,'widthdrawn':withdrawn,'used':used});
-});
-
-</script>
 {% endblock %}

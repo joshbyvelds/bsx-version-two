@@ -22,6 +22,7 @@ class WalletController extends AbstractController
     public function withdrawl(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $form = $this->createForm(WalletAdjustmentType::class);
         $form->handleRequest($request);
 
@@ -73,6 +74,7 @@ class WalletController extends AbstractController
             'page_title' => 'Withdrawl from Wallet',
             'form' => $form->createView(),
             'error' => "",
+            'settings' => $settings,
         ]);
     }
 
@@ -80,6 +82,7 @@ class WalletController extends AbstractController
     public function deposit(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $form = $this->createForm(WalletAdjustmentType::class);
         $form->handleRequest($request);
 
@@ -134,6 +137,7 @@ class WalletController extends AbstractController
             'page_title' => 'Deposit to Wallet',
             'form' => $form->createView(),
             'error' => "",
+            'settings' => $settings,
         ]);
     }
 
@@ -141,6 +145,7 @@ class WalletController extends AbstractController
     public function convert(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $form = $this->createForm(WalletConvertType::class);
         $form->handleRequest($request);
 
@@ -196,6 +201,7 @@ class WalletController extends AbstractController
             'page_title' => 'Convert Currency',
             'error' => false,
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 }

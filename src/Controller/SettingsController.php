@@ -33,6 +33,7 @@ class SettingsController extends AbstractController
             $settings->setStocksManualUpdateEnabled(false);
             $settings->setStocksDisableUpdateEnabled(false);
             $settings->setStocksDisableCanadianUpdateEnabled(false);
+            $settings->setFuturesEnabled(false);
             $settings->setFuturesPlayBucketMax(1000);
             $settings->setFuturesProfitBucketMax(1000);
             $settings->setFuturesUseBrokerMargin(false);
@@ -78,7 +79,8 @@ class SettingsController extends AbstractController
         }
 
         return $this->render('settings/index.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 }

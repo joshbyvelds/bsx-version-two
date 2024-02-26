@@ -45,6 +45,7 @@ class RegistrationController extends AbstractController
             $settings->setStocksManualUpdateEnabled(false);
             $settings->setStocksDisableUpdateEnabled(false);
             $settings->setStocksDisableCanadianUpdateEnabled(false);
+            $settings->setFuturesEnabled(false);
             $settings->setFuturesPlayBucketMax(1000);
             $settings->setFuturesProfitBucketMax(1000);
             $settings->setFuturesUseBrokerMargin(false);
@@ -74,6 +75,7 @@ class RegistrationController extends AbstractController
             $settings->setStocksCanadianUpdateLimitTimeout(10);
             $settings->setPortfolioUpdateOnWeekend(false);
             $settings->setStockUpdateOnWeekend(false);
+
 
             // Create a Wallet
             $wallet->setUser($user);

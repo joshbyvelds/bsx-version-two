@@ -7,7 +7,7 @@
         {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
         <div class="portfolio_wrapper">
             {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
-            {% if futures != "NO BUCKETS" %}{% include "partials/panels/futures.html.twig" %}{% endif %}
+            {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "partials/panels/futures.html.twig" %}{% endif %}
         </div>
         {% include "partials/panels/graph.html.twig" %}
         {% include "partials/panels/plays.html.twig" %}

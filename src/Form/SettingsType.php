@@ -36,6 +36,7 @@ class SettingsType extends AbstractType
             ->add('stocks_disable_canadian_update_enabled', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_canadian_update_amount_limit')
             ->add('stocks_canadian_update_limit_timeout')
+            ->add('futures_enabled')
             ->add('futures_data_fee')
             ->add('futures_play_bucket_max')
             ->add('futures_profit_bucket_max')

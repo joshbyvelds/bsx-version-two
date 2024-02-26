@@ -243,8 +243,8 @@ class StockController extends AbstractController
     public function index(Request $request, ManagerRegistry $doctrine): Response
     {
         $user = $this->getUser();
-        $stocks = $user->getStocks();
         $settings = $user->getSettings();
+        $stocks = $user->getStocks();
         $update_status = "";
         $update_status_stock = "";
         $manual_update = $settings->isStocksManualUpdateEnabled(); // use this when the script is not working or you need a quick update.. 
@@ -278,12 +278,15 @@ class StockController extends AbstractController
             'update_disabled' => $disable_update,
             'status' => $update_status,
             'stocks' => $stocks,
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/stocks/add', name: 'stocks_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $stock = new Stock();
         $form = $this->createForm(StockType::class, $stock);
         $form->handleRequest($request);
@@ -312,12 +315,15 @@ class StockController extends AbstractController
         return $this->render('form/index.html.twig', [
             'error' => "",
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/stocks/shares/buy', name: 'stocks_buy_shares')]
     public function buyShares(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $share_buy = new ShareBuy();
         $form = $this->createForm(ShareBuyType::class, $share_buy);
         $form->handleRequest($request);
@@ -369,12 +375,15 @@ class StockController extends AbstractController
         return $this->render('form/share_buy.html.twig', [
             'error' => "",
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/stocks/shares/sell', name: 'stocks_sell_shares')]
     public function sellShares(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $share_sell = new ShareSell();
         $form = $this->createForm(ShareSellType::class, $share_sell);
@@ -471,12 +480,15 @@ class StockController extends AbstractController
         return $this->render('form/share_sell.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/stocks/options/add', name: 'stocks_add_option')]
     public function addOption(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $option = new Option();
         $form = $this->createForm(OptionType::class, $option);
@@ -535,6 +547,7 @@ class StockController extends AbstractController
         return $this->render('form/option_add.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
@@ -542,6 +555,8 @@ class StockController extends AbstractController
     #[Route('/stocks/options/buy', name: 'stocks_buy_option')]
     public function buyOption(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $form = $this->createForm(OptionBuyType::class);
         $form->handleRequest($request);
@@ -600,12 +615,15 @@ class StockController extends AbstractController
         return $this->render('form/option_buy.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/stocks/options/sell', name: 'stocks_sell_option')]
     public function sellOption(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $form = $this->createForm(OptionSellType::class);
         $form->handleRequest($request);
@@ -663,6 +681,7 @@ class StockController extends AbstractController
         return $this->render('form/option_sell.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
@@ -670,6 +689,7 @@ class StockController extends AbstractController
     public function writtenOptions(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $options = $user->getWrittenOptions();
 
         //loop though all the calls and see if any have expired
@@ -688,6 +708,7 @@ class StockController extends AbstractController
         return $this->render('stock/writtenoptions.html.twig', [
             'controller_name' => 'StockController',
             'written_options' => $options,
+            'settings' => $settings,
         ]);
     }
 
@@ -695,6 +716,7 @@ class StockController extends AbstractController
     public function sellWrittenOption(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $wo = new WrittenOption();
         $form = $this->createForm(WrittenOptionType::class, $wo);
@@ -760,6 +782,7 @@ class StockController extends AbstractController
         return $this->render('form/write_option.html.twig', [
             'error' => "",
             'form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 

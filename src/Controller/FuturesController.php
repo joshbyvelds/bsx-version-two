@@ -22,7 +22,7 @@ class FuturesController extends AbstractController
     #[Route('/futures', name: 'app_futures')]
     public function index(ManagerRegistry $doctrine, EntityManagerInterface $entityManager): Response
     {
-        $user = $user = $this->getUser();
+        $user = $this->getUser();
         $settings = $user->getSettings();
         $weeks = $doctrine->getRepository(FuturesWeek::class)->findAll(array('user_id' => $user->getId()));
 
@@ -40,6 +40,8 @@ class FuturesController extends AbstractController
         $plays = $user->getFuturesDays();
         
         return $this->render('futures/index.html.twig', [
+            'settings' => $settings,
+            'enabled' => $settings->isFuturesEnabled(),
             'buckets' => $buckets,
             'plays' => $plays,
             'form' => $view,
@@ -56,13 +58,14 @@ class FuturesController extends AbstractController
 
     #[Route('/futures/createbuckets', name: 'app_futures_create_buckets')]
     public function futuresCreateBuckets(EntityManagerInterface $entityManager, Request $request): Response
-    {   
+    {
+        $user = $user = $this->getUser();
+        $settings = $user->getSettings();
         $buckets = new FuturesBuckets();
         $form = $this->createForm(FuturesBucketsType::class, $buckets);
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            $user = $user = $this->getUser();
             $buckets->setDebt(0);
             $buckets->setSavingsDebt(0);
             $buckets->setDataFees(0);
@@ -93,6 +96,8 @@ class FuturesController extends AbstractController
     #[Route('/futures/makeplay', name: 'app_futures_create_play')]
     public function futuresCreatePlay(ManagerRegistry $doctrine, EntityManagerInterface $entityManager, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $day = new FuturesDay();
         $date = new \DateTime();
         $day->setDate($date);
@@ -100,8 +105,6 @@ class FuturesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            $user = $user = $this->getUser();
-            $settings = $user->getSettings();
             $day->setUser($user);
             
             
@@ -236,7 +239,7 @@ class FuturesController extends AbstractController
     #[Route('/futures/emptyprofitbucket/{cdn}', name: 'app_futures_empty_profit_bucket')]
     public function futuresEmptyProfitBucket(EntityManagerInterface $entityManager, int $cdn): Response
     {
-        $user = $user = $this->getUser();
+        $user = $this->getUser();
         $buckets = $user->getFuturesBuckets()[0];
         $buckets->dumpProfitBucket($cdn);
         $entityManager->flush();
@@ -247,8 +250,8 @@ class FuturesController extends AbstractController
     public function payDataFee(EntityManagerInterface $entityManager): Response
     {
         $user = $user = $this->getUser();
-        $buckets = $user->getFuturesBuckets()[0];
         $settings = $user->getSettings();
+        $buckets = $user->getFuturesBuckets()[0];
         $buckets->PayDataFee($settings->getFuturesDataFee());
         $entityManager->flush();
         return new JsonResponse(['result' => 'ok']);

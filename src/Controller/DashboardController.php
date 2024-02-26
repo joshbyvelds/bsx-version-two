@@ -61,6 +61,7 @@ class DashboardController extends AbstractController
             'show_nav' => true,
             'wallet' => $wallet,
             'futures' => $buckets,
+            'futures_enabled' => $buckets,
             'current_futures_week' => $current_futures_week,
             'settings' => $settings,
             'stocks' => $stocks,

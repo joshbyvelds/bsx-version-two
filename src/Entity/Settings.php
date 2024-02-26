@@ -128,6 +128,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $stock_update_on_weekend;
 
+    #[ORM\Column(type: 'boolean')]
+    private $futures_enabled;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -585,6 +588,18 @@ class Settings
     public function setStockUpdateOnWeekend(bool $StockUpdateOnWeekend): self
     {
         $this->stock_update_on_weekend = $StockUpdateOnWeekend;
+
+        return $this;
+    }
+
+    public function isFuturesEnabled(): ?bool
+    {
+        return $this->futures_enabled;
+    }
+
+    public function setFuturesEnabled(bool $futures_enabled): self
+    {
+        $this->futures_enabled = $futures_enabled;
 
         return $this;
     }

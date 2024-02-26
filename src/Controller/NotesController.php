@@ -18,18 +18,22 @@ class NotesController extends AbstractController
     public function index(ManagerRegistry $doctrine): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $allNotes = $doctrine->getRepository(Note::class)->findAll();
 
         return $this->render('notes/index.html.twig', [
             'controller_name' => 'NotesController',
             'user' => $user->getId(),
             'notes' => $allNotes,
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/notes/write', name: 'app_notes_write')]
     public function write(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
         $error = "";
         $note = new Note();
         $form = $this->createForm(NoteType::class, $note);
@@ -47,6 +51,7 @@ class NotesController extends AbstractController
         }
 
         return $this->render('form/index.html.twig', [
+            'settings' => $settings,
             'form' => $form->createView(),
             'error' => '',
             'controller_name' => 'NotesController',

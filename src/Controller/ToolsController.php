@@ -27,17 +27,24 @@ class ToolsController extends AbstractController
     #[Route('/tools/sharestradecalc', name: 'tools_shares_calc')]
     public function sharestrade(): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
         return $this->render('tools/stock_profit_calc.html.twig', [
             'controller_name' => 'ToolsController',
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/tools/optionstradecalc', name: 'tools_options_daytrade_calc')]
     public function optionsdaytrade(): Response
     {
-        $user = $user = $this->getUser();
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
         return $this->render('tools/options_daytrade_calc.html.twig', [
             'controller_name' => 'ToolsController',
+            'settings' => $settings,
         ]);
     }
 
@@ -45,35 +52,49 @@ class ToolsController extends AbstractController
     public function furturesdaytrade(): Response
     {
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $f_day_form = new FuturesDay();
         $date = new \DateTime();
         $f_day_form->setDate($date);
         $form = $this->createForm(FuturesDayType::class, $f_day_form, ['action' => $this->generateUrl('app_futures_create_play'), 'method' => 'POST']);
+
         return $this->render('tools/futures_daytrade_calc.html.twig', [
             'controller_name' => 'ToolsController',
             'day_form' => $form->createView(),
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/tools/coveredcallcalc', name: 'tools_cc_calc')]
     public function coveredCallCalc(): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
         return $this->render('tools/covered_call_write_calculator.html.twig', [
             'controller_name' => 'ToolsController',
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/tools/articles', name: 'tools_articles')]
     public function articles(): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
         return $this->render('tools/articles.html.twig', [
             'controller_name' => 'ToolsController',
+            'settings' => $settings,
         ]);
     }
 
     #[Route('/tools/tenpercentplan', name: 'tools_ten_percent_plan')]
     public function ten(ManagerRegistry $doctrine, Request $request): Response
     {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
         $target = 0;
         $total_target = 0;
         $date_format = 0;
@@ -115,6 +136,7 @@ class ToolsController extends AbstractController
             'target' => $target,
             'date' => $date_format,
             'time' => $time_format,
+            'settings' => $settings,
         ]);
     }
 
