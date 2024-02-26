@@ -1,11 +1,11 @@
 <div class="panel small_panel stats end">
     <div class="title">Statistics</div>
     {% if settings.dashboardUseHotColdMeter %}
-        {% include "partials/panels/stats/hotcold.html.twig" %}
+        {% include "dashboard/panels/stats/hotcold.html.twig" %}
     {% endif %}
 
     {% if settings.dashboardUseCashEquityBalance %}
-        {% include "partials/panels/stats/cebalance.html.twig" %}
+        {% include "dashboard/panels/stats/cebalance.html.twig" %}
     {% endif %}
 </div>
 

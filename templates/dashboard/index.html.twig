@@ -6,17 +6,18 @@
     <div class="wide_column">
         {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
         <div class="portfolio_wrapper">
-            {% include "partials/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
-            {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "partials/panels/futures.html.twig" %}{% endif %}
+            {% include "dashboard/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
+            {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "dashboard/panels/futures.html.twig" %}{% endif %}
         </div>
-        {% include "partials/panels/graph.html.twig" %}
-        {% include "partials/panels/plays.html.twig" %}
+        {% include "dashboard/panels/graph.html.twig" %}
+        {% include "dashboard/panels/plays.html.twig" %}
     </div><!--
 
  --><div class="narrow_column">
-        {% include "partials/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD, 'locked_cdn': wallet.lockedCdn, 'locked_usd': wallet.lockedUsd} %}
-        {% include "partials/panels/stats.html.twig" %}
-        {% include "partials/panels/transactions.html.twig" with {'transactions': transactions} %}
+        {% include "dashboard/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD, 'locked_cdn': wallet.lockedCdn, 'locked_usd': wallet.lockedUsd} %}
+        {% include "dashboard/panels/transfer.html.twig" %}
+        {% include "dashboard/panels/stats.html.twig" %}
+        {% include "dashboard/panels/transactions.html.twig" with {'transactions': transactions} %}
     </div>
 {% endblock %}
 
