@@ -41,7 +41,9 @@ class StockController extends AbstractController
     {
         $this->update_function = true;
         if($stock->getCountry() == "CAN"){
+            dump("Debug Dump #2 - Update Canadian Stock");
             if(!$disable_can && $stock->isBeingPlayedShares()){
+                dump("Debug Dump #3 - Stock updates is enabled and we have shares");
                 if($day_today != "Sat" && $day_today != "Sun" && $hour_today >= 10 && $hour_today < 16) {
                     dump("No Update, Canadian Stocks can only be updated when market is closed");
                     return "C1";
@@ -51,8 +53,10 @@ class StockController extends AbstractController
                     $this->can_count = (int)$atomCount->getValue();
                     
                     // check how long it has been since last update
+                    dump("Debug Dump #4 - This CDN stock has not been updated yet today");
 
                     if($this->can_count <= $this->settings->getStocksCanadianUpdateAmountLimit()){
+                        dump("Debug Dump #5 - API update has limit not been reached ");
                         $this->can_updated = true;
                         // Call API, to get info..
                         $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
@@ -150,6 +154,10 @@ class StockController extends AbstractController
                     }
                 }
             }
+
+            else{
+                return "C5";
+            }
         }
 
         if($stock->getCountry() == "USD"){
@@ -228,7 +236,7 @@ class StockController extends AbstractController
             return "U";
         }
 
-
+        dump("Debug Dump #1 - UpdateStock Info Function has run and reached the end without a return");
     }
 
     #[Route('/stocks', name: 'stocks')]
@@ -954,11 +962,13 @@ class StockController extends AbstractController
 
             $ustatus = "Start Check..";
             $this->test_string = "1";
+            dump("Test 1");
 
             // check if force update is enabled in settings..
             if($forceUpdate)
             {
                 $this->test_string = "2 - Force Update";
+                dump("Test 2");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -972,6 +982,7 @@ class StockController extends AbstractController
              // first check if it's been over 3 days since the last update..
              if($numberDays >= 3){
                 $this->test_string = "3 - Over 3 Days since last update";
+                 dump("Test 3");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -986,6 +997,7 @@ class StockController extends AbstractController
              if($weekend_today){
                 if(!$updated_on_weekend){
                     $this->test_string = "3.1 - Weekend Update";
+                    dump("Test 3.1");
                     $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new \DateTime();
@@ -996,6 +1008,7 @@ class StockController extends AbstractController
                     }
                 } else {
                     $this->test_string = "3.2 - Trying to update again this weekend when we already have";
+                    dump("Test 3.2");
                     $updated = true;
                     $status_code = 1;
                     $update_status_stock = "You already updated this stock this weekend, price will not change.";
@@ -1008,6 +1021,7 @@ class StockController extends AbstractController
                 // so if we are just getting a mid-day update..
                 if($marketOpen){
                     $this->test_string = "4 - Mid Day Update";
+                    dump("Test 4");
                     $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new \DateTime();
@@ -1019,11 +1033,13 @@ class StockController extends AbstractController
                 } else {
                     if($hour_today <= 9){
                         $this->test_string = "5.1 - Trying to update again before Pre-Market";
+                        dump("Test 5.1");
                         $updated = true;
                         $status_code = 1;
                         $update_status_stock = "You already updated this stock today before open.. price will not change.";
                     } else {
-                        $this->test_string = "5.1 - Trying to update again after Post-Market";
+                        $this->test_string = "5.2 - Trying to update again after Post-Market";
+                        dump("Test 5.2");
                         $updated = true;
                         $status_code = 1;
                         $update_status_stock = "You already updated this stock today after close.. price will not change.";
@@ -1031,9 +1047,10 @@ class StockController extends AbstractController
                 }
              }
 
-             // no other condistions.. update please..
+             // no other conditions.. update please..
              if(!$updated){
                 $this->test_string = "6 - Normal Update";
+                 dump("Test 6");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new \DateTime();
@@ -1044,28 +1061,40 @@ class StockController extends AbstractController
                 }
             }
 
+             dump($ustatus);
+
 
             if($ustatus !== "U")
             {
                 switch($ustatus){
                     case("C1"):
                         $update_status_stock = "No Update, Canadian Stocks can only be updated when market is closed";
+                        dump("Test C1");
                         break;
 
                     case("C2"):
-                        $update_status_stock = "No Update, can only do 5 Candaian stock updates per minute";
+                        $update_status_stock = "No Update, can only do 5 Canadian stock updates per minute";
+                        dump("Test C2");
                         break;
 
                     case("C3"):
                         $update_status_stock = "Something wrong with the API metadata";
+                        dump("Test C3");
                         break;
 
                     case("C4"):
                         $update_status_stock = "Something wrong with the API metadata";
+                        dump("Test C4");
+                        break;
+
+                    case("C5"):
+                        $update_status_stock = "Canadian Stocks Disabled in Settings OR Stock is not being played";
+                        dump("Test C5");
                         break;
 
                     default:
                         $update_status_stock = "UStatus:" . $ustatus;
+                        dump("Test C5");
                 }
 
                 $status_code = 1;
@@ -1073,11 +1102,16 @@ class StockController extends AbstractController
             } else {
                 $status_code = 2;
                 $status_message = "Stock Price Updated";
+                dump("Test 7");
             }
+
+            dump("Update:" . $stock->getTicker());
         
 
             return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
         }
+
+        return new JsonResponse(array('success' => false, 'reason' => "Non XMLHttp Request"));
     }
 
     private function sort_buys_by_price($a, $b)

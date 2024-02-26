@@ -27,7 +27,7 @@
 <script>
 const cash = {{ wallet.CAN }};
 const equities = {{ total }};
-const percent = Math.floor((cash / (cash + equities)) * 100);
+const percent = +((cash / (cash + equities)) * 100).toFixed(1);
 
 document.getElementById("hc_percent_used").innerHTML = percent + "%";
 
