@@ -20,7 +20,7 @@ class FuturesController extends AbstractController
 {
 
     #[Route('/futures', name: 'app_futures')]
-    public function index(ManagerRegistry $doctrine): Response
+    public function index(ManagerRegistry $doctrine, EntityManagerInterface $entityManager): Response
     {
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
@@ -68,6 +68,21 @@ class FuturesController extends AbstractController
             $buckets->setDataFees(0);
             $buckets->setUser($user);
             $user->addFuturesBucket($buckets);
+
+            // create futures week
+            $week = new FuturesWeek();
+            $week->setTrades(0);
+            $week->setPl(0);
+            $week->setFees(0);
+            $week->setPlay(0);
+            $week->setProfit(0);
+            $week->setUser($user);
+            $e = new \DateTime('next saturday');
+            $s = new \DateTime('next saturday');
+            $week->setEnd($e);
+            $week->setStart($s->sub(new \DateInterval('P6D')));
+            $entityManager->persist($week);
+
             $entityManager->persist($buckets);
             $entityManager->flush();
         }
