@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\ShareBuy;
+use App\Entity\Option;
+use App\Entity\Play;
+use App\Form\PlayType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,8 +14,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 
-use App\Form\PlayType;
-use App\Entity\Play;
+
+
 
 class PlaysController extends AbstractController
 {
@@ -79,7 +83,7 @@ class PlaysController extends AbstractController
             }
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/plays_add.html.twig', [
             'form' => $form->createView(),
             'error' => $error,
             'controller_name' => 'PlaysController',
@@ -113,12 +117,46 @@ class PlaysController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/plays_edit.html.twig', [
             'page_title' => 'Create New Portfolio',
             'form' => $form->createView(),
             'error' => "",
             'settings' => $settings,
         ]);
+    }
+
+    #[Route('/plays/selectstock', name: 'app_plays_selectstock')]
+    public function selectstock(ManagerRegistry $doctrine, Request $request): Response
+    {
+        // get play from database..
+        $stock = $request->get('stockid');
+        $shares = $doctrine->getRepository(ShareBuy::class)->findBy(['stock' => $stock]);
+        $options = $doctrine->getRepository(Option::class)->findBy(['stock' => $stock, 'expired' => 0]);
+
+        $refined_shares = [];
+        foreach ($shares as $share) {
+            $refined_shares[] = ['id' => $share->getId(), 'name' => $share->getStock()->getName(), 'date' => $share->getDate()->format("F j, Y"), 'amount' => $share->getAmount(), 'price' => $share->getPrice()];
+        }
+
+        $refined_options = [];
+        foreach ($options as $option) {
+            $refined_options[] = ['id' => $option->getId(), 'name' => $option->getStock()->getName(), 'date' => $option->getExpiry()->format("F j, Y"), 'contracts' => $option->getContracts(), 'type'=> $option->getType(), 'strike' => number_format($option->getStrike(),2)];
+        }
+
+        dump($shares);
+        dump($options);
+
+        dump($refined_shares);
+        dump($refined_options);
+
+        $response = new JsonResponse();
+        $response->setData([
+            "shares" => $refined_shares,
+            "options" => $refined_options,
+        ]);
+
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 
     #[Route('/plays/update', name: 'app_plays_update')]

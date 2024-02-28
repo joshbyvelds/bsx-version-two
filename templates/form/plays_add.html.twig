@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard{% endblock %}
+
+{% block body %}
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
+
+    <script>
+        $(() => {
+            $("#play_shares, #play_options").hide();
+            $("#play_Stock").on('change', function(){
+                $.post("/plays/selectstock", {stockid:$("#play_Stock").val()}, function(json){
+                    console.log(json);
+                    if(json.shares.length > 0){
+                        $shares = $("#play_shares");
+                        $shares.empty();
+                        json.shares.forEach((element) => {
+                            $shares.append("<option value="+ element.id +">"+ element.name + " - " + element.date + " - " + element.amount + " * " + element.price +"</option>");
+                        });
+
+                        $shares.show();
+                    }
+
+                    if(json.options.length > 0){
+                        $options = $("#play_options");
+                        $options.empty();
+                        json.options.forEach((element) => {
+                            const option_type = (element.type === 1) ? "call" : "put";
+                            $options.append("<option value="+ element.id +">"+ element.name + " - " + element.contracts + " * $" + element.strike + option_type + " - " + element.date +"</option>");
+                        });
+                        $options.show();
+                    }
+                });
+            });
+        })
+    </script>
+{% endblock %}
