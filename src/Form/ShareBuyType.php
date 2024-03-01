@@ -52,6 +52,7 @@ class ShareBuyType extends AbstractType
                 'expanded'=>true
             ])
             ->add('cost', TextType::class, ['mapped' => false])
+            ->add('nofee')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

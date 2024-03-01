@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Transfer Shares to Another Account{% endblock %}
+
+{% block body %}
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
+
+    <script>
+        $(() => {
+            let shareBuysInput = $("#transfer_shares_shareBuy").hide();
+            $("#transfer_shares_stock").on("change", function(){
+                $.post("/transfer/shares/getbuys", {'share_id':$("#transfer_shares_stock").val()}, function(json){
+                    if(json.buys.length > 0){
+                        shareBuysInput.empty();
+                        json.buys.forEach((element) => {
+                            shareBuysInput.append("<option data-max="+ element.max +" value="+ element.id +">"+ element.name + "</option>");
+                        });
+                        shareBuysInput.show();
+                        shareBuysInput.trigger("change");
+                    }
+                });
+            });
+
+            shareBuysInput.on("change", function(){
+                let data_max = $($('#transfer_shares_shareBuy option:selected')[0]).attr("data-max");
+                let amount_input = $("#transfer_shares_amount");
+
+                if(parseInt(amount_input.val()) > parseInt(data_max)){
+                    amount_input.val(data_max);
+                }
+
+                amount_input.attr("max", data_max);
+            });
+        });
+    </script>
+
+{% endblock %}

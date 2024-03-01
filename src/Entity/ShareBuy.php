@@ -29,6 +29,12 @@ class ShareBuy
     #[ORM\Column(type: 'float')]
     private $sold;
 
+    #[ORM\Column(type: 'boolean')]
+    private $nofee;
+
+    #[ORM\Column(type: 'boolean')]
+    private $transfer;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -97,6 +103,30 @@ class ShareBuy
     public function addSold(float $sold): self
     {
         $this->sold += $sold;
+        return $this;
+    }
+
+    public function isNofee(): ?bool
+    {
+        return $this->nofee;
+    }
+
+    public function setNofee(bool $nofee): self
+    {
+        $this->nofee = $nofee;
+
+        return $this;
+    }
+
+    public function isTransfer(): ?bool
+    {
+        return $this->transfer;
+    }
+
+    public function setTransfer(bool $transfer): self
+    {
+        $this->transfer = $transfer;
+
         return $this;
     }
 }

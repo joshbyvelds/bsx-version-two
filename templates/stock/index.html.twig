@@ -42,10 +42,12 @@
         {% set total = 0 %}
         {% set option_cost = 0 %}
         {% set option_total_worth = 0 %}
+        {% set stock_buy_fee = false %}
 
         {% for buy in stock.shareBuys %}
             {% set d_buy = buy.date|date('U') %}
             {% if buy.sold < buy.amount %}
+                {% if buy.nofee == false %}{% set stock_buy_fee = true %}{% endif %}
                 {% set remaining = buy.amount - buy.sold %}
                 {% set buys = buys + 1 %}
                 {% set stock_amount = stock_amount + remaining %}
@@ -56,8 +58,8 @@
 
         {% if stock_amount > 0 %}
             {% set stock_average = stock_average / stock_amount %}
-            {% if stock.noFee %}
-                {% set fee = 0 %}
+            {% if stock.noFee or stock_buy_fee == false %}
+                {% set fee = 0.01 %}
             {% else %}
                 {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
             {% endif %}
@@ -230,13 +232,15 @@
 
                 {% set today = "now"|date('d-m-Y') %}
                 {% set lastBuyDate = today %}
+                {% set breakeven_fee = false %}
 
                
                 {% for buy in stock.shareBuys %}
                     {% set d_bought = buy.date %}
-                    {% if stock.noFee %}
+                    {% if stock.noFee or buy.noFee %}
                         {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) %}
                     {% else %}
+                        {% set breakeven_fee = true %}
                         {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
                     {% endif %}
                     {% if buy.sold < buy.amount %}
@@ -256,7 +260,7 @@
                 
                 {% if stock_amount > 0 %}
                     {% set stock_average = stock_average / stock_amount %}
-                    {% if stock.noFee %}
+                    {% if stock.noFee or breakeven_fee == false %}
                         {% set fee = 0 %}
                     {% else %}
                         {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
