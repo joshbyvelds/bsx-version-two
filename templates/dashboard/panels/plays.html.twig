@@ -15,9 +15,9 @@
                         {% set fee = 0 %}
                         {% if play.shares|length > 0 %}{% set fee = fee + 9.95 %}{% endif %}
                         {% for sb in play.shares %}
-                            Stock Swing - {{ sb.amount }} * ${{ sb.price }}<br/>
+                            Stock Swing - {{ sb.amount - sb.sold }} * ${{ sb.price }}<br/>
                             {% set fee = fee + 9.95 %}
-                            {% set profit = profit + ((sb.stock.getCurrentPrice * sb.amount) - (sb.amount * sb.price)) %}
+                            {% set profit = profit + ((sb.stock.getCurrentPrice * (sb.amount - sb.sold)) - ((sb.amount - sb.sold) * sb.price)) %}
                         {% endfor %}
 
                         {% if play.options|length > 0 %}{% set fee = fee + 9.95 %}{% endif %}
