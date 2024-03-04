@@ -106,7 +106,7 @@ class TransferController extends AbstractController
             $transaction->setDate($date);
             $transaction->setUser($user);
             $word = ($amount) ? 'Share' : 'Shares';
-            $transaction->setName('Transferred '. $amount . ' ' . $stock->getTicker() . $word .' to ' . $transfer_user->getUsername());
+            $transaction->setName('Transferred '. $amount . ' ' . $stock->getTicker() . ' ' . $word .' to ' . $transfer_user->getUsername());
             $em->persist($transaction);
 
 
@@ -160,7 +160,7 @@ class TransferController extends AbstractController
             $transaction_r->setDate($date);
             $transaction_r->setUser($transfer_user);
             $word = ($amount) ? 'Share' : 'Shares';
-            $transaction_r->setName('Received '. $amount . ' ' . $stock->getTicker() . $word .' from ' . $user->getUsername());
+            $transaction_r->setName('Received '. $amount . ' ' . $stock->getTicker() . ' ' . $word .' from ' . $user->getUsername());
             $em->persist($transaction_r);
             $em->flush();
 
