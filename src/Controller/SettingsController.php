@@ -63,6 +63,7 @@ class SettingsController extends AbstractController
             $settings->setStocksCanadianUpdateLimitTimeout(10);
             $settings->setPortfolioUpdateOnWeekend(false);
             $settings->setStockUpdateOnWeekend(false);
+            $settings->setTFSALimit(0);
             $em->persist($settings);
             $em->flush();
         }

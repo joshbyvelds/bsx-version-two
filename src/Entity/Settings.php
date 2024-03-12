@@ -131,6 +131,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $futures_enabled;
 
+    #[ORM\Column(type: 'float')]
+    private $TFSA_limit;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -600,6 +603,18 @@ class Settings
     public function setFuturesEnabled(bool $futures_enabled): self
     {
         $this->futures_enabled = $futures_enabled;
+
+        return $this;
+    }
+
+    public function getTFSALimit(): ?float
+    {
+        return $this->TFSA_limit;
+    }
+
+    public function setTFSALimit(float $TFSA_limit): self
+    {
+        $this->TFSA_limit = $TFSA_limit;
 
         return $this;
     }

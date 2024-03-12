@@ -82,6 +82,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Portfolio::class, orphanRemoval: true)]
     private $portfolios;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: TFSAContribution::class)]
+    private $TFSAContributions;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -96,6 +99,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notes = new ArrayCollection();
         $this->writtenOptions = new ArrayCollection();
         $this->portfolios = new ArrayCollection();
+        $this->TFSAContributions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -592,6 +596,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($portfolio->getUser() === $this) {
                 $portfolio->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TFSAContribution>
+     */
+    public function getTFSAContributions(): Collection
+    {
+        return $this->TFSAContributions;
+    }
+
+    public function addTFSAContribution(TFSAContribution $tFSAContribution): self
+    {
+        if (!$this->TFSAContributions->contains($tFSAContribution)) {
+            $this->TFSAContributions[] = $tFSAContribution;
+            $tFSAContribution->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTFSAContribution(TFSAContribution $tFSAContribution): self
+    {
+        if ($this->TFSAContributions->removeElement($tFSAContribution)) {
+            // set the owning side to null (unless already changed)
+            if ($tFSAContribution->getUser() === $this) {
+                $tFSAContribution->setUser(null);
             }
         }
 

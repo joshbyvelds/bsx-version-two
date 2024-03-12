@@ -60,6 +60,7 @@ class SettingsType extends AbstractType
             ->add('futures_broker_margin_amount')
             ->add('portfolio_update_on_weekend')
             ->add('stock_update_on_weekend')
+            ->add('tfsa_limit')
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'
