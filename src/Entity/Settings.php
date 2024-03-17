@@ -134,6 +134,24 @@ class Settings
     #[ORM\Column(type: 'float')]
     private $TFSA_limit;
 
+    #[ORM\Column(type: 'boolean')]
+    private $TFSAEnabled;
+
+    #[ORM\Column(type: 'float')]
+    private $FHSA_limit;
+
+    #[ORM\Column(type: 'boolean')]
+    private $FHSAEnabled;
+
+    #[ORM\Column(type: 'float')]
+    private $RRSP_limit;
+
+    #[ORM\Column(type: 'boolean')]
+    private $RRSP_enabled;
+
+    #[ORM\Column(type: 'boolean')]
+    private $TFSA_track_balance;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -615,6 +633,78 @@ class Settings
     public function setTFSALimit(float $TFSA_limit): self
     {
         $this->TFSA_limit = $TFSA_limit;
+
+        return $this;
+    }
+
+    public function isTFSAEnabled(): ?bool
+    {
+        return $this->TFSAEnabled;
+    }
+
+    public function setTFSAEnabled(bool $TFSAEnabled): self
+    {
+        $this->TFSAEnabled = $TFSAEnabled;
+
+        return $this;
+    }
+
+    public function getFHSALimit(): ?float
+    {
+        return $this->FHSA_limit;
+    }
+
+    public function setFHSALimit(float $FHSA_limit): self
+    {
+        $this->FHSA_limit = $FHSA_limit;
+
+        return $this;
+    }
+
+    public function isFHSAEnabled(): ?bool
+    {
+        return $this->FHSAEnabled;
+    }
+
+    public function setFHSAEnabled(bool $FHSAEnabled): self
+    {
+        $this->FHSAEnabled = $FHSAEnabled;
+
+        return $this;
+    }
+
+    public function getRRSPLimit(): ?float
+    {
+        return $this->RRSP_limit;
+    }
+
+    public function setRRSPLimit(float $RRSP_limit): self
+    {
+        $this->RRSP_limit = $RRSP_limit;
+
+        return $this;
+    }
+
+    public function isRRSPEnabled(): ?bool
+    {
+        return $this->RRSP_enabled;
+    }
+
+    public function setRRSPEnabled(bool $RRSP_enabled): self
+    {
+        $this->RRSP_enabled = $RRSP_enabled;
+
+        return $this;
+    }
+
+    public function isTFSATrackBalance(): ?bool
+    {
+        return $this->TFSA_track_balance;
+    }
+
+    public function setTFSATrackBalance(bool $TFSA_track_balance): self
+    {
+        $this->TFSA_track_balance = $TFSA_track_balance;
 
         return $this;
     }

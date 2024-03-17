@@ -61,6 +61,12 @@ class SettingsType extends AbstractType
             ->add('portfolio_update_on_weekend')
             ->add('stock_update_on_weekend')
             ->add('tfsa_limit')
+            ->add('tfsa_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('tfsa_track_balance',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('fhsa_limit')
+            ->add('fhsa_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('rrsp_limit')
+            ->add('rrsp_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

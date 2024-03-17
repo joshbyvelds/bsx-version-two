@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello TSFAController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    tr td {
+        padding: 5px;
+    }
+</style>
+
+<div class="example-wrapper">
+    <a href="/tfsa/add">Add TFSA Transaction</a>
+    <table style="width: 100%;">
+        <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Deposit</th>
+            <th>Interest</th>
+            <th>Withdrawal</th>
+            {% if settings.TFSATrackBalance %}<th>Balance</th>{% endif %}
+            <th>Room Remaining</th>
+            <th style="width: 150px;">Notes</th>
+        </tr>
+
+        {% set room = settings.tfsaLimit %}
+        {% set balance = 0.0 %}
+        {% for contribution in contributions %}
+        {% set balance = balance + (contribution.deposit + contribution.interest - contribution.withdrawal) %}
+        <tr>
+            <td>{{ contribution.date|date("F d, Y")}}</td>
+            <td>{{ contribution.title }}</td>
+            <td>${{ contribution.deposit|number_format(2) }}</td>
+            <td>${{ contribution.interest|number_format(2)  }}</td>
+            <td>${{ contribution.withdrawal|number_format(2)  }}</td>
+            {% set room = room - contribution.deposit %}
+            {% if settings.TFSATrackBalance %}<td>${{ balance }}</td>{% endif %}
+            <td>${{ room|number_format(2) }}</td>
+            <td><p style="font-size: 16px; max-height: 87px; overflow:scroll;">{{ contribution.note }}</p></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

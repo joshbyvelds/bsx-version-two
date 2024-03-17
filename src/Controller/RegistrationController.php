@@ -76,6 +76,12 @@ class RegistrationController extends AbstractController
             $settings->setPortfolioUpdateOnWeekend(false);
             $settings->setStockUpdateOnWeekend(false);
             $settings->setTFSALimit(0);
+            $settings->setTFSAEnabled(false);
+            $settings->setTFSATrackBalance(true);
+            $settings->setFHSALimit(0);
+            $settings->setFHSAEnabled(false);
+            $settings->setRRSPLimit(0);
+            $settings->setRRSPEnabled(false);
 
 
             // Create a Wallet

@@ -85,6 +85,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: TFSAContribution::class)]
     private $TFSAContributions;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FHSAContribution::class)]
+    private $FHSAContributions;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RRSPContribution::class)]
+    private $RRSPContributions;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -100,6 +106,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->writtenOptions = new ArrayCollection();
         $this->portfolios = new ArrayCollection();
         $this->TFSAContributions = new ArrayCollection();
+        $this->FHSAContributions = new ArrayCollection();
+        $this->RRSPContributions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -626,6 +634,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($tFSAContribution->getUser() === $this) {
                 $tFSAContribution->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FHSAContribution>
+     */
+    public function getFHSAContributions(): Collection
+    {
+        return $this->FHSAContributions;
+    }
+
+    public function addFHSAContribution(FHSAContribution $FHSAContribution): self
+    {
+        if (!$this->FHSAContributions->contains($FHSAContribution)) {
+            $this->FHSAContributions[] = $FHSAContribution;
+            $FHSAContribution->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFHSAContribution(FHSAContribution $FHSAContribution): self
+    {
+        if ($this->FHSAContributions->removeElement($FHSAContribution)) {
+            // set the owning side to null (unless already changed)
+            if ($FHSAContribution->getUser() === $this) {
+                $FHSAContribution->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RRSPContribution>
+     */
+    public function getRRSPContributions(): Collection
+    {
+        return $this->RRSPContributions;
+    }
+
+    public function addRRSPContribution(RRSPContribution $RRSPContribution): self
+    {
+        if (!$this->RRSPContributions->contains($RRSPContribution)) {
+            $this->RRSPContributions[] = $RRSPContribution;
+            $RRSPContribution->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRRSPContribution(RRSPContribution $RRSPContribution): self
+    {
+        if ($this->RRSPContributions->removeElement($RRSPContribution)) {
+            // set the owning side to null (unless already changed)
+            if ($RRSPContribution->getUser() === $this) {
+                $RRSPContribution->setUser(null);
             }
         }
 

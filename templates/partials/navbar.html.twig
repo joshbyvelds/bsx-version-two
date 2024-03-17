@@ -34,8 +34,18 @@
             <li>
                 <a href="#" class="submenu-title" data-submenu="tax"><span class="material-icons">card_membership</span>Tax Account Tracking</a>
                 <ul class="submenu" data-submenu="tax">
+                    {% if settings.TFSAEnabled %}
                     <li><a href="/tfsa">TFSA Tracking</a></li>
                     <li><a href="/tfsa/add">Add TFSA Transaction</a></li>
+                    {% endif %}
+                    {% if settings.FHSAEnabled %}
+                    <li><a href="/tfsa">FHSA Tracking</a></li>
+                    <li><a href="/tfsa/add">Add FHSA Transaction</a></li>
+                    {% endif %}
+                    {% if settings.RRSPEnabled %}
+                    <li><a href="/tfsa">RRSP Tracking</a></li>
+                    <li><a href="/tfsa/add">Add RRSP Transaction</a></li>
+                    {% endif %}
                 </ul>
             </li>
             <li>
