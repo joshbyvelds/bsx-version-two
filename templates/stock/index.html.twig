@@ -462,8 +462,10 @@
     function open_stock_detail(stock_id){
         $("#stock_details_table").show();
         $("#stock_details_table tr").removeClass("on");
-        $("#stock-detail-" + stock_id).addClass("on");
-        $("#stock-detail-" + stock_id).next().addClass("on");
+        $selected_stock_details = $("#stock-detail-" + stock_id);
+        $selected_stock_details.addClass("on");
+        $selected_stock_details.next().addClass("on");
+        $selected_stock_details.next().next().addClass("on");
         $([document.documentElement, document.body]).animate({
             scrollTop: $("#stock-detail-" + stock_id).offset().top - 200
         }, 2000);

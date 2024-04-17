@@ -331,6 +331,7 @@ class StockController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
             $data = $form->getData();
+            $share_buy->setTransfer(false);
             
             if($share_buy->getStock()->isNoFee()){
                 $cost = $share_buy->getAmount() * $share_buy->getPrice();
@@ -386,6 +387,7 @@ class StockController extends AbstractController
         $settings = $user->getSettings();
         $error = "";
         $share_sell = new ShareSell();
+        $share_sell->setTransfer(false);
         $form = $this->createForm(ShareSellType::class, $share_sell);
         $form->handleRequest($request);
 
