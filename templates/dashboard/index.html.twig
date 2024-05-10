@@ -15,6 +15,9 @@
 
  --><div class="narrow_column">
         {% include "dashboard/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD, 'locked_cdn': wallet.lockedCdn, 'locked_usd': wallet.lockedUsd} %}
+        {% if wallet.lockedCdn != 0 or wallet.lockedUsd != 0 %}
+            {% include "dashboard/panels/wallet_locked.html.twig" with {'amount_can': wallet.lockedCdn, 'amount_usd': wallet.lockedUsd} %}
+        {% endif %}
         {% include "dashboard/panels/transfer.html.twig" %}
         {% include "dashboard/panels/stats.html.twig" %}
         {% include "dashboard/panels/transactions.html.twig" with {'transactions': transactions} %}

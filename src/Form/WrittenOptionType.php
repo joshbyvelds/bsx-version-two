@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\WrittenOption;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -61,6 +62,11 @@ class WrittenOptionType extends AbstractType
                 'expanded'=>true
             ])
             ->add('total', TextType::class, ['mapped' => false])
+
+            ->add('payment_locked',CheckboxType::class,[
+                'label' => 'Lock Payment? (for rollover) ',
+                'required' => false,
+            ])
 
             ->add('save', SubmitType::class, [
                 'attr' => [

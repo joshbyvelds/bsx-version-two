@@ -51,6 +51,9 @@ class WrittenOption
     #[ORM\Column(type: 'string', length: 3)]
     private $payment_currency;
 
+    #[ORM\Column(type: 'boolean')]
+    private $payment_locked;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -196,6 +199,18 @@ class WrittenOption
     public function setPaymentCurrency(string $payment_currency): self
     {
         $this->payment_currency = $payment_currency;
+
+        return $this;
+    }
+
+    public function isPaymentLocked(): ?bool
+    {
+        return $this->payment_locked;
+    }
+
+    public function setPaymentLocked(bool $payment_locked): self
+    {
+        $this->payment_locked = $payment_locked;
 
         return $this;
     }

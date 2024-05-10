@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -62,7 +63,7 @@ class StockController extends AbstractController
                         $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
                         dump("Update:" . $stock->getTicker());
                         $this->can_count++;
-                        $date = new \DateTime('now');
+                        $date = new DateTime('now');
                         $now = $date->format('Y-m-d H:i:s');
                         $atomCount->setValue($this->can_count);
                         $atomDate->setValue($now);
@@ -88,7 +89,7 @@ class StockController extends AbstractController
                             $this->update_price = $price;
 
                             $last = $stock->getLastPriceUpdate();
-                            $today = new \DateTime();
+                            $today = new DateTime();
 
                             $today_hour = $today->format('H');
 
@@ -134,8 +135,8 @@ class StockController extends AbstractController
                         
                     } else {
                         // check if it has been longer than 10 minutes
-                        $lastUpdate = \DateTime::createFromFormat('Y-m-d H:i:s', $atomDate->getValue());
-                        $now = new \DateTime('now');
+                        $lastUpdate = DateTime::createFromFormat('Y-m-d H:i:s', $atomDate->getValue());
+                        $now = new DateTime('now');
                         $interval = $lastUpdate->diff($now);
                         $minutes = (int)$interval->format('%i');
 
@@ -172,7 +173,7 @@ class StockController extends AbstractController
                 $this->update_price = $price;
 
                 $last = $stock->getLastPriceUpdate();
-                $today = new \DateTime();
+                $today = new DateTime();
 
                 $today_hour = $today->format('H');
 
@@ -213,7 +214,7 @@ class StockController extends AbstractController
             if($stock->isBeingPlayedOption() && count($stock->getOptions()) > 0){
                 foreach ($stock->getOptions() as $option) {
                     if(!$option->isExpired()){
-                        $date = new \DateTime();
+                        $date = new DateTime();
                         if($option->getExpiry() < $date){
                             $option->setExpired(true);
                             $option->getStock()->setBeingPlayedOption(false);
@@ -300,7 +301,7 @@ class StockController extends AbstractController
             $stock->setBeingPlayedShares(true);
             $stock->setBeingPlayedOption(false);
             $stock->setSharesOwned(0);
-            $date = new \DateTime();
+            $date = new DateTime();
             $stock->setLastPriceUpdate($date);
             $stock->setBgColor("ffffff");
 
@@ -346,7 +347,7 @@ class StockController extends AbstractController
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -450,7 +451,7 @@ class StockController extends AbstractController
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -509,7 +510,7 @@ class StockController extends AbstractController
             $option->setUser($user);
             $option->setCurrent(0.0);
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -579,7 +580,7 @@ class StockController extends AbstractController
             $option->setContracts($contracts);
             $option->setBuys((int)$option->getBuys() + 1);
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -640,7 +641,7 @@ class StockController extends AbstractController
             
             $option->setContracts($option->getContracts() - $form->get("contracts")->getData());
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -695,7 +696,7 @@ class StockController extends AbstractController
         $options = $user->getWrittenOptions();
 
         //loop though all the calls and see if any have expired
-        $today = new \DateTime();
+        $today = new DateTime();
         $today->modify('-1 day');
         $em = $doctrine->getManager();
 
@@ -724,6 +725,8 @@ class StockController extends AbstractController
         $form = $this->createForm(WrittenOptionType::class, $wo);
         $form->handleRequest($request);
 
+        $payment_locked = $form->get("payment_locked")->getData();
+
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
             $wo->setUser($user);
@@ -734,7 +737,7 @@ class StockController extends AbstractController
             
             //create transaction for sale of option contract ( you did make money right?? )
             $transaction = new Transaction();
-            $date = new \DateTime();
+            $date = new DateTime();
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -752,12 +755,21 @@ class StockController extends AbstractController
             $currency = $form->get("payment_currency")->getData();
             
             if ($currency == 'can'){
-                $wallet->deposit('CAN', $total);
+                if ($form->get("payment_locked")->getData() === true) {
+                    $wallet->lock('CAN', $total);
+                } else {
+                    $wallet->deposit('CAN', $total);
+                }
+
                 $transaction->setCurrency(1);
             }
 
             if ($currency == 'usd'){
-                $wallet->deposit('USD', $total);
+                if ($form->get("payment_locked")->getData() === true) {
+                    $wallet->lock('USD', $total);
+                } else {
+                    $wallet->deposit('USD', $total);
+                }
                 $transaction->setCurrency(2);
             }
             
@@ -853,12 +865,14 @@ class StockController extends AbstractController
             }
     
             // sell 100 shares of stock at strike
-            $date = new \DateTime();
+            $date = new DateTime();
             $share_sell = new ShareSell();
             $share_sell->setStock($stock);
             $share_sell->setPrice($wo->getStrike());
             $share_sell->setAmount(100);
             $share_sell->setDate($date);
+            $share_sell->setNofee(false);
+            $share_sell->setTransfer(false);
             
             $user = $share_sell->getStock()->getUser();
             $transaction = new Transaction();
@@ -888,7 +902,7 @@ class StockController extends AbstractController
         
         // EXERCISE CSP...
         } else {
-            $date = new \DateTime();
+            $date = new DateTime();
             $share_buy = new ShareBuy();
             $share_buy->setStock($stock);
             $share_buy->setPrice($wo->getStrike());
@@ -996,7 +1010,7 @@ class StockController extends AbstractController
                 dump("Test 2");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
-                    $date = new \DateTime();
+                    $date = new DateTime();
                     $stock->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
@@ -1010,7 +1024,7 @@ class StockController extends AbstractController
                  dump("Test 3");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
-                    $date = new \DateTime();
+                    $date = new DateTime();
                     $stock->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
@@ -1025,7 +1039,7 @@ class StockController extends AbstractController
                     dump("Test 3.1");
                     $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
-                        $date = new \DateTime();
+                        $date = new DateTime();
                         $stock->setLastPriceUpdate($date);
                         $em = $doctrine->getManager();
                         $em->flush();
@@ -1049,7 +1063,7 @@ class StockController extends AbstractController
                     dump("Test 4");
                     $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
-                        $date = new \DateTime();
+                        $date = new DateTime();
                         $stock->setLastPriceUpdate($date);
                         $em = $doctrine->getManager();
                         $em->flush();
@@ -1078,7 +1092,7 @@ class StockController extends AbstractController
                  dump("Test 6");
                 $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
-                    $date = new \DateTime();
+                    $date = new DateTime();
                     $stock->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
