@@ -50,7 +50,7 @@
         <th>🎯% |</th>
         <th>Expiry Date | </th>
         <th>Days Left | </th>
-        <th>Actions</th>
+        <th colspan="3">Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -84,11 +84,9 @@
                         {% set dl = (datePost == today) ? 'Today' : (leftDays == 1) ? 'Tomorrow' : (pastExpiry) ? '<span style="color:red">' ~ leftDays ~ '</span>' : leftDays %}
                         {{ dl|raw }}
                     </td>
-                    <td>
-                        <a href="/stocks/writtenoption/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a>
-                        <br />
-                        <a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;" {% if pastExpiry == false %}disabled{% endif %}>Expire</button></a>
-                    </td>
+                    <td><a href="/stocks/writtenoption/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a></td>
+                    <td><a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;" {% if pastExpiry == false %}disabled{% endif %}>Expire</button></a></td>
+                    <td><a href="/stocks/writtenoption/selltoclose/{{ wo.id }}"><button style="width:100%;">Sell To Close</button></a></td>
                 </tr>
             {% endif %}
         {% endfor %}
@@ -109,6 +107,7 @@
                     <th>Strike |</th>
                     <th>Expiry Date |</th>
                     <th>Exercised |</th>
+                    <th>Buyout |</th>
                     <th>Earned | </th>
                     <th><small>Buy/Expire +/-</small> | </th>
                     <th><small>Strike +/-</small> | </th>
@@ -121,6 +120,11 @@
                 {% for wo in old_wo|sort((a, b) => a.expiry <=> b.expiry) %}
                     {% if wo.contractType == 1 %}
                         {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
+
+                        {% if wo.buyout %}
+                            {% set earned = earned - wo.buyoutPrice %}
+                        {% endif %}
+
                         {% set eps = earned / (wo.contracts * 100)  %}
 
                         {% if wo.exercised %}
@@ -144,6 +148,7 @@
                             <td>{{ wo.strike|number_format(2) }}</td>
                             <td>{{ wo.expiry|date("m/d/Y") }}</td>
                             <td>{% if wo.exercised %}1{% else %}0{% endif %}</td>
+                            <td>{% if wo.buyout %}1{% else %}0{% endif %}</td>
                             <td>${{ earned|number_format(2) }}</td>
                             <td class="{% if be_diff > 0 %}green{% else %}red{% endif %}">
                                 <span class="{% if be_diff > 0 %}green{% else %}red{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>

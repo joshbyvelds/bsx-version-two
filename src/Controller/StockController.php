@@ -17,6 +17,7 @@ use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
 use App\Form\WrittenOptionType;
+use App\Form\WrittenOptionSelltocloseType;
 use App\Entity\Atom;
 use App\Entity\WrittenOption;
 use App\Entity\Option;
@@ -733,6 +734,8 @@ class StockController extends AbstractController
             $wo->setExercised(false);
             $wo->setExpired(false);
             $wo->setStockExpiryPrice(0.00);
+            $wo->setBuyout(0);
+            $wo->setBuyoutPrice(0);
             $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             
             //create transaction for sale of option contract ( you did make money right?? )
@@ -1157,5 +1160,73 @@ class StockController extends AbstractController
     {
         if($a->getPrice() == $b->getPrice()){ return 0; }
         return ($a->getPrice() < $b->getPrice()) ? -1 : 1;
+    }
+
+    #[Route('/stocks/writtenoption/selltoclose/{option}', name: 'stocks_written_options_selltoclose')]
+    public function sellToClose(ManagerRegistry $doctrine, Request $request, int $option): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $em = $doctrine->getManager();
+        $wo = $em->getRepository(WrittenOption::class)->find($option);
+        $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
+
+        $info = ["option" => $option, "name" => $wo->getStock()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
+
+        $form = $this->createForm(WrittenOptionSelltocloseType::class, $info);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $currency = $form->get("payment_currency")->getData();
+            $basic_fee = 9.95;
+            $contract_fee = 1.25;
+            $contracts = $form->get("contracts")->getData();
+            $total_cost = (($form->get("price")->getData() * 100) * $contracts) + $basic_fee + ($contract_fee * $contracts);
+            $wo->setExpired(true);
+            $wo->setStockExpiryPrice($form->get("stock_price")->getData());
+            $wo->setBuyout(true);
+            $wo->setBuyoutPrice($total_cost);
+
+            $transaction = new Transaction();
+            $date = new DateTime();
+            $transaction->setType(2);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $option_strike = "$". number_format($wo->getStrike(), 2);
+            $option_expiry = date_format($wo->getExpiry(), 'Y-m-d');
+            $word = ($contracts === 1) ? " Covered Call Option " : " Covered Call Options ";
+            $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setAmount($total_cost);
+
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            if ($currency == 'can'){
+                if($form->get("use_locked_funds")->getData()){
+                    $wallet->unlock('CAN', $total_cost);
+                }
+                $wallet->withdraw('CAN', $total_cost);
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                if($form->get("use_locked_funds")->getData()){
+                    $wallet->unlock('CAN', $total_cost);
+                }
+                $wallet->withdraw('USD', $total_cost);
+                $transaction->setCurrency(2);
+            }
+
+            $em->persist($transaction);
+            $em->flush();
+
+            //return $this->redirectToRoute('stocks_buy_shares');
+            return $this->redirectToRoute('stocks_written_options');
+        }
+
+        return $this->render('form/index.html.twig', [
+            'error' => "",
+            'form' => $form->createView(),
+            'settings' => $settings,
+        ]);
     }
 }

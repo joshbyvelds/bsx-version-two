@@ -137,11 +137,15 @@ class Wallet
     public function unlock(string $currency, float $amount): self
     {
         if($currency === "CAN"){
-            $this->locked_cdn -= $amount;
+            $amount_to_unlock = ($amount < $this->locked_cdn) ? $amount : $this->locked_cdn;
+            $this->locked_cdn -= $amount_to_unlock;
+            $this->CAN += $amount_to_unlock;
         }
         
         if($currency === "USD"){
-            $this->locked_usd -= $amount;
+            $amount_to_unlock = ($amount < $this->locked_usd) ? $amount : $this->locked_usd;
+            $this->locked_usd -= $amount_to_unlock;
+            $this->USD += $amount_to_unlock;
         }
     
         return $this;

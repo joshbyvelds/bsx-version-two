@@ -54,6 +54,12 @@ class WrittenOption
     #[ORM\Column(type: 'boolean')]
     private $payment_locked;
 
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private $buyout;
+
+    #[ORM\Column(type: 'float')]
+    private $buyout_price;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -211,6 +217,30 @@ class WrittenOption
     public function setPaymentLocked(bool $payment_locked): self
     {
         $this->payment_locked = $payment_locked;
+
+        return $this;
+    }
+
+    public function isBuyout(): ?bool
+    {
+        return $this->buyout;
+    }
+
+    public function setBuyout(?bool $buyout): self
+    {
+        $this->buyout = $buyout;
+
+        return $this;
+    }
+
+    public function getBuyoutPrice(): ?float
+    {
+        return $this->buyout_price;
+    }
+
+    public function setBuyoutPrice(float $buyoutPrice): self
+    {
+        $this->buyout_price = $buyoutPrice;
 
         return $this;
     }
