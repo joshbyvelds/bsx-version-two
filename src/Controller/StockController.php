@@ -17,7 +17,7 @@ use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
 use App\Form\WrittenOptionType;
-use App\Form\WrittenOptionSelltocloseType;
+use App\Form\WrittenOptionBuytocloseType;
 use App\Entity\Atom;
 use App\Entity\WrittenOption;
 use App\Entity\Option;
@@ -1188,7 +1188,7 @@ class StockController extends AbstractController
         return ($a->getPrice() < $b->getPrice()) ? -1 : 1;
     }
 
-    #[Route('/stocks/writtenoption/selltoclose/{option}', name: 'stocks_written_options_selltoclose')]
+    #[Route('/stocks/writtenoption/buytoclose/{option}', name: 'stocks_written_options_buytoclose')]
     public function sellToClose(ManagerRegistry $doctrine, Request $request, int $option): Response
     {
         $user = $this->getUser();
@@ -1199,7 +1199,7 @@ class StockController extends AbstractController
 
         $info = ["option" => $option, "name" => $wo->getStock()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
 
-        $form = $this->createForm(WrittenOptionSelltocloseType::class, $info);
+        $form = $this->createForm(WrittenOptionBuytocloseType::class, $info);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

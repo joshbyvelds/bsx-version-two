@@ -86,7 +86,7 @@
                     </td>
                     <td><a href="/stocks/writtenoption/exercise/{{ wo.id }}"><button style="width:100%;">Exercise</button></a></td>
                     <td><a href="/stocks/writtenoption/expire/{{ wo.id }}"><button style="width:100%;" {% if pastExpiry == false %}disabled{% endif %}>Expire</button></a></td>
-                    <td><a href="/stocks/writtenoption/selltoclose/{{ wo.id }}"><button style="width:100%;">Sell To Close</button></a></td>
+                    <td><a href="/stocks/writtenoption/buytoclose/{{ wo.id }}"><button style="width:100%;">Buy To Close</button></a></td>
                 </tr>
             {% endif %}
         {% endfor %}

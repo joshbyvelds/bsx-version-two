@@ -13,7 +13,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 
 
-class WrittenOptionSelltocloseType extends AbstractType
+class WrittenOptionBuytocloseType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
