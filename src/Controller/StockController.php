@@ -284,6 +284,32 @@ class StockController extends AbstractController
         ]);
     }
 
+    #[Route('/stocks/details/{stock_id}', name: 'stock_details')]
+    public function details(Request $request, ManagerRegistry $doctrine, int $stock_id): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $em = $doctrine->getManager();
+        $stock = $em->getRepository(Stock::class)->find($stock_id);
+
+
+
+
+        // make sure this stock exists..
+        if(!isset($stock)) {
+            return $this->redirectToRoute('stocks');
+        }
+
+        // Make sure this stock belongs to the user...
+        if($user !== $stock->getUser())
+            return $this->redirectToRoute('dashboard');
+
+        return $this->render('stock/details.html.twig', [
+            'stock' => $stock,
+            'settings' => $settings,
+        ]);
+    }
+
     #[Route('/stocks/add', name: 'stocks_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {

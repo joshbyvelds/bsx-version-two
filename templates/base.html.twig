@@ -19,12 +19,14 @@
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
             <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
             <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wdth,wght@83.9,300&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="/assets/css/tailwind_output.css">
             <link rel="stylesheet" href="/assets/css/master.min.css">
         {% endblock %}
 
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
             <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
             <script src="/assets/js/moment.min.js"></script>
             <script src="/assets/js/chart.min.js"></script>
             <script src="/assets/js/master.js"></script>
