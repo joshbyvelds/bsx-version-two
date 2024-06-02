@@ -3,5 +3,476 @@
 {% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" /><div class="results"></div></div>{% endblock %}
 
 {% block body %}
-    <div class="rounded h-20 w-20 bg-amber-500"></div>
+
+    {% set stock_amount = 0 %}
+    {% set stock_average = 0 %}
+
+    {% for buy in stock.shareBuys %}
+        {% if buy.sold < buy.amount %}
+            {% set remaining = buy.amount - buy.sold %}
+            {% set stock_amount = stock_amount + remaining %}
+            {% set buy_average = remaining * buy.price %}
+            {% set stock_average = stock_average + buy_average %}
+        {% endif %}
+    {% endfor %}
+
+    {% set stock_dividend = 0 %}
+    {% set stock_amount = 0 %}
+    {% set stock_average = 0 %}
+    {% set stock_money_total = 0 %}
+    {% set stock_earned = stock.earned %}
+    {% set stock_current = stock.currentPrice %}
+    {% set stock_breakeven = 0 %}
+    {% set stock_pl = 0 %}
+    {% set stock_buy_cost_total = 0 %}
+    {% set buys = 0 %}
+    {% set sells = 0 %}
+    {% set d_bought = "" %}
+    {% set d_sold = "" %}
+    {% set buy_average = 0 %}
+
+    {% set today = "now"|date('d-m-Y') %}
+    {% set lastBuyDate = today %}
+    {% set breakeven_fee = false %}
+
+
+    {% for buy in stock.shareBuys %}
+        {% set d_bought = buy.date %}
+        {% if stock.noFee or buy.noFee %}
+            {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) %}
+        {% else %}
+            {% set breakeven_fee = true %}
+            {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
+        {% endif %}
+        {% if buy.sold < buy.amount %}
+            {% set remaining = buy.amount - buy.sold %}
+            {% set buys = buys + 1 %}
+            {% set stock_amount = stock_amount + remaining %}
+            {% set buy_average = remaining * buy.price %}
+            {% set stock_average = stock_average + buy_average %}
+            {% set stock_money_total = stock_money_total + buy_average %}
+            {% set lastBuyDate = buy.date|date('d-m-Y') %}
+        {% endif %}
+
+    {% endfor %}
+
+    {# {{ stock_buy_cost_total }} | {{ stock_amount }} | {{ buy_average }} | {{ stock_average }} #}
+
+
+    {% if stock_amount > 0 %}
+        {% set stock_average = stock_average / stock_amount %}
+        {% if stock.noFee or breakeven_fee == false %}
+            {% set fee = 0 %}
+        {% else %}
+            {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+        {% endif %}
+        {% set stock_breakeven = fee + stock_average %}
+        {% set diff = stock_current - stock_breakeven %}
+        {% set stock_pl = diff * stock_amount %}
+    {% endif %}
+
+    {% set total_sold = 0 %}
+    {% for sell in stock.shareSells %}
+        {% set sells = sells + 1 %}
+        {% if stock.noFee %}
+            {% set total_sold = total_sold + (sell.amount * sell.price) %}
+            {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
+        {% else %}
+            {% set total_sold = total_sold + (sell.amount * sell.price) - 9.95 %}
+            {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
+        {% endif %}
+        {% set d_sold = sell.date %}
+    {% endfor %}
+
+    {% for divi in stock.dividends %}
+        {% set stock_dividend = stock_dividend + divi.amount %}
+    {% endfor %}
+
+    {% set stock_earned = stock_earned + stock_dividend - stock_buy_cost_total %}
+    {% set cc_total = 0 %}
+    {% set breakeven_cc = 0 %}
+    {% for cc in stock.coveredCalls %}
+        {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
+        {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}
+        {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
+    {% endfor %}
+
+    {% set buyDateDifference = date(today).diff(date(lastBuyDate))%}
+    {% set daysSinceLastBuy = buyDateDifference.days %}
+
+    {% set options_total = 0 %}
+    {% for option in stock.options %}
+        {% set option_fees = (9.95 * (option.buys + option.sells)) + (1.25 * option.totalContracts) + 1.25 * option.totalContractsSold %}
+        {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100)))  %}
+    {% endfor %}
+
+    <div>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+            <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg'); background-position: center center; background-repeat: no-repeat; background-size:cover;"></div>
+            <div class="sm:col-span-2">
+                <div class="text-6xl"><span class="text-9xl" style="font-size: 190px;">{{ stock.ticker }}</span> <span>${{ stock.currentPrice|number_format(2) }}</span></div>
+                <div>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="px-4 sm:px-0">
+            <h3 class="text-base font-semibold leading-7 text-gray-900">Stock Information</h3>
+            <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Personal details and application.</p>
+        </div>
+        <div class="mt-6 border-t border-gray-100">
+            <dl class="divide-y divide-gray-100">
+
+                {# Company Details #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Company Name</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock.name }}</dd>
+                </div>
+
+                {# Stock Details #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Stock Type</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0">{% if stock.country == "USD" %}<img src="/assets/images/flag_us.png" alt=""> United States (NYSE){% else %}<img src="/assets/images/flag_can.png" alt="">Canada (TSX){% endif %}</dd>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"><img src="/assets/images/{{ stock.type }}_chip.png">{{ stock.type }} CHIP</dd>
+                </div>
+
+                {# Amount Owned #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Amount Owned</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock_amount }}</dd>
+                </div>
+
+                {# Performance #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Performance</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {% if stock_amount > 0 %}
+                        <table style="width:100%;">
+                            <tr>
+                                <td>
+                                    <h2>Yesterday</h2>
+                                    {% set percent_change = ((stock_current / stock.priceYesterday) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYesterday|number_format(2) }}
+                                </td>
+
+                                <td>
+                                    <h2>Week</h2>
+                                    {% set percent_change = ((stock_current / stock.priceWeek) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.priceWeek|number_format(2) }}
+                                </td>
+
+                                <td>
+                                    <h2>Month</h2>
+                                    {% set percent_change = ((stock_current / stock.priceMonth) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceMonth|number_format(2) }}
+                                </td>
+
+                                <td>
+                                    <h2>Year</h2>
+                                    {% set percent_change = ((stock_current / stock.priceYear) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYear|number_format(2) }}
+                                </td>
+                            </tr>
+                        </table>
+                        {% else %}
+                            No Performance Metrics for Stock with No Shares.
+                        {% endif %}
+                    </dd>
+                </div>
+
+                {# Key Dates #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Key Dates</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <div class="relative overflow-x-auto">
+                            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Last Bought</th>
+                                    <th scope="col" class="px-6 py-3">Last Sold</th>
+                                    <th scope="col" class="px-6 py-3">Days Owned</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <td class="px-6 py-4">{% if d_bought != "" %}{{ d_bought|date("m/d/Y") }}{% endif %}</td>
+                                    <td class="px-6 py-4">{% if d_sold != "" %}{{ d_sold|date("m/d/Y") }}{% else %}Never Sold{% endif %}</td>
+                                    <td class="px-6 py-4">{{ daysSinceLastBuy }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </dd>
+                </div>
+
+                {# Earned #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Earned</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br />
+                        <br />
+                        <span class="text-3xl">${{ stock_earned|number_format(2) }}</span>
+                    </dd>
+                </div>
+
+                {# Breakeven Price #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Break Even Prices</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <div class="flex flex-col">
+                            <div class="-m-1.5 overflow-x-auto">
+                                <div class="p-1.5 min-w-full inline-block align-middle">
+                                    <div class="border rounded-lg shadow overflow-hidden dark:border-neutral-700 dark:shadow-gray-900">
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                            <thead>
+                                            <tr class="divide-x divide-gray-200 dark:divide-neutral-700">
+                                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Shares Only</th>
+                                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">with Covered Calls</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ stock_breakeven|number_format(2) }}</span></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ breakeven_cc|number_format(2) }}</span></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </dd>
+                </div>
+
+                {# Written Options #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Written Options</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {% if stock.coveredCalls is empty %}
+                            No covered calls sold on this stock
+                        {% else %}
+                        <table>
+                            <tr>
+                                <th>Price |</th>
+                                <th>Contracts |</th>
+                                <th>Strike |</th>
+                                <th>Expiry Date |</th>
+                                <th>Status |</th>
+                                <th>Earned | </th>
+                                <th><small>Buy/Expire +/-</small> | </th>
+                                <th><small>Strike +/-</small> | </th>
+                                <th>🎯% |</th>
+                                <th>Stats <small>(EPS|SBP|SEP)</small></th>
+                            </tr>
+                            {% for cc in stock.coveredCalls %}
+                            <tr>
+                                {% set cc_earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+
+                                {% if cc.buyout %}
+                                    {% set cc_earned = cc_earned - cc.buyoutPrice %}
+                                {% endif %}
+
+                                {% set eps = cc_earned / (cc.contracts * 100)  %}
+
+                                {% if cc.exercised %}
+                                    {% set cc_diff = cc.strike - (cc.stockBuyPrice - eps) %}
+                                {% else %}
+                                    {% set cc_diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
+                                {% endif %}
+
+                                {% set cc_be_diff = (cc.stockBuyPrice - cc.stockExpiryPrice) * -1 %}
+                                {% set cc_se_diff = (cc.stockExpiryPrice - cc.strike) %}
+                                {% set cc_se_per = ((cc.stockExpiryPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                {% set cc_ab_per = cc_se_per %}
+                                {% set cc_away_from_target = 100 + cc_ab_per %}
+
+                                <td>{{ cc.price|number_format(2) }}</td>
+                                <td>{{ cc.contracts }}</td>
+                                <td>{{ cc.strike|number_format(2) }}</td>
+                                <td>{{ cc.expiry|date("m/d/Y") }}</td>
+                                <td>
+                                    {% if cc.buyout %}
+                                        Buyout
+                                    {% elseif cc.expired %}
+                                        Expired
+                                    {% else %}
+                                        Ongoing
+                                    {% endif %}
+                                </td>
+                                <td>${{ cc_earned|number_format(2) }}</td>
+                                <td class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">
+                                    <span class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">{% if cc_be_diff > 0 %}+{% endif %}{{ cc_be_diff|number_format(2) }}</span>
+                                </td>
+                                <td class="{% if cc_se_diff < 0 %}green{% else %}red{% endif %}">
+                                    <span>{% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }}</span>
+                                </td>
+                                <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
+                                    <span>{{ cc_away_from_target|number_format(2) }}%</span>
+                                </td>
+                                <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
+                            </tr>
+                        {% endfor %}
+                        </table>
+                        {% endif %}
+                    </dd>
+                </div>
+
+                {# Dividend #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Dividend</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {% if stock.paysDividend %}
+                            <table>
+                                <tr>
+                                    <th>Total Amount</th>
+                                    <th># of Payments</th>
+                                    <th></th>
+                                </tr>
+                            </table>
+                            ${{ stock_dividend|number_format(2) }}
+                        {% else %}
+                            No Dividend
+                        {% endif %}
+                    </dd>
+                </div>
+
+                {# Plays History #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Plays History</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <table style="width:100%;">
+                            <tr>
+                                <th>Range</th>
+                                <th>Amount</th>
+                            </tr>
+                            <tr>
+                                <td>01/03/2024 - 03/17/2024</td>
+                                <td>$1,234.46</td>
+                            </tr>
+                        </table>
+                    </dd>
+                </div>
+
+                {# Share Ownership History #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Share Ownership History</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <table style="width: 100%">
+                            <tr>
+                                <th>BUYS</th>
+                                <th>SELLS</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <table class="buy_table" style="width: 100%; vertical-align: top;">
+                                        <tr>
+                                            <th>DATE</th>
+                                            <th>AMOUNT</th>
+                                            <th>PRICE</th>
+                                        </tr>
+
+                                        {% for buy in stock.shareBuys %}
+                                            <tr>
+                                                <td>{{ buy.date|date("m/d/Y") }}</td>
+                                                <td>{{ buy.amount }}</td>
+                                                <td>{{ buy.price }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                                <td>
+                                    <table class="sell_table" style="width: 100%; vertical-align: top;">
+                                        <tr>
+                                            <th>DATE</th>
+                                            <th>AMOUNT</th>
+                                            <th>PRICE</th>
+                                        </tr>
+                                        {% for sell in stock.shareSells %}
+                                            <tr>
+                                                <td>{{ sell.date|date("m/d/Y") }}</td>
+                                                <td>{{ sell.amount }}</td>
+                                                <td>{{ sell.price }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </dd>
+                </div>
+
+                {# Options Ownership History #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Options Ownership History</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <table class="buy_table" style="width: 100%; vertical-align: top;">
+                            <tr>
+                                <th>Buy Date</th>
+                                <th>Expiry Date</th>
+                                <th>Contracts</th>
+                                <th>Average</th>
+                                <th>Sell Date</th>
+                                <th>Sell Price</th>
+                            </tr>
+
+                            {% for option in stock.options %}
+                                <tr>
+                                    <td>{{ option.buyDate|date("m/d/Y") }}</td>
+                                    <td>{{ option.expiry|date("m/d/Y") }}</td>
+                                    <td>{{ option.contracts }}</td>
+                                    <td>{{ option.average }}</td>
+                                    {% if option.expired and option.totalContractsSold == 0 %}
+                                        <td colspan="2">Expired</td>
+                                    {% elseif option.totalContractsSold == 0 %}
+                                        <td colspan="2">No Contracts sold</td>
+                                    {% else %}
+                                        <td>{{ option.sellDate|date("m/d/Y") }}</td>
+                                        <td>${{ option.sellPrice|number_format(2) }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </dd>
+                </div>
+
+                {# Attacxhments #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Attachments</dt>
+                    <dd class="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                        <ul role="list" class="divide-y divide-gray-100 rounded-md border border-gray-200">
+                            <li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
+                                <div class="flex w-0 flex-1 items-center">
+                                    <svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="ml-4 flex min-w-0 flex-1 gap-2">
+                                        <span class="truncate font-medium">resume_back_end_developer.pdf</span>
+                                        <span class="flex-shrink-0 text-gray-400">2.4mb</span>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-shrink-0">
+                                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
+                                </div>
+                            </li>
+                            <li class="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6">
+                                <div class="flex w-0 flex-1 items-center">
+                                    <svg class="h-5 w-5 flex-shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M15.621 4.379a3 3 0 00-4.242 0l-7 7a3 3 0 004.241 4.243h.001l.497-.5a.75.75 0 011.064 1.057l-.498.501-.002.002a4.5 4.5 0 01-6.364-6.364l7-7a4.5 4.5 0 016.368 6.36l-3.455 3.553A2.625 2.625 0 119.52 9.52l3.45-3.451a.75.75 0 111.061 1.06l-3.45 3.451a1.125 1.125 0 001.587 1.595l3.454-3.553a3 3 0 000-4.242z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="ml-4 flex min-w-0 flex-1 gap-2">
+                                        <span class="truncate font-medium">coverletter_back_end_developer.pdf</span>
+                                        <span class="flex-shrink-0 text-gray-400">4.5mb</span>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-shrink-0">
+                                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Download</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
 {% endblock %}

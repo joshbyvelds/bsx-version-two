@@ -36,6 +36,15 @@ class Option
     #[ORM\Column(type: 'date')]
     private $expiry;
 
+    #[ORM\Column(type: 'date')]
+    private $buy_date;
+
+    #[ORM\Column(type: 'date')]
+    private $sell_date;
+
+    #[ORM\Column(type: 'float')]
+    private $sell_price;
+
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'options')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
@@ -48,6 +57,15 @@ class Option
 
     #[ORM\Column(type: 'float')]
     private $current;
+
+    #[ORM\Column(type: 'integer')]
+    private $total_contracts;
+
+    #[ORM\Column(type: 'integer')]
+    private $total_contracts_sold;
+
+    #[ORM\Column(type: 'integer')]
+    private $sells;
 
     public function getId(): ?int
     {
@@ -182,6 +200,78 @@ class Option
     public function setCurrent(float $current): self
     {
         $this->current = $current;
+
+        return $this;
+    }
+
+    public function getSellPrice(): ?float
+    {
+        return $this->sell_price;
+    }
+
+    public function setSellPrice(float $current): self
+    {
+        $this->sell_price = $current;
+
+        return $this;
+    }
+
+    public function getBuyDate(): ?\DateTimeInterface
+    {
+        return $this->buy_date;
+    }
+
+    public function setBuyDate(\DateTimeInterface $date): self
+    {
+        $this->buy_date = $date;
+
+        return $this;
+    }
+
+    public function getSellDate(): ?\DateTimeInterface
+    {
+        return $this->sell_date;
+    }
+
+    public function setSellDate(\DateTimeInterface $date): self
+    {
+        $this->sell_date = $date;
+
+        return $this;
+    }
+
+    public function getTotalContracts(): ?int
+    {
+        return $this->total_contracts;
+    }
+
+    public function setTotalContracts(int $total_contracts): self
+    {
+        $this->total_contracts = $total_contracts;
+
+        return $this;
+    }
+
+    public function getTotalContractsSold(): ?int
+    {
+        return $this->total_contracts_sold;
+    }
+
+    public function setTotalContractsSold(int $total_contracts_sold): self
+    {
+        $this->total_contracts_sold = $total_contracts_sold;
+
+        return $this;
+    }
+
+    public function getSells(): ?int
+    {
+        return $this->sells;
+    }
+
+    public function setSells(int $sells): self
+    {
+        $this->sells = $sells;
 
         return $this;
     }

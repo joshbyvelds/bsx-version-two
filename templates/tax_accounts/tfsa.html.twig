@@ -18,6 +18,7 @@
             <th>Date</th>
             <th>Title</th>
             <th>Deposit</th>
+            <th>Locked</th>
             <th>Interest</th>
             <th>Withdrawal</th>
             {% if settings.TFSATrackBalance %}<th>Balance</th>{% endif %}
@@ -33,6 +34,7 @@
             <td>{{ contribution.date|date("F d, Y")}}</td>
             <td>{{ contribution.title }}</td>
             <td>${{ contribution.deposit|number_format(2) }}</td>
+            <td>${{ contribution.locked|number_format(2)  }}</td>
             <td>${{ contribution.interest|number_format(2)  }}</td>
             <td>${{ contribution.withdrawal|number_format(2)  }}</td>
             {% set room = room - contribution.deposit %}

@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Dividend;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -41,6 +42,14 @@ class DividendType extends AbstractType
             ])
             ->add('amount', TextType::class, [
                 'attr' => ['placeholder' => '$0.00'],
+            ])
+            ->add('currency',ChoiceType::class,[
+                'choices' => array(
+                    'CAN' => 'can',
+                    'USD' => 'usd'
+                ),
+                'multiple'=>false,
+                'expanded'=>true
             ])
             ->add('save', SubmitType::class, [
                 'attr' => [

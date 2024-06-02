@@ -27,6 +27,9 @@ class Dividend
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
+    #[ORM\Column(type: 'string', length: 5)]
+    private $currency;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +79,18 @@ class Dividend
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(string $currency): self
+    {
+        $this->currency = $currency;
 
         return $this;
     }

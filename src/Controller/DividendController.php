@@ -103,11 +103,18 @@ class DividendController extends AbstractController
 
             // Update Wallet..
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
-            $wallet->deposit('CAN', $data->getAmount());
+
+            // get currency
+            if ($form->get("currency")->getData() === "can") {
+                $wallet->deposit('CAN', $data->getAmount());
+                $transaction->setCurrency(1);
+            } else {
+                $wallet->deposit('USD', $data->getAmount());
+                $transaction->setCurrency(2);
+            }
 
             // Create Transaction..
             $transaction->setUser($user);
-            $transaction->setCurrency(1);
             $transaction->setType(4);
             $transaction->setName('Dividend Payment - ' . $data->getStock()->getTicker());
             $transaction->setAmount($data->getAmount());

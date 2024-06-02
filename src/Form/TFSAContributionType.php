@@ -19,6 +19,7 @@ class TFSAContributionType extends AbstractType
                 'widget' => 'single_text',
             ])
             ->add('deposit')
+            ->add('locked')
             ->add('withdrawal')
             ->add('interest')
             ->add('note')

@@ -35,6 +35,9 @@ class TFSAContribution
     #[ORM\Column(type: 'text', nullable: true)]
     private $note;
 
+    #[ORM\Column(type: 'float')]
+    private $locked;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +123,18 @@ class TFSAContribution
     public function setNote(?string $note): self
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getLocked(): ?float
+    {
+        return $this->locked;
+    }
+
+    public function setLocked(float $locked): self
+    {
+        $this->locked = $locked;
 
         return $this;
     }

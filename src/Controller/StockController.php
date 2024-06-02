@@ -596,6 +596,8 @@ class StockController extends AbstractController
             $data = $form->getData();
             $option = $form->get("option")->getData();
 
+            $date = new DateTime();
+
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
             
@@ -606,8 +608,10 @@ class StockController extends AbstractController
             $option->setAverage($average);
             $option->setContracts($contracts);
             $option->setBuys((int)$option->getBuys() + 1);
+            $option->setBuyDate($date);
+            $option->setSellPrice(0);
+
             $transaction = new Transaction();
-            $date = new DateTime();
             $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
@@ -616,6 +620,7 @@ class StockController extends AbstractController
             $option_strike = $option->getStrike();
             $option_expiry = date_format($option->getExpiry(), 'Y-m-d');
             $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+
 
             //dump($transaction->getName());
 
