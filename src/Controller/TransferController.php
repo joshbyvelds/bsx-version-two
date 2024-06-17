@@ -8,6 +8,7 @@ use App\Entity\Stock;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Form\TransferSharesType;
+use App\Form\TransferCdnType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,13 +32,65 @@ class TransferController extends AbstractController
 //    }
 
     #[Route('/transfer/cdn', name: 'app_transfer_cdn')]
-    public function cdn(ManagerRegistry $doctrine): Response
+    public function cdn(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
         $settings = $user->getSettings();
+        
+
+        $error = "";
+        $form = $this->createForm(TransferCdnType::class);
+        $form->handleRequest($request);
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $doctrine->getManager();
+            $amount = (float)$form->get("amount")->getData();
+            $wallet = $user->getWallet();
+            $user2 = $form->get("user")->getData();
+            $wallet2 = $user2->getWallet();
+
+            if ($amount > (float)$wallet->getCAN()){
+                $error = "Not enough Cash in wallet for this transfer";
+                return $this->render('transfer/cdn.html.twig', [
+                    'settings' => $settings,
+                    'error' => $error,
+                    'form' => $form->createView(),
+                ]);
+            }
+            
+            // move money..
+            $wallet->withdraw("CAN", $amount);
+            $wallet2->deposit("CAN", $amount);
+
+            // create transaction for both users..
+            $transaction_sender = new Transaction();
+            $date = new \DateTime();
+            $transaction_sender->setType(8);
+            $transaction_sender->setAmount($amount);
+            $transaction_sender->setCurrency(1);
+            $transaction_sender->setDate($date);
+            $transaction_sender->setUser($user);
+            $transaction_sender->setName('Sent $'. $amount . ' CDN from ' . $user2->getUsername());
+            $em->persist($transaction_sender);
+
+            $transaction_receiver = new Transaction();
+            $date = new \DateTime();
+            $transaction_receiver->setType(8);
+            $transaction_receiver->setAmount($amount);
+            $transaction_receiver->setCurrency(1);
+            $transaction_receiver->setDate($date);
+            $transaction_receiver->setUser($user2);
+            $transaction_receiver->setName('Received $'. number_format($amount, 2) . ' CDN from ' . $user->getUsername());
+            $em->persist($transaction_receiver);
+            $em->flush();
+
+        }
 
         return $this->render('transfer/cdn.html.twig', [
             'settings' => $settings,
+            'error' => $error,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -152,16 +205,16 @@ class TransferController extends AbstractController
             $shareBuy->setTransfer(true);
             $em->persist($shareBuy);
 
-            $transaction_r = new Transaction();
+            $transaction_reciever = new Transaction();
             $date = new \DateTime();
-            $transaction_r->setType(8);
-            $transaction_r->setAmount(0);
-            $transaction_r->setCurrency(1);
-            $transaction_r->setDate($date);
-            $transaction_r->setUser($transfer_user);
+            $transaction_reciever->setType(8);
+            $transaction_reciever->setAmount(0);
+            $transaction_reciever->setCurrency(1);
+            $transaction_reciever->setDate($date);
+            $transaction_reciever->setUser($transfer_user);
             $word = ($amount) ? 'Share' : 'Shares';
-            $transaction_r->setName('Received '. $amount . ' ' . $stock->getTicker() . ' ' . $word .' from ' . $user->getUsername());
-            $em->persist($transaction_r);
+            $transaction_reciever->setName('Received '. $amount . ' ' . $stock->getTicker() . ' ' . $word .' from ' . $user->getUsername());
+            $em->persist($transaction_reciever);
             $em->flush();
 
             return $this->redirectToRoute('dashboard');

@@ -3,5 +3,9 @@
 {% block title %}Transfer CDN Cash to Another Account{% endblock %}
 
 {% block body %}
-
+    {{ form(form) }}
+    {% if error %}
+        <br />
+        {{ error }}
+    {% endif %}
 {% endblock %}
