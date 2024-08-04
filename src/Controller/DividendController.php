@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Dividend;
 use App\Entity\Transaction;
+use App\Entity\Stock;
 use App\Entity\Wallet;
 use App\Form\DividendType;
 use Doctrine\Persistence\ManagerRegistry;
@@ -95,11 +96,14 @@ class DividendController extends AbstractController
         $dividend->setUser($this->getUser());
         $form = $this->createForm(DividendType::class, $dividend);
         $form->handleRequest($request);
+        $em = $doctrine->getManager();
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
             $data = $form->getData();
-            $em = $doctrine->getManager();
+
+            $stock = $em->getRepository(Stock::class)->find($form->get("Stock")->getData());
+            $dividend->setStock($stock);
 
             // Update Wallet..
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
@@ -116,10 +120,10 @@ class DividendController extends AbstractController
             // Create Transaction..
             $transaction->setUser($user);
             $transaction->setType(4);
-            $transaction->setName('Dividend Payment - ' . $data->getStock()->getTicker());
+            $transaction->setName('Dividend Payment - ' . $stock->getTicker());
             $transaction->setAmount($data->getAmount());
             $transaction->setDate($data->getPaymentDate());
-            
+
             $em->persist($wallet);
             $em->persist($transaction);
             $em->persist($dividend);
@@ -129,8 +133,11 @@ class DividendController extends AbstractController
             return $this->redirectToRoute('dividends_add');
         }
 
-        return $this->render('form/index.html.twig', [
+        $myDiviStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id AND p.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+
+        return $this->render('form/dividend.html.twig', [
             'form' => $form->createView(),
+            'stocks' => $myDiviStocks,
             'error' => $error,
             'settings' => $settings
         ]);

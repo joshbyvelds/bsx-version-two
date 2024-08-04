@@ -27,6 +27,7 @@ class DividendType extends AbstractType
     {
         $builder
             ->add('Stock', EntityType::class, [
+                'label' => 'Stock',
                 'class' => 'App\Entity\Stock',
                 'choice_label' => 'name',
                 'query_builder' => function (EntityRepository $er) {
@@ -37,13 +38,26 @@ class DividendType extends AbstractType
                     ->setParameter('user', $user_id);
                 },
             ])
+
             ->add('payment_date', DateType::class, [
+                'label' => 'Payment Date',
                 'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                ]
             ])
             ->add('amount', TextType::class, [
-                'attr' => ['placeholder' => '$0.00'],
+                'label' => 'Amount',
+                'attr' => [
+                    'placeholder' => '$0.00',
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                ],
             ])
             ->add('currency',ChoiceType::class,[
+                'label' => 'Currency',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                ],
                 'choices' => array(
                     'CAN' => 'can',
                     'USD' => 'usd'
@@ -53,7 +67,7 @@ class DividendType extends AbstractType
             ])
             ->add('save', SubmitType::class, [
                 'attr' => [
-                    'class' => 'btn btn-primary float-right'
+                    'class' => 'normal-case cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow'
                 ]    
             ])
         ;
