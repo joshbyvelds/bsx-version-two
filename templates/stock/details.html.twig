@@ -212,7 +212,9 @@
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br />
                         <br />
-                        <span class="text-3xl">${{ stock_earned|number_format(2) }}</span>
+                        {% set new_total = (total_sold - stock_buy_cost_total + stock_dividend + cc_total + options_total) %}
+{#                        <span class="text-3xl">${{ stock_earned|number_format(2) }}</span>#}
+                        <span class="text-3xl">${{ new_total|number_format(2) }}</span>
                     </dd>
                 </div>
 

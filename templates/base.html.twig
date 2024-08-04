@@ -26,7 +26,7 @@
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
             <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+            <script src="//unpkg.com/alpinejs" defer></script>
             <script src="/assets/js/moment.min.js"></script>
             <script src="/assets/js/chart.min.js"></script>
             <script src="/assets/js/master.js"></script>
@@ -38,12 +38,12 @@
         {% if settings.theme == 2 %}{% set theme = "dark" %}{% endif %}
     {% endif %}
     <body class="theme_{{ theme }}">
-        <div class="container">
+        <div class="container bg-gray-50">
             {% block navbar %}{% include "partials/navbar.html.twig" %}{% endblock %}<!--
-        --><div class="page_content">
+        --><div class="page_content !bg-gray-50">
                 <header>
                     <div class="page_title">{{ block('title') }}</div>
-                    
+
                     {% if app.user %}
                     <div class="user_panel">
                         <div class="profile_pic" style="background-image: url(/assets/images/user_profile_pictures/{{ app.user.id }}.jpg);"></div>
