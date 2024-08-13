@@ -352,14 +352,17 @@ class StockController extends AbstractController
     {
         $user = $this->getUser();
         $settings = $user->getSettings();
+        $em = $doctrine->getManager();
         $share_buy = new ShareBuy();
         $form = $this->createForm(ShareBuyType::class, $share_buy);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $doctrine->getManager();
             $data = $form->getData();
             $share_buy->setTransfer(false);
+
+            $STOCK = $em->getRepository(Stock::class)->find($form->get("Stock")->getData());
+            $share_buy->setStock($STOCK);
             
             if($share_buy->getStock()->isNoFee()){
                 $cost = $share_buy->getAmount() * $share_buy->getPrice();
@@ -401,8 +404,11 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
+        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+
         return $this->render('form/share_buy.html.twig', [
             'error' => "",
+            'stocks' => $myStocks,
             'form' => $form->createView(),
             'settings' => $settings,
         ]);
@@ -752,6 +758,7 @@ class StockController extends AbstractController
     {
         $user = $this->getUser();
         $settings = $user->getSettings();
+        $em = $doctrine->getManager();
         $error = "";
         $wo = new WrittenOption();
         $form = $this->createForm(WrittenOptionType::class, $wo);
@@ -760,7 +767,10 @@ class StockController extends AbstractController
         $payment_locked = $form->get("payment_locked")->getData();
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $doctrine->getManager();
+
+            $stock = $em->getRepository(Stock::class)->find($form->get("Stock")->getData());
+            $wo->setStock($stock);
+
             $wo->setUser($user);
             $wo->setExercised(false);
             $wo->setExpired(false);
@@ -827,7 +837,10 @@ class StockController extends AbstractController
             return $this->redirectToRoute('stocks_written_options');
         }
 
+        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id AND p.shares_owned > 99 ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+
         return $this->render('form/write_option.html.twig', [
+            'stocks' => $myStocks,
             'error' => "",
             'form' => $form->createView(),
             'settings' => $settings,
