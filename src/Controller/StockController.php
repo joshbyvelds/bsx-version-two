@@ -284,6 +284,32 @@ class StockController extends AbstractController
         ]);
     }
 
+    #[Route('/stocks/average/{stock_id}', name: 'stocks_average')]
+    public function getStockAverage(Request $request, ManagerRegistry $doctrine, int $stock_id): JsonResponse
+    {
+        $shares = 0;
+        $avg = 0;
+        $total = 0;
+
+        $em = $doctrine->getManager();
+        $stock = $em->getRepository(Stock::class)->find($stock_id);
+
+        foreach($stock->getShareBuys() as $buy)
+        {
+            if($buy->getSold() < $buy->getAmount()) {
+                $remaining = $buy->getAmount() - $buy->getSold();
+                $shares += $remaining;
+                $total += ($remaining * $buy->getPrice()) + (($stock->isNoFee() || $buy->isNofee()) ? 0 : 9.95);
+            }
+        }
+
+        if($shares > 0) {
+            $avg = $total / $shares;
+        }
+
+        return new JsonResponse(array('shares' => $shares, 'average' => round($avg, 2,PHP_ROUND_HALF_UP)));
+    }
+
     #[Route('/stocks/details/{stock_id}', name: 'stock_details')]
     public function details(Request $request, ManagerRegistry $doctrine, int $stock_id): Response
     {
@@ -291,9 +317,6 @@ class StockController extends AbstractController
         $settings = $user->getSettings();
         $em = $doctrine->getManager();
         $stock = $em->getRepository(Stock::class)->find($stock_id);
-
-
-
 
         // make sure this stock exists..
         if(!isset($stock)) {

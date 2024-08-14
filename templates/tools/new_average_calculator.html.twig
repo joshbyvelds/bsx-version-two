@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Average Calculator{% endblock %}
+
+{% block body %}
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500" x-data="AverageCalc()">
+        <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white">
+            Personal Best Records
+            <p class="mt-1 text-sm font-normal text-gray-500">Table featuring every record for every exercise in your workout program.</p>
+        </caption>
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+        <tr>
+            <th scope="col" class="min-w-96 px-6 py-3">
+                Stock
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Current Shares
+            </th>
+            <th scope="col" class="px-6 py-3">
+                Current Average
+            </th>
+            <th scope="col" class="px-6 py-3">
+                New Shares
+            </th>
+            <th scope="col" class="px-6 py-3">
+                New Price
+            </th>
+            <th scope="col" class="px-6 py-3">
+                No Fee
+            </th>
+            <th scope="col" class="min-w-36 px-6 py-3">
+                New Average
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="bg-white border-b">
+            <th scope="row" class="min-w-96 px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                <div class="relative mt-2">
+                    <button type="button" x-on:click="toggleDropdown();" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+                                  <span class="flex items-center">
+                                    <img x-bind:src="selectedStockIcon"
+                                         alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                  </span>
+
+                        <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                      <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"/>
+                                    </svg>
+                                  </span>
+                    </button>
+
+                    <!--
+                      Select popover, show/hide based on select state.
+
+                      Entering: ""
+                        From: ""
+                        To: ""
+                      Leaving: "transition ease-in duration-100"
+                        From: "opacity-100"
+                        To: "opacity-0"
+                    -->
+                    <ul x-show="dropdownOpen" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+                        <!--
+                          Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
+
+                          Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
+                        -->
+                        {% for stock in stocks %}
+                            <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                                <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{  stock.ticker }}');">
+                                    <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                    <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                                    <span class="ml-3 block truncate font-normal">{{ stock.name }}</span>
+                                </div>
+
+                                <!--
+                                  Checkmark, only display for selected option.
+
+                                  Highlighted: "text-white", Not Highlighted: "text-indigo-600"
+                                -->
+                                <span x-show="checkSelected({{ stock.id }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                                          </svg>
+                                        </span>
+                            </li>
+                        {% endfor %}
+
+                        <!-- More items... -->
+                    </ul>
+                </div>
+            </th>
+            <td class="px-6 py-4">
+                <input type="text" x-model="current_shares" class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6" />
+            </td>
+            <td class="px-6 py-4">
+                <input type="text" x-model="current_average"  readonly class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6" />
+            </td>
+            <td class="px-6 py-4">
+                <input type="number" x-model="new_shares" class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6" />
+            </td>
+            <td class="px-6 py-4">
+                <input type="text" x-model="new_price" class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6" />
+            </td>
+            <td class="px-6 py-4">
+                <input type="checkbox" x-model="no_fee" />
+            </td>
+            <td class="px-6 py-4">
+                <input type="text" x-model="getNewAverage()" readonly class="block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6" />
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <script>
+        $(() => {
+
+        });
+
+        function AverageCalc(){
+            return {
+                dropdownOpen: false,
+                selectedStock: null,
+                selectedStockName: "Select Stock",
+                selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                current_average: 0,
+                current_shares: 0,
+                new_shares: 0,
+                new_price: 0,
+                new_average: 0,
+                no_fee: false,
+
+                selectStock(id, name, ticker){
+                    this.selectedStock = id;
+                    this.selectedStockName = name;
+                    this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
+                    this.toggleDropdown();
+
+                    $.post("/stocks/average/" + id, {}, (j) => {
+                        this.current_shares = j.shares;
+                        this.current_average = j.average;
+                    });
+                },
+
+                toggleDropdown(){
+                    this.dropdownOpen = (!this.dropdownOpen);
+                },
+
+                getNewAverage(){
+                    let total = (((((this.current_shares * this.current_average) + (parseInt(this.new_shares) * parseFloat(this.new_price))) + (this.no_fee ? 0 : 9.95))));
+                    let shares = (parseInt(this.current_shares) + parseInt(this.new_shares));
+                    let num =  total / shares;
+                    return Math.round((num + Number.EPSILON) * 100) / 100
+                }
+            }
+        }
+    </script>
+
+{% endblock %}
+

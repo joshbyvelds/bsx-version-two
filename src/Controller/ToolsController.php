@@ -89,6 +89,20 @@ class ToolsController extends AbstractController
         ]);
     }
 
+    #[Route('/tools/average', name: 'tools_average')]
+    public function average(): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $stocks = $user->getStocks();
+
+        return $this->render('tools/new_average_calculator.html.twig', [
+            'controller_name' => 'ToolsController',
+            'settings' => $settings,
+            'stocks' => $stocks,
+        ]);
+    }
+
     #[Route('/tools/tenpercentplan', name: 'tools_ten_percent_plan')]
     public function ten(ManagerRegistry $doctrine, Request $request): Response
     {

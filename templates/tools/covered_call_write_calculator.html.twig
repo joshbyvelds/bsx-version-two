@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Day Trade Calculator{% endblock %}
+
+{% block body %}
+    <table id="dt_table">
+        <tr>
+            <th>Price</th>
+            <th>Contracts</th>
+            <th>Total</th>
+        </tr>
+
+        <tr class="calc_row">
+            <td>
+                <input id="price" type="text">
+            </td>
+            <td>
+                <input id="contracts" type="text">
+            </td>
+            <td>
+                <input id="total" type="text" readonly>
+            </td>
+        </tr>
+    </table>
+
+
+    <script>
+        var row = 1;
+        $(function(){
+            engageListeners();
+        })
+
+        function engageListeners(){
+            $("table input").off().on("change", calculate);
+        }
+
+        function calculate(){
+            var price = parseFloat($("#price").val());
+            var contracts = parseInt($("#contracts").val());
+            var $total = $("#total");
+            var fee = 9.95;
+            var contract_fee = 1.25;
+
+            console.log(price + " | " + contracts);
+
+            total = ((price * 100) * contracts) - (fee + (contract_fee * contracts)); 
+            $total.val("$" + total.toFixed(2));
+        }
+    </script>
+{% endblock %}
+
