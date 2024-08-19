@@ -896,7 +896,7 @@ class StockController extends AbstractController
                 }
             }
     
-            $amount_to_sell = 100;
+            $amount_to_sell = 100 * $wo->getContracts();
     
             $buys_length = count($shareBuys);
             $current_buy = 0;
@@ -939,7 +939,7 @@ class StockController extends AbstractController
             $share_sell = new ShareSell();
             $share_sell->setStock($stock);
             $share_sell->setPrice($wo->getStrike());
-            $share_sell->setAmount(100);
+            $share_sell->setAmount(100 * $wo->getContracts());
             $share_sell->setDate($date);
             $share_sell->setNofee(false);
             $share_sell->setTransfer(false);
@@ -949,9 +949,9 @@ class StockController extends AbstractController
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
-            $transaction->setName($stock->getTicker() . ' - $' . $wo->getStrike() . ' Covered Call Exercised');
+            $transaction->setName($stock->getTicker() . ' - '. $wo->getContracts() .'* $' . number_format($wo->getStrike(),2) . ' Covered Call Exercised');
     
-            $cost = ($wo->getStrike() * 100) - 9.95;
+            $cost = ($wo->getStrike() * (100 * $wo->getContracts())) - 43.05;
             $currency = $wo->getPaymentCurrency();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
     

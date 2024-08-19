@@ -389,10 +389,10 @@
                                                 <div class="ml-4 text-left">
                                                     {# <div class="font-medium text-gray-900"></div>#}
                                                     <div class="mt-1 text-gray-500">
-                                                        <span class="font-semibold text-gray-900">Buy/Expire:</span> <span class="{% if be_diff %}text-green-700{% else %}text-red-500{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>
+                                                        <span class="font-semibold text-gray-900">Buy/Expire:</span> <span class="{% if be_diff > 0 %}text-green-700{% else %}text-red-500{% endif %}">{% if be_diff > 0 %}+{% endif %}{{ be_diff|number_format(2) }}</span>
                                                     </div>
                                                     <div class="mt-1 text-gray-500">
-                                                        <span class="font-semibold text-gray-900">Strike:</span> <span class="{% if se_diff %}text-green-700{% else %}text-red-500{% endif %}">{% if se_diff > 0 %}+{% endif %}{{ se_diff|number_format(2) }}</span>
+                                                        <span class="font-semibold text-gray-900">Strike:</span> <span class="{% if se_diff < 0 %}text-green-700{% else %}text-red-500{% endif %}">{% if se_diff > 0 %}+{% endif %}{{ se_diff|number_format(2) }}</span>
                                                     </div>
                                                 </div>
                                             </td>
