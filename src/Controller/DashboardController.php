@@ -56,7 +56,7 @@ class DashboardController extends AbstractController
             $stocks = $user->getStocks();
         }
         
-        return $this->render('dashboard/index.html.twig', [
+        return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
             'show_nav' => true,
             'wallet' => $wallet,

@@ -50,7 +50,7 @@
                                         <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{  stock.ticker }}');">
                                             <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                                             <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                            <span class="ml-3 block truncate font-normal">{{ stock.name }}</span>
+                                            <span class="ml-3 block truncate font-normal">({{ stock.ticker|upper }}) {{ stock.name }}</span>
                                         </div>
 
                                         <!--

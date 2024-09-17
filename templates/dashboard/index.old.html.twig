@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" /><div class="results"></div></div>{% endblock %}
+
+{% block body %}
+    <div class="wide_column">
+        {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
+        <div class="portfolio_wrapper">
+            {% include "dashboard/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
+            {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "dashboard/panels/futures.html.twig" %}{% endif %}
+        </div>
+        {% include "dashboard/panels/graph.html.twig" %}
+        {% include "dashboard/panels/plays.html.twig" %}
+    </div><!--
+
+ --><div class="narrow_column">
+        {% include "dashboard/panels/wallet.html.twig" with {'amount_can': wallet.CAN, 'amount_usd': wallet.USD, 'locked_cdn': wallet.lockedCdn, 'locked_usd': wallet.lockedUsd} %}
+        {% if wallet.lockedCdn != 0 or wallet.lockedUsd != 0 %}
+            {% include "dashboard/panels/wallet_locked.html.twig" with {'amount_can': wallet.lockedCdn, 'amount_usd': wallet.lockedUsd} %}
+        {% endif %}
+        {% include "dashboard/panels/transfer.html.twig" %}
+        {% include "dashboard/panels/stats.html.twig" %}
+        {% include "dashboard/panels/transactions.html.twig" with {'transactions': transactions} %}
+    </div>
+{% endblock %}
+

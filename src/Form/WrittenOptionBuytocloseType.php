@@ -6,6 +6,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -24,25 +25,43 @@ class WrittenOptionBuytocloseType extends AbstractType
                 ),
             ))
             ->add('name', TextType::class, array(
+                'label' => 'Option Name',
                 'attr' => array(
                     'readonly' => true,
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00'
                 ),
             ))
-            ->add('contracts')
+            ->add('contracts', NumberType::class, array(
+                'label' => 'Number of Contracts',
+                'attr' => array(
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => 0,
+                )
+            ))
             ->add('price', TextType::class, [
-                'attr' => ['placeholder' => '$0.00'],
+                'label' => 'Buyback Price',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00'
+                ],
             ])
             ->add('stock_price', TextType::class, [
-                'attr' => ['placeholder' => '$0.00'],
+                'label' => 'Stock Price',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00'
+                ],
             ])
             ->add('payment_currency',ChoiceType::class,[
+                'label' => 'Payment Currency',
                 'choices' => array(
                     'CAN' => 'can',
                     'USD' => 'usd'
                 ),
                 'mapped' => false,
-                'multiple'=>false,
-                'expanded'=>true
+                'multiple' => false,
+                'expanded' => true
             ])
             ->add('use_locked_funds', CheckboxType::class, [
                 'label'    => 'Use Locked Funds?',

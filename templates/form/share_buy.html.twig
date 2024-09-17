@@ -161,7 +161,7 @@
 
                             </style>
                             <div class="hidden">
-                                <input type="checkbox" id="share_buy_nofee" name="share_buy[nofee]" x-model="no_fee_converted()">
+                                <input type="checkbox" id="share_buy_nofee" name="share_buy[nofee]" value="no_fee" x-model="no_fee">
                             </div>
 
                         </div>
@@ -188,7 +188,7 @@
     <script>
         $(() => {
             $("#share_buy_price, #share_buy_amount").on("change", function(){
-                var cost = (parseFloat($("#share_buy_price").val()) * parseInt($("#share_buy_amount").val())) + 9.95;
+                var cost = (parseFloat($("#share_buy_price").val()) * parseInt($("#share_buy_amount").val())) + ((document.getElementById('share_buy_nofee').checked) ? 0.00 : 9.95);
                 $("#share_buy_cost").val(cost);
             });
         });
@@ -211,10 +211,6 @@
                     } else {
                         this.no_fee = true;
                     }
-                },
-
-                no_fee_converted(){
-                    return (this.no_fee) ? "1" : "0";
                 },
 
                 checkSelected(id){

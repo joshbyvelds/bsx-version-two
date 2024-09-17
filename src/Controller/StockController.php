@@ -72,7 +72,7 @@ class StockController extends AbstractController
                         $em->flush();
                         
                         $data = json_decode($json,true);
-                        if(!$md = $data["Meta Data"]){
+                        if(!$md = (isset($data["Meta Data"])) ? $data["Meta Data"] : false){
                             return "C3";
                         }
 
@@ -165,7 +165,9 @@ class StockController extends AbstractController
         if($stock->getCountry() == "USD"){
             // get current price
             if($stock->isBeingPlayedShares()){
-                $result = file_get_contents("https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=". $stock->getTicker()  ."&reqId=0");
+                $opc_link = 'https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=' . $stock->getTicker() . '&reqId=0';
+                dump($opc_link);
+                $result = file_get_contents($opc_link);
                 dump("Update:" . $stock->getTicker());
                 //dump($result);
                 $price = json_decode($result)->price->last;
@@ -359,11 +361,10 @@ class StockController extends AbstractController
             $em->persist($stock);
             $em->flush();
 
-            //return $this->redirectToRoute('stocks_buy_shares');
             return $this->redirectToRoute('stocks_add');
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/stock.html.twig', [
             'error' => "",
             'form' => $form->createView(),
             'settings' => $settings,
@@ -440,6 +441,7 @@ class StockController extends AbstractController
     #[Route('/stocks/shares/sell', name: 'stocks_sell_shares')]
     public function sellShares(ManagerRegistry $doctrine, Request $request): Response
     {
+        $em = $doctrine->getManager();
         $user = $this->getUser();
         $settings = $user->getSettings();
         $error = "";
@@ -450,7 +452,6 @@ class StockController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $em = $doctrine->getManager();
 
             $shareBuys = $data->getStock()->getShareBuys()->getValues();
             usort($shareBuys, [$this,"sort_buys_by_price"]);
@@ -516,6 +517,8 @@ class StockController extends AbstractController
 
             $cost = $form->get("cost")->getData();
             $currency = $form->get("payment_currency")->getData();
+
+            dump($currency);
             
             if ($currency == 'can'){
                 $wallet->deposit('CAN', $cost);
@@ -536,7 +539,10 @@ class StockController extends AbstractController
             return $this->redirectToRoute('stocks_sell_shares');
         }
 
+        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+
         return $this->render('form/share_sell.html.twig', [
+            'stocks' => $myStocks,
             'error' => $error,
             'form' => $form->createView(),
             'settings' => $settings,
@@ -609,7 +615,6 @@ class StockController extends AbstractController
             'settings' => $settings,
         ]);
     }
-
 
     #[Route('/stocks/options/buy', name: 'stocks_buy_option')]
     public function buyOption(ManagerRegistry $doctrine, Request $request): Response
@@ -1032,13 +1037,80 @@ class StockController extends AbstractController
         return $this->redirectToRoute('stocks_written_options');
     }
 
+    #[Route('/stocks/writtenoption/buytoclose/{option}', name: 'stocks_written_options_buytoclose')]
+    public function sellToClose(ManagerRegistry $doctrine, Request $request, int $option): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $em = $doctrine->getManager();
+        $wo = $em->getRepository(WrittenOption::class)->find($option);
+        $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
+
+        $info = ["option" => $option, "name" => $wo->getStock()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
+
+        $form = $this->createForm(WrittenOptionBuytocloseType::class, $info);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $currency = $form->get("payment_currency")->getData();
+            $basic_fee = 9.95;
+            $contract_fee = 1.25;
+            $contracts = $form->get("contracts")->getData();
+            $total_cost = (($form->get("price")->getData() * 100) * $contracts) + $basic_fee + ($contract_fee * $contracts);
+            $wo->setExpired(true);
+            $wo->setStockExpiryPrice($form->get("stock_price")->getData());
+            $wo->setBuyout(true);
+            $wo->setBuyoutPrice($total_cost);
+
+            $transaction = new Transaction();
+            $date = new DateTime();
+            $transaction->setType(2);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $option_strike = "$". number_format($wo->getStrike(), 2);
+            $option_expiry = date_format($wo->getExpiry(), 'Y-m-d');
+            $word = ($contracts === 1) ? " Covered Call Option " : " Covered Call Options ";
+            $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setAmount($total_cost);
+
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            if ($currency == 'can'){
+                if($form->get("use_locked_funds")->getData()){
+                    $wallet->unlock('CAN', $total_cost);
+                }
+                $wallet->withdraw('CAN', $total_cost);
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                if($form->get("use_locked_funds")->getData()){
+                    $wallet->unlock('CAN', $total_cost);
+                }
+                $wallet->withdraw('USD', $total_cost);
+                $transaction->setCurrency(2);
+            }
+
+            $em->persist($transaction);
+            $em->flush();
+
+            //return $this->redirectToRoute('stocks_buy_shares');
+            return $this->redirectToRoute('stocks_written_options');
+        }
+
+        return $this->render('form/written_option_buyback.html.twig', [
+            'error' => "",
+            'form' => $form->createView(),
+            'settings' => $settings,
+        ]);
+    }
 
     #[Route('/stocks/update', name: 'stock_update')]
     public function updateStock(Request $request, ManagerRegistry $doctrine): JsonResponse
     {
         $id = $request->get('stock_id');
         $user = $this->getUser();
-        $disable_can = false; // $request->get('disable_can');
+        $disable_can = $request->get('disable_can');
         $this->settings = $user->getSettings();
         $forceUpdate = $this->settings->isStocksManualUpdateEnabled();
 
@@ -1065,7 +1137,8 @@ class StockController extends AbstractController
             $weekend_today = ($day_today === "Sat" || $day_today === "Sun" || ($day_today === "Fri" && $hour_today > 16) || ($day_today === "Mon" && $hour_today < 9));
 
             // check if we last updated during the weekend..
-            $updated_on_weekend = ($update_day === "Sat" || $update_hour === "Sun" || ($update_day === "Fri" && $update_hour > 16) || ($update_day === "Mon" && $update_hour < 9));
+            $updated_on_weekend = ($update_day === "Sat" || $update_day === "Sun" || ($update_day === "Fri" && $update_hour > 16) || ($update_day === "Mon" && $update_hour < 9));
+            dump($update_day);
 
             $marketOpen = (!$weekend_today && $hour_today >= 10 && $hour_today < 16);
 
@@ -1227,73 +1300,5 @@ class StockController extends AbstractController
     {
         if($a->getPrice() == $b->getPrice()){ return 0; }
         return ($a->getPrice() < $b->getPrice()) ? -1 : 1;
-    }
-
-    #[Route('/stocks/writtenoption/buytoclose/{option}', name: 'stocks_written_options_buytoclose')]
-    public function sellToClose(ManagerRegistry $doctrine, Request $request, int $option): Response
-    {
-        $user = $this->getUser();
-        $settings = $user->getSettings();
-        $em = $doctrine->getManager();
-        $wo = $em->getRepository(WrittenOption::class)->find($option);
-        $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
-
-        $info = ["option" => $option, "name" => $wo->getStock()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
-
-        $form = $this->createForm(WrittenOptionBuytocloseType::class, $info);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            $currency = $form->get("payment_currency")->getData();
-            $basic_fee = 9.95;
-            $contract_fee = 1.25;
-            $contracts = $form->get("contracts")->getData();
-            $total_cost = (($form->get("price")->getData() * 100) * $contracts) + $basic_fee + ($contract_fee * $contracts);
-            $wo->setExpired(true);
-            $wo->setStockExpiryPrice($form->get("stock_price")->getData());
-            $wo->setBuyout(true);
-            $wo->setBuyoutPrice($total_cost);
-
-            $transaction = new Transaction();
-            $date = new DateTime();
-            $transaction->setType(2);
-            $transaction->setDate($date);
-            $transaction->setUser($user);
-            $option_strike = "$". number_format($wo->getStrike(), 2);
-            $option_expiry = date_format($wo->getExpiry(), 'Y-m-d');
-            $word = ($contracts === 1) ? " Covered Call Option " : " Covered Call Options ";
-            $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
-            $transaction->setAmount($total_cost);
-
-            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
-            if ($currency == 'can'){
-                if($form->get("use_locked_funds")->getData()){
-                    $wallet->unlock('CAN', $total_cost);
-                }
-                $wallet->withdraw('CAN', $total_cost);
-                $transaction->setCurrency(1);
-            }
-
-            if ($currency == 'usd'){
-                if($form->get("use_locked_funds")->getData()){
-                    $wallet->unlock('CAN', $total_cost);
-                }
-                $wallet->withdraw('USD', $total_cost);
-                $transaction->setCurrency(2);
-            }
-
-            $em->persist($transaction);
-            $em->flush();
-
-            //return $this->redirectToRoute('stocks_buy_shares');
-            return $this->redirectToRoute('stocks_written_options');
-        }
-
-        return $this->render('form/index.html.twig', [
-            'error' => "",
-            'form' => $form->createView(),
-            'settings' => $settings,
-        ]);
     }
 }
