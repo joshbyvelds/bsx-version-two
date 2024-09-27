@@ -16,8 +16,9 @@ use App\Form\OptionSellType;
 use App\Form\StockType;
 use App\Form\ShareBuyType;
 use App\Form\ShareSellType;
-use App\Form\WrittenOptionType;
 use App\Form\WrittenOptionBuytocloseType;
+use App\Form\WrittenOptionType;
+use App\Form\WrittenOptionRolloverType;
 use App\Entity\Atom;
 use App\Entity\WrittenOption;
 use App\Entity\Option;
@@ -1021,6 +1022,99 @@ class StockController extends AbstractController
         }
 
         $em->flush();
+
+        return new JsonResponse(array('success' => true));
+    }
+
+    #[Route('/stocks/writtenoption/rollover/{id}', name: 'stocks_writtenoption_rollover')]
+    public function rolloverWrittenOption(ManagerRegistry $doctrine, Request $request, int $id): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+
+        // get cc from id..
+        $em = $doctrine->getManager();
+        $wo = $em->getRepository(WrittenOption::class)->find($id);
+
+        // get stock from cc..
+        $stock = $wo->getStock();
+
+        $nwo = new WrittenOption();
+        $nwo->setContracts($wo->getContracts());
+        $form = $this->createForm(WrittenOptionRolloverType::class, $nwo);
+        $form->handleRequest($request);
+
+        $payment_locked = $form->get("payment_locked")->getData();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $total = (float)$form->get("total")->getData();
+            $wo->setExpiry($nwo->getExpiry());
+            $wo->setStrike($nwo->getStrike());
+            $price = (float)$wo->getPrice() + ($total / 100);
+            $wo->setPrice(round($price, 2));
+
+            $transaction = new Transaction();
+            $date = new DateTime();
+            $transaction->setType(1);
+            $transaction->setDate($date);
+            $transaction->setUser($user);
+            $transaction->setAmount($total);
+
+            $currency = $form->get("payment_currency")->getData();
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            dump($form);
+
+            if ($currency == 'can'){
+                if ($form->get("payment_locked")->getData() === true) {
+                    //$wallet->lock('CAN', $total);
+                    $wallet->deposit('CAN', $total);
+                } else {
+                    $wallet->deposit('CAN', $total);
+                }
+
+                $transaction->setCurrency(1);
+            }
+
+            if ($currency == 'usd'){
+                if ($form->get("payment_locked")->getData() === true) {
+                    //$wallet->lock('USD', $total);
+                    $wallet->deposit('USD', $total);
+                } else {
+                    $wallet->deposit('USD', $total);
+                }
+                $transaction->setCurrency(2);
+            }
+
+            $lock_amount = (100 * $wo->getContracts() * $wo->getStrike());
+            if($wo->getContractType() === 2){
+                if ($currency == 'can'){
+                    $wallet->lock('CAN', $lock_amount);
+                }
+
+                if ($currency == 'usd'){
+                    $wallet->lock('USD', $lock_amount);
+                }
+            }
+
+            $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
+            if($wo->getContractType() === 1){
+                $transaction->setName("Covered Call Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
+            } else {
+                $transaction->setName("Cash Secured Put Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
+            }
+
+            $em->persist($transaction);
+            $em->flush();
+        }
+
+        return $this->render('form/rollover_written_option.html.twig', [
+            'old_option' => $wo,
+            'error' => "",
+            'form' => $form->createView(),
+            'settings' => $settings,
+        ]);
+
 
         return new JsonResponse(array('success' => true));
     }
