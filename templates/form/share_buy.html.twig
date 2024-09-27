@@ -188,13 +188,14 @@
     <script>
         $(() => {
             $("#share_buy_price, #share_buy_amount").on("change", function(){
-                var cost = (parseFloat($("#share_buy_price").val()) * parseInt($("#share_buy_amount").val())) + ((document.getElementById('share_buy_nofee').checked) ? 0.00 : 9.95);
+                var cost = (parseFloat($("#share_buy_price").val()) * parseInt($("#share_buy_amount").val())) + ((window_no_fee) ? 0.00 : 9.95);
                 $("#share_buy_cost").val(cost);
             });
         });
     </script>
 
     <script>
+        let window_no_fee = false;
         function StockBuyForm() {
 
             return {
@@ -211,6 +212,9 @@
                     } else {
                         this.no_fee = true;
                     }
+
+                    window_no_fee = this.no_fee;
+                    $("#share_buy_price").trigger("change");
                 },
 
                 checkSelected(id){
