@@ -40,9 +40,15 @@
         {% set d_buy = 0 %}
         {% set d_sold = 0 %}
         {% set total = 0 %}
+        {% set total_earned = 0 %}
         {% set option_cost = 0 %}
         {% set option_total_worth = 0 %}
         {% set stock_buy_fee = false %}
+        {% set total_buy = 0 %}
+        {% set total_sold = 0 %}
+        {% set total_earned = 0 %}
+        {% set stock_dividend = 0 %}
+        {% set cc_total = 0 %}
 
         {% for buy in stock.shareBuys %}
             {% set d_buy = buy.date|date('U') %}
@@ -53,6 +59,11 @@
                 {% set stock_amount = stock_amount + remaining %}
                 {% set buy_average = remaining * buy.price %}
                 {% set stock_average = stock_average + buy_average %}
+            {% endif %}
+
+            {% set total_buy = total_buy + (buy.amount * buy.price) %}
+            {% if buy.nofee == false %}
+                {% set total_buy = total_buy + 9.95 %}
             {% endif %}
         {% endfor %}
 
@@ -68,6 +79,11 @@
 
         {% for sell in stock.shareSells %}
             {% set d_sold = sell.date|date('U') %}
+            {% if stock.noFee %}
+                {% set total_sold = total_sold + (sell.amount * sell.price) %}
+            {% else %}
+                {% set total_sold = total_sold + (sell.amount * sell.price) - 9.95 %}
+            {% endif %}
         {% endfor %}
 
         {% if stock_amount == 0 and option_amount == 0 %}
@@ -80,7 +96,25 @@
             {% endif %}
         {% endif %}
 
-        {% if (stock_current - stock_breakeven) > 0 %}
+        {% for divi in stock.dividends %}
+            {% set stock_dividend = stock_dividend + divi.amount %}
+        {% endfor %}
+
+        {% for cc in stock.coveredCalls %}
+            {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
+        {% endfor %}
+
+        {% set options_total = 0 %}
+        {% for option in stock.options %}
+            {% set option_fees = (9.95 * (option.buys + option.sells)) + (1.25 * option.totalContracts) + 1.25 * option.totalContractsSold %}
+            {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100)))  %}
+        {% endfor %}
+
+        {% set stock_earned = (total_sold - total_buy + stock_dividend + cc_total + options_total) %}
+
+        {% if stock_earned > 0 and stock_amount > 0 %}
+            {% set stock_class = "gold" %}
+        {% elseif (stock_current - stock_breakeven) > 0 %}
             {% set stock_class = "win" %}
         {% elseif stock_current > stock_average %}
             {% set stock_class = "fee_loss" %}
@@ -95,6 +129,7 @@
                         {{ stock.name }}<br />
                         <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
                         <small>${{ diff|number_format(2) }}</small><br />
+                        <small>{{ stock_earned|number_format(2) }}</small>
                         {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
                     </div>
                 </div>    
@@ -102,7 +137,7 @@
             {% set share_update_ids = share_update_ids ~ stock.id ~ ", " %}
         {% endif %}
     {% endfor %}
-    </div>
+    </a>
 
     <h3>Options</h3>
 
@@ -175,7 +210,7 @@
     </div>
 
     <h3>All Stock Details</h3>
-    <div class="all_stocks" id="stock_details_table" style="display:none;">
+    <div style="display:none;" class="all_stocks" id="stock_details_table">
         <table>
             <tr>
                 <th></th>
