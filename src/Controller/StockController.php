@@ -567,13 +567,20 @@ class StockController extends AbstractController
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
+            $date = new DateTime();
 
             $option->setBuys(1);
             $option->setExpired(false);
             $option->setUser($user);
             $option->setCurrent(0.0);
+            $option->setBuyDate($date);
+            $option->setSellDate();
+            $option->setSellPrice(0.0);
+            $option->setTotalContracts($form->get("contracts")->getData());
+            $option->setTotalContractsSold(0);
+            $option->setSells(0);
+
             $transaction = new Transaction();
-            $date = new DateTime();
             $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
