@@ -1,0 +1,68 @@
+<div class="panel large_panel total_value">
+    {% set total_value_usd = 0.00 %}
+    {% set total_value_can = 0.00 %}
+
+    {% for stock in stocks %}
+        {% set stock_total = 0 %}
+        {% set stock_amount = 0 %}
+        {% set cc_over_strike_total_can = 0 %}
+        {% set cc_over_strike_total_usd = 0 %}
+        {% set buys = 0 %}
+
+        {% for buy in stock.shareBuys %}
+            {% if buy.sold < buy.amount %}
+                {% if buy.nofee == false %}{% endif %}
+                {% set remaining = buy.amount - buy.sold %}
+                {% set stock_amount = stock_amount + remaining %}
+            {% endif %}
+        {% endfor %}
+
+        {% for cc in stock.coveredCalls %}
+            {% if cc.expired == 0 and cc.exercised == 0 and cc.strike <= stock.currentPrice  %}
+                {% set stock_amount = stock_amount - (100 * cc.contracts) %}
+                {% if stock.country == "CAN" %}
+                    {% set cc_over_strike_total_can = cc_over_strike_total_can + ((cc.strike * cc.contracts * 100) - 43.00) %}
+                {% else %}
+                    {% set cc_over_strike_total_usd = cc_over_strike_total_usd + ((cc.strike * cc.contracts * 100) - 43.00) %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% if stock_amount > 0 or cc_over_strike_total_can > 0 or cc_over_strike_total_usd > 0 %}
+            {% if stock.noFee == false %}
+                {% set fee = (buys * 9.95) %}
+            {% endif %}
+
+            {% set stock_total = (stock_amount * stock.currentPrice) + fee %}
+
+{#            {{ stock.name }}: {{ stock_total }} | {{ stock_amount }} | {{ stock.currentPrice }} | {{ cc_over_strike_total_usd }}<br />#}
+
+            {% if stock.country == "CAN" %}
+                {% set total_value_can = total_value_can + stock_total + cc_over_strike_total_can %}
+            {% else %}
+                {% set total_value_usd = total_value_usd + stock_total + cc_over_strike_total_usd %}
+            {% endif %}
+        {% endif %}
+
+        {% for option in stock.options %}
+            {% if option.expired == false and option.contracts >= 1 %}
+                {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
+                {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
+                {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
+                {% if stock.country == "CAN" %}
+                    {% set total_value_can = total_value_can + option_current %}
+                {% else %}
+                    {% set total_value_usd = total_value_usd + option_current %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+    {% endfor %}
+
+
+
+    <h2 class="text-2xl">Total Portfolio Value</h2>
+    US: ${{ total_value_usd|number_format(2) }} | ${{ (total_value_usd * 1.36)|number_format(2) }} (can)<br />
+    Can: ${{ total_value_can|number_format(2) }}<br />
+    <h2 class="text-center text-6xl">${{ ((total_value_usd * 1.36) + total_value_can)|number_format(2) }}</h2>
+</div>

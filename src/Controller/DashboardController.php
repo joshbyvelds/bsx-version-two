@@ -51,10 +51,7 @@ class DashboardController extends AbstractController
         ToolsController::updateTenPercentPlan( $user, $doctrine );
 
         // check if we need stock infomation
-        $stocks = null;
-        if($settings->isDashboardUseCashEquityBalance()) {
-            $stocks = $user->getStocks();
-        }
+        $stocks = $user->getStocks();
         
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
