@@ -31,17 +31,19 @@
         {% if stock_amount > 0 or cc_over_strike_total_can > 0 or cc_over_strike_total_usd > 0 %}
             {% if stock.noFee == false %}
                 {% set fee = (buys * 9.95) %}
+            {% else %}
+                {% set fee = 0 %}
             {% endif %}
 
             {% set stock_total = (stock_amount * stock.currentPrice) + fee %}
-
-{#            {{ stock.name }}: {{ stock_total }} | {{ stock_amount }} | {{ stock.currentPrice }} | {{ cc_over_strike_total_usd }}<br />#}
 
             {% if stock.country == "CAN" %}
                 {% set total_value_can = total_value_can + stock_total + cc_over_strike_total_can %}
             {% else %}
                 {% set total_value_usd = total_value_usd + stock_total + cc_over_strike_total_usd %}
             {% endif %}
+
+{#            {{ stock.name }}: {{ stock_total }} | {{ stock_amount }} | {{ stock.currentPrice }} | {{ cc_over_strike_total_usd }} | {{ total_value_can + total_value_usd }}<br />#}
         {% endif %}
 
         {% for option in stock.options %}
@@ -64,5 +66,130 @@
     <h2 class="text-2xl">Total Portfolio Value</h2>
     US: ${{ total_value_usd|number_format(2) }} | ${{ (total_value_usd * 1.36)|number_format(2) }} (can)<br />
     Can: ${{ total_value_can|number_format(2) }}<br />
-    <h2 class="text-center text-6xl">${{ ((total_value_usd * 1.36) + total_value_can)|number_format(2) }}</h2>
+    {% set overall_total = ((total_value_usd * 1.36) + total_value_can) %}
+    <h2 class="text-center text-6xl">${{ overall_total|number_format(2) }}</h2>
+</div>
+
+<div class="panel large_panel">
+    <canvas id="total_chart"></canvas>
+    <script>
+        let total_data_values = [
+            {{ totalValues.value1 }},
+            {{ totalValues.value2 }},
+            {{ totalValues.value3 }},
+            {{ totalValues.value4 }},
+            {{ totalValues.value5 }},
+            {{ totalValues.value6 }},
+            {{ totalValues.value7 }},
+            {{ totalValues.value8 }},
+            {{ totalValues.value9 }},
+            {{ totalValues.value10 }},
+            {{ totalValues.value11 }},
+            {{ totalValues.value12 }},
+            {{ totalValues.value13 }},
+            {{ totalValues.value14 }},
+            {{ totalValues.value15 }},
+            {{ totalValues.value16 }},
+            {{ totalValues.value17 }},
+            {{ totalValues.value18 }},
+            {{ totalValues.value19 }},
+            {{ totalValues.value20 }}
+        ];
+
+        total_data_values[{{ totalValues.fill }} - 1] = {{ overall_total }}
+
+
+
+        const data_total = {
+            labels: [
+                "{{ totalValues.valueDate1|date("D d/m")  }}",
+                "{{ totalValues.valueDate2|date("D d/m")  }}",
+                "{{ totalValues.valueDate3|date("D d/m")  }}",
+                "{{ totalValues.valueDate4|date("D d/m")  }}",
+                "{{ totalValues.valueDate5|date("D d/m")  }}",
+                "{{ totalValues.valueDate6|date("D d/m")  }}",
+                "{{ totalValues.valueDate7|date("D d/m")  }}",
+                "{{ totalValues.valueDate8|date("D d/m")  }}",
+                "{{ totalValues.valueDate9|date("D d/m")  }}",
+                "{{ totalValues.valueDate10|date("D d/m")  }}",
+                "{{ totalValues.valueDate11|date("D d/m")  }}",
+                "{{ totalValues.valueDate12|date("D d/m")  }}",
+                "{{ totalValues.valueDate13|date("D d/m")  }}",
+                "{{ totalValues.valueDate14|date("D d/m")  }}",
+                "{{ totalValues.valueDate15|date("D d/m")  }}",
+                "{{ totalValues.valueDate16|date("D d/m")  }}",
+                "{{ totalValues.valueDate17|date("D d/m")  }}",
+                "{{ totalValues.valueDate18|date("D d/m")  }}",
+                "{{ totalValues.valueDate19|date("D d/m")  }}",
+                "{{ totalValues.valueDate20|date("D d/m")  }}",
+
+            ],
+            datasets: [{
+                label: 'Total Value over 20 days..',
+                data: total_data_values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                ],
+                borderWidth: 1
+            }]
+        };
+        const config_total = {
+            type: 'bar',
+            data: data_total,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            },
+        };
+        const total_ctx = document.getElementById('total_chart');
+        let total_chart = new Chart(total_ctx, config_total);
+
+        $.post("/dashboard/settotalvaluecolumn", {total:{{ overall_total }}}, (json) => {
+            console.log(json.total);
+        });
+    </script>
 </div>

@@ -91,6 +91,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: RRSPContribution::class)]
     private $RRSPContributions;
 
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: TotalValue::class)]
+    private $totalValues;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -108,6 +111,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->TFSAContributions = new ArrayCollection();
         $this->FHSAContributions = new ArrayCollection();
         $this->RRSPContributions = new ArrayCollection();
+        $this->totalValues = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -694,6 +698,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($RRSPContribution->getUser() === $this) {
                 $RRSPContribution->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TotalValue>
+     */
+    public function getTotalValues(): Collection
+    {
+        return $this->totalValues;
+    }
+
+    public function addTotalValue(TotalValue $totalValue): self
+    {
+        if (!$this->totalValues->contains($totalValue)) {
+            $this->totalValues[] = $totalValue;
+            $totalValue->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTotalValue(TotalValue $totalValue): self
+    {
+        if ($this->totalValues->removeElement($totalValue)) {
+            // set the owning side to null (unless already changed)
+            if ($totalValue->getUser() === $this) {
+                $totalValue->setUser(null);
             }
         }
 
