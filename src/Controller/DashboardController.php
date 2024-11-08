@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use App\Entity\Debt;
 use App\Entity\User;
 use App\Entity\Wallet;
 use App\Entity\TotalValue;
@@ -62,6 +63,10 @@ class DashboardController extends AbstractController
         //check if we need to update the Total Value Chart
         $totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
 
+        // get Debt if any..
+        $debt = $doctrine->getRepository(Debt::class)->findBy(['user' => $user->getId()]);
+
+
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
             'show_nav' => true,
@@ -75,6 +80,7 @@ class DashboardController extends AbstractController
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
             'totalValues' => $totalValues,
+            'debts' => $debt,
         ]);
     }
 

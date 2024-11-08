@@ -94,6 +94,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'User', targetEntity: TotalValue::class)]
     private $totalValues;
 
+    #[ORM\OneToMany(mappedBy: 'User', targetEntity: Debt::class)]
+    private $debts;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -728,6 +731,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($totalValue->getUser() === $this) {
                 $totalValue->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Debt>
+     */
+    public function getDebts(): Collection
+    {
+        return $this->debts;
+    }
+
+    public function addDebt(Debt $debt): self
+    {
+        if (!$this->debts->contains($debt)) {
+            $this->debts[] = $debt;
+            $debt->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDebt(Debt $debt): self
+    {
+        if ($this->debts->removeElement($debt)) {
+            // set the owning side to null (unless already changed)
+            if ($debt->getUser() === $this) {
+                $debt->setUser(null);
             }
         }
 

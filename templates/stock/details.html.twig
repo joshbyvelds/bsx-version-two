@@ -257,9 +257,9 @@
                         <table>
                             <tr>
                                 <th>Price |</th>
-                                <th>Contracts |</th>
+                                <th><small>Contracts</small> |</th>
                                 <th>Strike |</th>
-                                <th>Expiry Date |</th>
+                                <th><small>Expiry Date |</small></th>
                                 <th>Status |</th>
                                 <th>Earned | </th>
                                 <th><small>Buy/Expire +/-</small> | </th>
@@ -289,6 +289,13 @@
                                 {% set cc_ab_per = cc_se_per %}
                                 {% set cc_away_from_target = 100 + cc_ab_per %}
 
+                                {% set cc_be_diff2 = (cc.stockBuyPrice - stock.currentPrice) * -1 %}
+                                {% set cc_se_diff2 = (stock.currentPrice - cc.strike) %}
+                                {% set cc_se_per2 = ((stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                {% set cc_ab_per2 = cc_se_per2 %}
+                                {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
+
+
                                 <td>{{ cc.price|number_format(2) }}</td>
                                 <td>{{ cc.contracts }}</td>
                                 <td>{{ cc.strike|number_format(2) }}</td>
@@ -309,10 +316,23 @@
                                 <td class="{% if cc_se_diff < 0 %}green{% else %}red{% endif %}">
                                     <span>{% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }}</span>
                                 </td>
-                                <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
-                                    <span>{{ cc_away_from_target|number_format(2) }}%</span>
-                                </td>
-                                <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
+
+                                {% if cc.buyout or cc.expired %}
+                                    <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
+                                        <span>{{ cc_away_from_target|number_format(1) }}% | </span>
+                                    </td>
+                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
+                                {% else %}
+                                    {% set cc_be_diff2 = (cc.stockBuyPrice - stock.currentPrice) * -1 %}
+                                    {% set cc_se_diff2 = (stock.currentPrice - cc.strike) %}
+                                    {% set cc_se_per2 = ((stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                    {% set cc_ab_per2 = cc_se_per2 %}
+                                    {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
+                                    <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
+                                        <span>{{ cc_away_from_target2|number_format(1) }}% | </span>
+                                    </td>
+                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ stock.currentPrice|number_format(2) }}</td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                         </table>

@@ -1,0 +1,16 @@
+<div class="cash panel end">
+    <div class="title">Debt</div>
+    <table>
+        <tr>
+            <th>Stock</th>
+            <th>Amount</th>
+        </tr>
+        {% for debt in debts %}
+            <tr>
+                <td>{{ debt.stock.ticker }}</td>
+                <td>{{ debt.cdn }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <small>Note Debt must be adjusted manually in <a href="http://localhost:888/phpmyadmin/index.php">PHPMyAdmin</a></small>
+</div>
