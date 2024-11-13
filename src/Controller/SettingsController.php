@@ -70,6 +70,7 @@ class SettingsController extends AbstractController
             $settings->setFHSAEnabled(false);
             $settings->setRRSPLimit(0);
             $settings->setRRSPEnabled(false);
+            $settings->setWeeklyTotalValue(false);
             $em->persist($settings);
             $em->flush();
         }

@@ -24,6 +24,7 @@ class SettingsType extends AbstractType
             ])
             ->add('dashboard_transactions')
             ->add('dashboard_portfolio_large', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('weekly_total_value', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_cash_equity_balance', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('stocks_update_sold_price', CheckboxType::class, ['mapped' => true, 'required' => false])

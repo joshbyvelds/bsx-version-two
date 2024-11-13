@@ -61,12 +61,26 @@
 
     {% endfor %}
 
+    {% set debt_total_cdn = 0 %}
+    {% set debt_total_usd = 0 %}
+
+    {% for debt in debts %}
+        {% set debt_total_cdn = debt_total_cdn + debt.cdn %}
+        {% set debt_total_usd = debt_total_usd + debt.usd %}
+    {% endfor %}
+
 
 
     <h2 class="text-2xl">Total Portfolio Value</h2>
     US: ${{ total_value_usd|number_format(2) }} | ${{ (total_value_usd * 1.36)|number_format(2) }} (can)<br />
     Can: ${{ total_value_can|number_format(2) }}<br />
-    {% set overall_total = ((total_value_usd * 1.36) + total_value_can) %}
+    {% set debt_total = debt_total_cdn - (debt_total_usd * 1.36) %}
+    {% if debt_total > 0 %}
+    Debt: -${{ debt_total|number_format(2) }}
+    {% endif %}
+
+    {% set overall_total = (((total_value_usd * 1.36) + total_value_can) - debt_total_cdn - (debt_total_usd * 1.36)) %}
+
     <h2 class="text-center text-6xl">${{ overall_total|number_format(2) }}</h2>
 </div>
 
@@ -98,6 +112,8 @@
 
         total_data_values[{{ totalValues.fill }} - 1] = {{ overall_total }}
 
+        const label = {% if settings.weeklyTotalValue %}'Total Value over 20 weeks..'{% else %}'Total Value over 20 days..'{% endif %}
+
 
 
         const data_total = {
@@ -125,7 +141,7 @@
 
             ],
             datasets: [{
-                label: 'Total Value over 20 days..',
+                label: label,
                 data: total_data_values,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',

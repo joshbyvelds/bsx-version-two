@@ -89,15 +89,22 @@ class DashboardController extends AbstractController
     {
         $em = $doctrine->getManager();
         $user = $this->getUser();
+        $settings = $user->getSettings();
         $total = $request->get('total');
         $total = (empty($total)) ? 0.0 : $total;
         $totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
         $date = new \DateTime();
 
-        if($date->format('d') !== $totalValues->getDate()->format('d'))
+        $progress = 0;
+        $weekly = ($settings->isWeeklyTotalValue() && ($date->format('W') !== $totalValues->getDate()->format('W') && $date->format('w') === "5"));
+        $daily = (!$settings->isWeeklyTotalValue() && $date->format('d') !== $totalValues->getDate()->format('d'));
+
+        if($daily || $weekly)
         {
+            $progress = 1;
             if ($totalValues->getFill() < 20)
             {
+                $progress = 2;
                 switch ($totalValues->getFill() + 1)
                 {
                     case(1):
@@ -190,6 +197,6 @@ class DashboardController extends AbstractController
             $em->flush();
         }
 
-        return new JsonResponse(array('success' => false, 'date'=> $totalValues->getDate()->format('d'), 'date2'=> $date->format('d'), 'total' => $total, 'message' => "Portfolio does not belong to user."));
+        return new JsonResponse(array('success' => false, 'd' => $daily, 'w' => $weekly, 'progress' => $progress, 'weekly'=> $settings->isWeeklyTotalValue(), 'date'=> $totalValues->getDate()->format('w'), 'date2'=> $date->format('w'), 'total' => $total, 'message' => "Portfolio does not belong to user."));
     }
 }

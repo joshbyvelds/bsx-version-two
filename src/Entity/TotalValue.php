@@ -17,9 +17,6 @@ class TotalValue
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
-    #[ORM\Column(type: 'integer')]
-    private $type;
-
     #[ORM\Column(type: 'date')]
     private $date;
 
@@ -159,18 +156,6 @@ class TotalValue
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getType(): ?float
-    {
-        return $this->type;
-    }
-
-    public function setType(float $type): self
-    {
-        $this->type = $type;
 
         return $this;
     }

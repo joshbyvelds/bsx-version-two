@@ -82,6 +82,7 @@ class RegistrationController extends AbstractController
             $settings->setFHSAEnabled(false);
             $settings->setRRSPLimit(0);
             $settings->setRRSPEnabled(false);
+            $settings->setWeeklyTotalValue(false);
 
 
             // Create a Wallet

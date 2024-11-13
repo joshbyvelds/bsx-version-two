@@ -152,6 +152,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $TFSA_track_balance;
 
+    #[ORM\Column(type: 'boolean')]
+    private $weekly_total_value;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -709,5 +712,15 @@ class Settings
         return $this;
     }
 
+    public function isWeeklyTotalValue(): ?bool
+    {
+        return $this->weekly_total_value;
+    }
 
+    public function setWeeklyTotalValue(bool $weeklyTotalValue): self
+    {
+        $this->weekly_total_value = $weeklyTotalValue;
+
+        return $this;
+    }
 }
