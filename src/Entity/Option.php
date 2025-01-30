@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OptionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OptionRepository::class)]
@@ -66,6 +68,14 @@ class Option
 
     #[ORM\Column(type: 'integer')]
     private $sells;
+
+    #[ORM\OneToMany(mappedBy: 'option_id', targetEntity: OptionRollover::class)]
+    private $optionRollovers;
+
+    public function __construct()
+    {
+        $this->optionRollovers = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -272,6 +282,36 @@ class Option
     public function setSells(int $sells): self
     {
         $this->sells = $sells;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OptionRollover>
+     */
+    public function getOptionRollovers(): Collection
+    {
+        return $this->optionRollovers;
+    }
+
+    public function addOptionRollover(OptionRollover $optionRollover): self
+    {
+        if (!$this->optionRollovers->contains($optionRollover)) {
+            $this->optionRollovers[] = $optionRollover;
+            $optionRollover->setOptionId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOptionRollover(OptionRollover $optionRollover): self
+    {
+        if ($this->optionRollovers->removeElement($optionRollover)) {
+            // set the owning side to null (unless already changed)
+            if ($optionRollover->getOptionId() === $this) {
+                $optionRollover->setOptionId(null);
+            }
+        }
 
         return $this;
     }

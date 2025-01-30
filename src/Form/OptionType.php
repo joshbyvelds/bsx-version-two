@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Option;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -38,18 +39,42 @@ class OptionType extends AbstractType
                 },
             ])
             ->add('type',ChoiceType::class,[
+                'label' => 'Option Type',
                 'choices' => array(
                     'Call' => '1',
                     'Put' => '2'
                 ),
             ])
-            ->add('strike')
-            ->add('contracts')
-            ->add('average')
+            ->add('strike', TextType::class, [
+                'label' => 'Strike',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00',
+                ]
+            ])
+            ->add('contracts', TextType::class, [
+                'label' => 'Contracts',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '0',
+                ]
+            ])
+            ->add('average', NumberType::class, [
+                'label' => 'Average',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00',
+                ]
+            ])
             ->add('expiry', DateType::class, [
+                'label' => 'Expiry',
                 'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                ]
             ])
             ->add('payment_currency',ChoiceType::class,[
+                'label' => 'Payment Currency',
                 'choices' => array(
                     'CAN' => 'can',
                     'USD' => 'usd'
@@ -58,7 +83,14 @@ class OptionType extends AbstractType
                 'multiple'=>false,
                 'expanded'=>true
             ])
-            ->add('cost', TextType::class, ['mapped' => false])
+            ->add('cost', TextType::class, [
+                'label' => 'Cost',
+                'mapped' => false,
+                'attr' => [
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => '$0.00',
+                ]
+            ])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

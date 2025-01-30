@@ -197,11 +197,57 @@ class WalletController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        return $this->render('form/index.html.twig', [
+        return $this->render('form/currency_convert.html.twig', [
             'page_title' => 'Convert Currency',
             'error' => false,
             'form' => $form->createView(),
             'settings' => $settings,
         ]);
+    }
+
+    #[Route('/wallet/unlockall', name: 'wallet_unlock_all')]
+    public function unlockAll(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $em = $doctrine->getManager();
+
+        // Update Wallet
+        //TODO:: Get the users wallet.. for now use the demo
+        $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+        $wallet->unlock('USD', $wallet->getLockedUsd());
+        $wallet->unlock('CAN', $wallet->getLockedCdn());
+        $em->persist($wallet);
+        $em->flush();
+        return $this->redirectToRoute('dashboard');
+    }
+
+    #[Route('/wallet/unlockusd', name: 'wallet_unlock_usd')]
+    public function unlockUsd(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $em = $doctrine->getManager();
+
+        // Update Wallet
+        //TODO:: Get the users wallet.. for now use the demo
+        $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+        $wallet->unlock('USD', $wallet->getLockedUsd());
+        $em->persist($wallet);
+        $em->flush();
+        return $this->redirectToRoute('dashboard');
+    }
+
+    #[Route('/wallet/unlockcdn', name: 'wallet_unlock_cdn')]
+    public function unlockCdn(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $em = $doctrine->getManager();
+
+        // Update Wallet
+        //TODO:: Get the users wallet.. for now use the demo
+        $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+        $wallet->unlock('CAN', $wallet->getLockedCdn());
+        $em->persist($wallet);
+        $em->flush();
+        return $this->redirectToRoute('dashboard');
     }
 }

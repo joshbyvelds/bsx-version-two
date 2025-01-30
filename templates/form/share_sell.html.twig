@@ -113,8 +113,9 @@
 
     <script>
         $(() => {
-            $("#share_sell_price, #share_sell_amount").on("change", function(){
-                var cost = (parseFloat($("#share_sell_price").val()) * parseInt($("#share_sell_amount").val())) - 9.95;
+            $("#share_sell_price, #share_sell_amount, #share_sell_nofee").on("change", function(){
+                var no_fee = $("#share_sell_nofee").is(":checked");
+                var cost = (parseFloat($("#share_sell_price").val()) * parseInt($("#share_sell_amount").val())) - ((no_fee) ? 0 : 9.95);
                 $("#share_sell_cost").val(cost);
             });
         });

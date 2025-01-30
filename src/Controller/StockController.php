@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,6 +29,7 @@ use App\Entity\ShareBuy;
 use App\Entity\ShareSell;
 use App\Entity\Transaction;
 use App\Entity\Wallet;
+use App\Repository\OptionRepository;
 use App\Repository\StockRepository;
 use App\Repository\AtomRepository;
 
@@ -559,10 +561,10 @@ class StockController extends AbstractController
         $option = new Option();
         $form = $this->createForm(OptionType::class, $option);
         $form->handleRequest($request);
+        $em = $doctrine->getManager();
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $em = $doctrine->getManager();
 
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
@@ -617,9 +619,12 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
+        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
         return $this->render('form/option_add.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'stocks' =>$myStocks,
             'settings' => $settings,
         ]);
     }
@@ -1051,13 +1056,14 @@ class StockController extends AbstractController
         $form = $this->createForm(WrittenOptionRolloverType::class, $nwo);
         $form->handleRequest($request);
 
+        $use_locked_funds = $form->get("use_locked_funds")->getData();
         $payment_locked = $form->get("payment_locked")->getData();
 
         if ($form->isSubmitted() && $form->isValid()) {
             $total = (float)$form->get("total")->getData();
             $wo->setExpiry($nwo->getExpiry());
             $wo->setStrike($nwo->getStrike());
-            $price = (float)$wo->getPrice() + ($total / 100);
+            $price = (float)$wo->getPrice() + (($total / 100) / $wo->getContracts());
             $wo->setPrice(round($price, 2));
 
             $transaction = new Transaction();
@@ -1070,12 +1076,30 @@ class StockController extends AbstractController
             $currency = $form->get("payment_currency")->getData();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
-            dump($form);
+            //if total is negative..
+            if ($total < 0) {
+                if ($currency == 'can') {
+                    if ($use_locked_funds === true) {
+                        $locked_total = $wallet->getLockedCdn();
+                        $totalABS = abs($total);
+                        $locked_funds_to_use = ($totalABS <= $locked_total) ? $totalABS : $locked_total;
+                        $wallet->unlock('CAN', $locked_funds_to_use);
+                    }
+                }
+
+                if ($currency == 'usd'){
+                    if ($use_locked_funds === true) {
+                        $locked_total = $wallet->getLockedUsd();
+                        $totalABS = abs($total);
+                        $locked_funds_to_use = ($totalABS <= $locked_total) ? $totalABS : $locked_total;
+                        $wallet->unlock('USD', $locked_funds_to_use);
+                    }
+                }
+            }
 
             if ($currency == 'can'){
-                if ($form->get("payment_locked")->getData() === true) {
-                    //$wallet->lock('CAN', $total);
-                    $wallet->deposit('CAN', $total);
+                if ($payment_locked === true) {
+                    $wallet->lock('CAN', $total);
                 } else {
                     $wallet->deposit('CAN', $total);
                 }
@@ -1084,16 +1108,15 @@ class StockController extends AbstractController
             }
 
             if ($currency == 'usd'){
-                if ($form->get("payment_locked")->getData() === true) {
-                    //$wallet->lock('USD', $total);
-                    $wallet->deposit('USD', $total);
+                if ($payment_locked === true) {
+                    $wallet->lock('USD', $total);
                 } else {
                     $wallet->deposit('USD', $total);
                 }
                 $transaction->setCurrency(2);
             }
 
-            $lock_amount = (100 * $wo->getContracts() * $wo->getStrike());
+            $lock_amount = (100 * $wo->getContracts() * (float)$form->get("total")->getData());
             if($wo->getContractType() === 2){
                 if ($currency == 'can'){
                     $wallet->lock('CAN', $lock_amount);
@@ -1113,6 +1136,8 @@ class StockController extends AbstractController
 
             $em->persist($transaction);
             $em->flush();
+
+            return $this->redirectToRoute('stocks_written_options');
         }
 
         return $this->render('form/rollover_written_option.html.twig', [
@@ -1122,8 +1147,6 @@ class StockController extends AbstractController
             'settings' => $settings,
         ]);
 
-
-        return new JsonResponse(array('success' => true));
     }
 
     #[Route('/stocks/writtenoption/expire/{id}', name: 'stocks_writtenoption_expire')]

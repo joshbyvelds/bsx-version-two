@@ -27,7 +27,7 @@
                     </div>
 
                     {% for input in form.children %}
-                        {% if input.vars.name != "Stock" and input.vars.name != "total" and input.vars.name != "contract_type" and input.vars.name != "payment_currency" and input.vars.name != "payment_locked" and  input.vars.name != "save" and input.vars.name != "_token" %}
+                        {% if input.vars.name != "Stock" and input.vars.name != "total" and input.vars.name != "contract_type" and input.vars.name != "payment_currency" and input.vars.name != "payment_locked" and input.vars.name != "use_locked_funds" and input.vars.name != "save" and input.vars.name != "_token" %}
                             <div class="col-span-full">
                                 <label for="{{ input.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if input.vars.required == true %}required{% endif %}">{{ input.vars.label }}</label>
                                 <div class="mt-2">
@@ -61,6 +61,16 @@
                                 <span class="ml-3 text-sm">
                                     <span class="font-medium">Lock Payment</span>
                                     <span class="font-normal text-gray-500">(for Rollovers)</span>
+                                </span>
+                            </div>
+                            <br />
+                            <div class="flex items-center">
+                                <button type="button" class="fee-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-transparent bg-gray-200" :class="use_locked_funds == true && 'checked'" x-on:click="use_locked_funds_selected()">
+                                    <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white"></span>
+                                </button>
+                                <span class="ml-3 text-sm">
+                                    <span class="font-medium">Use Locked Funds</span>
+                                    <span class="font-normal text-gray-500">(if total is negative)</span>
                                 </span>
                             </div>
                             <style>
@@ -104,10 +114,6 @@
                                 }
 
                             </style>
-                            <div class="hidden">
-                                <input type="checkbox" id="written_option_rollover_payment_locked" name="written_option_rollover[payment_locked]" value="payment_locked" x-model="payment_locked">
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -125,6 +131,7 @@
             <input type="hidden" name="written_option_rollover[contract_type]" id="written_option_rollover_contract_type" x-model="selected_type" />
             <input type="hidden" name="written_option_rollover[payment_currency]" id="written_option_rollover_payment_currency" x-model="selected_currency" />
             <input type="hidden" name="written_option_rollover[payment_locked]" id="written_option_rollover_payment_locked" x-model="payment_locked_converted()" />
+            <input type="hidden" name="written_option_rollover[use_locked_funds]" id="written_option_rollover_use_locked_funds" x-model="use_locked_funds_converted()" />
         </form>
 
         {# render tailwind class that form inputs will use.. #}
@@ -136,7 +143,7 @@
             $("#written_option_rollover_new_price, #written_option_rollover_old_price, #written_option_rollover_contracts").on("change", function(){
                 var new_contact = ((parseFloat($("#written_option_rollover_new_price").val()) * parseInt($("#written_option_rollover_contracts").val())) * 100);
                 var old_contract = ((parseFloat($("#written_option_rollover_old_price").val()) * parseInt($("#written_option_rollover_contracts").val())) * 100);
-                var fee = 9.95 + (1.25 * parseInt($(" #written_option_rollover_contracts").val()));
+                var fee = 9.95 + (1.25 * parseInt($(" #written_option_rollover_contracts").val() * 2));
                 var cost = floor10((new_contact - old_contract - fee), -2);
 
                 $("#written_option_rollover_total").val(cost);
@@ -180,6 +187,7 @@
                 old_price: {{ old_option.price }},
                 dropdownOpen: false,
                 selectedStock: null,
+                use_locked_funds: false,
                 payment_locked: false,
                 selected_type: {{ old_option.contractType }},
                 selected_currency: "can",
@@ -188,6 +196,14 @@
 
                 checkSelected(id){
                     return this.selectedStock === id;
+                },
+
+                use_locked_funds_selected(){
+                    this.use_locked_funds = !this.use_locked_funds;
+                },
+
+                use_locked_funds_converted(){
+                    return (this.use_locked_funds) ? "1" : "0";
                 },
 
                 payment_locked_selected(){

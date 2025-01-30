@@ -1,4 +1,8 @@
 <div class="cash panel end">
     <div class="title">Cash Locked</div>
     <div class="amount">{{ amount_can|format_currency('USD', {fraction_digit: 2}) }} / {{ amount_usd|format_currency('USD', {fraction_digit: 2}) }}</div>
+    <a class="cash_button" id="unlock_locked_money" href="/wallet/unlockall">Unlock All</a>
+    <a class="cash_button" id="unlock_locked_money" href="/wallet/unlockcdn">Unlock CDN</a>
+    <a class="cash_button" id="unlock_locked_money" href="/wallet/unlockusd">Unlock USD</a>
+
 </div>

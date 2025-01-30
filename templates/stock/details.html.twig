@@ -101,9 +101,16 @@
     {% set daysSinceLastBuy = buyDateDifference.days %}
 
     {% set options_total = 0 %}
+    {% set options_rollover = 0 %}
     {% for option in stock.options %}
+        {% set options_rollover = 0 %}
+        {% for rollover in option.optionRollovers %}
+            {{ rollover.oldPrice }}
+            {% set options_rollover = options_rollover + ((((rollover.oldPrice - rollover.newPrice) * rollover.contracts) * 100) - 9.95 - (1.25 * rollover.contracts)) %}
+            ROLLOVER: {{ options_rollover }}<br />
+        {% endfor %}
         {% set option_fees = (9.95 * (option.buys + option.sells)) + (1.25 * option.totalContracts) + 1.25 * option.totalContractsSold %}
-        {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100)))  %}
+        {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100))) + options_rollover %}
     {% endfor %}
 
     <div>
@@ -302,11 +309,13 @@
                                 <td>{{ cc.expiry|date("m/d/Y") }}</td>
                                 <td>
                                     {% if cc.buyout %}
-                                        Buyout
+                                        <small>Buyout</small>
                                     {% elseif cc.expired %}
-                                        Expired
+                                        <small>Expired</small>
+                                    {% elseif cc.exercised %}
+                                        <small>Exercised</small>
                                     {% else %}
-                                        Ongoing
+                                        <small>Ongoing</small>
                                     {% endif %}
                                 </td>
                                 <td>${{ cc_earned|number_format(2) }}</td>
@@ -317,7 +326,7 @@
                                     <span>{% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }}</span>
                                 </td>
 
-                                {% if cc.buyout or cc.expired %}
+                                {% if cc.buyout or cc.expired or cc.exercised %}
                                     <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
                                         <span>{{ cc_away_from_target|number_format(1) }}% | </span>
                                     </td>

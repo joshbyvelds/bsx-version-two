@@ -97,7 +97,7 @@ class DashboardController extends AbstractController
 
         $progress = 0;
         $weekly = ($settings->isWeeklyTotalValue() && ($date->format('W') !== $totalValues->getDate()->format('W') && $date->format('w') === "5"));
-        $daily = (!$settings->isWeeklyTotalValue() && $date->format('d') !== $totalValues->getDate()->format('d'));
+        $daily = (!$settings->isWeeklyTotalValue() && $date->format('d') !== $totalValues->getDate()->format('d') && in_array($date->format('w'), ["1", "2", "3", "4", "5"]));
 
         if($daily || $weekly)
         {
@@ -192,6 +192,7 @@ class DashboardController extends AbstractController
             } else {
                 $totalValues->moveLeft();
                 $totalValues->setValue20($total);
+                $totalValues->setValueDate20($date);
             }
             $totalValues->setDate($date);
             $em->flush();

@@ -58,9 +58,16 @@ class WrittenOptionRolloverType extends AbstractType
             ])
             ->add('total', TextType::class, ['mapped' => false, 'label' => 'Total Amount', 'attr' => ['class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6', 'placeholder' => '$0.00']])
 
+            ->add('use_locked_funds',CheckboxType::class,[
+                'label' => 'Use Locked Funds (if negative total)',
+                'required' => false,
+                'mapped' => false,
+            ])
+
             ->add('payment_locked',CheckboxType::class,[
                 'label' => 'Lock Payment? (for rollover) ',
                 'required' => false,
+                'mapped' => false,
             ])
 
             ->add('save', SubmitType::class, [

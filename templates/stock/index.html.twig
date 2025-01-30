@@ -49,6 +49,13 @@
         {% set total_earned = 0 %}
         {% set stock_dividend = 0 %}
         {% set cc_total = 0 %}
+        {% set cc_over = 0 %}
+
+        {% for cc in stock.coveredCalls %}
+            {% if cc.strike < stock_current and cc.buyout == 0 and cc.exercised == 0 and cc.expired == 0%}
+                {% set cc_over = cc_over + ((stock_current - cc.strike) * 100) %}
+            {% endif %}
+        {% endfor %}
 
         {% for buy in stock.shareBuys %}
             {% set d_buy = buy.date|date('U') %}
@@ -66,6 +73,10 @@
                 {% set total_buy = total_buy + 9.95 %}
             {% endif %}
         {% endfor %}
+
+{#        {% if cc_over > 0 %}#}
+{#            {% set stock_average = stock_average - cc_over %}#}
+{#        {% endif %}#}
 
         {% if stock_amount > 0 %}
             {% set stock_average = stock_average / stock_amount %}
