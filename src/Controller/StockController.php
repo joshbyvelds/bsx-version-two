@@ -1056,8 +1056,8 @@ class StockController extends AbstractController
         $form = $this->createForm(WrittenOptionRolloverType::class, $nwo);
         $form->handleRequest($request);
 
-        $use_locked_funds = $form->get("use_locked_funds")->getData();
-        $payment_locked = $form->get("payment_locked")->getData();
+        $use_locked_funds = ((int)$form->get("use_locked_funds")->getData() === 1);
+        $payment_locked = ((int)$form->get("payment_locked")->getData() === 1);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $total = (float)$form->get("total")->getData();
