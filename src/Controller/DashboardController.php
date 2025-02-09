@@ -47,7 +47,8 @@ class DashboardController extends AbstractController
             $current_futures_week = null;
         }
 
-        $plays = $user->getPlays();
+        $plays = $settings->isDashboardPlaysPanel() ? $user->getPlays() : false;
+
         $portfolios = $user->getPortfolios();
 
 
@@ -66,6 +67,10 @@ class DashboardController extends AbstractController
         // get Debt if any..
         $debt = $doctrine->getRepository(Debt::class)->findBy(['user' => $user->getId()]);
 
+        $cc = $settings->isDashboardCcPanel() ? $user->getWrittenOptions() : false;
+
+
+
 
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
@@ -80,6 +85,7 @@ class DashboardController extends AbstractController
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
             'totalValues' => $totalValues,
+            'covered_calls' => $cc,
             'debts' => $debt,
         ]);
     }

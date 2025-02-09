@@ -155,6 +155,12 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $weekly_total_value;
 
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_plays_panel;
+
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_cc_panel;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -720,6 +726,30 @@ class Settings
     public function setWeeklyTotalValue(bool $weeklyTotalValue): self
     {
         $this->weekly_total_value = $weeklyTotalValue;
+
+        return $this;
+    }
+
+    public function isDashboardPlaysPanel(): ?bool
+    {
+        return $this->dashboard_plays_panel;
+    }
+
+    public function setDashboardPlaysPanel(bool $value): self
+    {
+        $this->dashboard_plays_panel = $value;
+
+        return $this;
+    }
+
+    public function isDashboardCcPanel(): ?bool
+    {
+        return $this->dashboard_cc_panel;
+    }
+
+    public function setDashboardCcPanel(bool $value): self
+    {
+        $this->dashboard_cc_panel = $value;
 
         return $this;
     }

@@ -24,6 +24,8 @@ class SettingsType extends AbstractType
             ])
             ->add('dashboard_transactions')
             ->add('dashboard_portfolio_large', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_plays_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_cc_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('weekly_total_value', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_cash_equity_balance', CheckboxType::class, ['mapped' => true, 'required' => false])
@@ -68,6 +70,7 @@ class SettingsType extends AbstractType
             ->add('fhsa_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('rrsp_limit')
             ->add('rrsp_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
+
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

@@ -10,8 +10,8 @@
             {% include "dashboard/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
             {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "dashboard/panels/futures.html.twig" %}{% endif %}
         </div>
-        {% include "dashboard/panels/graph.html.twig" %}
-        {% include "dashboard/panels/plays.html.twig" %}
+        {% if settings.dashboardPlaysPanel %}{% include "dashboard/panels/plays.html.twig" %}{% endif %}
+        {% if settings.dashboardCcPanel %}{% include "dashboard/panels/cc.html.twig" %}{% endif %}
     </div><!--
 
  --><div class="narrow_column">

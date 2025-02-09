@@ -1,0 +1,106 @@
+<div class="panel large_panel plays">
+    <div class="title">Covered Calls</div>
+    <div class="py-10 bg-white text-start">
+        <div class="max-w-7xl mx-auto">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex sm:items-center">
+                    <div class="flex-1">
+                        <h1 class="m-0 text-base font-semibold leading-6 text-gray-900">Active Option Contracts</h1>
+                        <p class="mt-2 text-sm leading-5 text-gray-700">A list of all the written option contracts in your account that are still active</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 flow-root">
+                    <div class="mx-[-1rem] my-[-0.5rem] overflow-x-auto sm:mx-6 lg:mx-[-2rem]">
+                        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                            <table class="indent-0 border-inherit border-collapse min-w-full table-table table-body">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm leading-5 font-semibold text-gray-900 sm:pl-0">Company</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Contract Info</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Earned</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">🎯%</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Days Left</th>
+                                </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                {% set total_earned = 0 %}
+                                {% set old_wo = [] %}
+                                {% for wo in covered_calls|sort((a, b) => a.expiry <=> b.expiry) %}
+                                    {% if wo.exercised or wo.expired %}
+                                        {% set old_wo = old_wo|merge([wo]) %}
+                                    {% else %}
+                                        {% set datePost = wo.expiry|date('d-m-Y') %}
+                                        {% set today = "now"|date('d-m-Y') %}
+                                        {% set difference = date(today).diff(date(datePost))%}
+                                        {% set leftDays = difference.days %}
+                                        {% set pastExpiry = difference.invert %}
+                                        {% set earned = ((wo.price * wo.contracts * 100) - 9.95 - (1.25 * wo.contracts)) %}
+                                        {% set current_per = ((wo.stock.currentPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
+                                        {% set ab_per = current_per %}
+                                        {% set away_from_target = 100 + ab_per %}
+                                        <tr>
+                                            <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
+                                                <div class="w-28 h-28 p-3 shadow rounded-full" style="background-color:#{{ wo.stock.bgColor }};">
+                                                    <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/{{ wo.stock.ticker }}.jpg" alt="{{ wo.stock.ticker }} Logo" class="block align-middle max-w-full w-27 h-27 rounded-full" /></a>
+                                                </div>
+                                            </td>
+                                            <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                                <div class="ml-4 text-left">
+                                                    <div class="font-medium text-gray-900">{{ wo.contracts }} {% if wo.contractType == 1 %}Covered Call{% else %}Cash Secured Put{% endif%} {% if wo.contracts == 1 %}Contract{% else %}Contracts{% endif %}</div>
+                                                    {#                                            <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Expires:</span> 02/07/2023 | <span class="font-semibold text-gray-900">Price:</span> 0.31 | <span class="font-semibold text-gray-900">Strike:</span> $7.00</div>#}
+                                                    <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Expires:</span> {{ wo.expiry|date("m/d/Y") }}</div>
+                                                    <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Price:</span> {{ wo.price|number_format(2) }}</div>
+                                                    <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Strike:</span> ${{ wo.strike|number_format(2) }}</div>
+                                                </div>
+                                            </td>
+                                            <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">${{ earned|number_format(2) }}</td>
+                                            <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                                {% if away_from_target <= 10 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-red-900 pill_shadow ring-inset ring-red-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target > 10 and away_from_target < 20 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-300 px-2 py-1 text-xs font-medium text-red-800 pill_shadow ring-inset ring-red-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 20 and away_from_target < 30 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-200 px-2 py-1 text-xs font-medium text-red-700 pill_shadow ring-inset ring-red-700/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 30 and away_from_target < 40 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-600 pill_shadow ring-inset ring-red-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 40 and away_from_target < 50 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 pill_shadow ring-inset ring-red-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 50 and away_from_target < 60 %}
+                                                    <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-600 pill_shadow ring-inset ring-green-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 60 and away_from_target < 70 %}
+                                                    <span class="inline-flex items-center rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-600 pill_shadow ring-inset ring-green-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 70 and away_from_target < 80 %}
+                                                    <span class="inline-flex items-center rounded-md bg-green-200 px-2 py-1 text-xs font-medium text-green-700 pill_shadow ring-inset ring-green-700/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 80 and away_from_target < 90 %}
+                                                    <span class="inline-flex items-center rounded-md bg-green-300 px-2 py-1 text-xs font-medium text-green-800 pill_shadow ring-inset ring-green-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 90 and away_from_target < 100.01 %}
+                                                    <span class="inline-flex items-center rounded-md bg-green-500 px-2 py-1 text-xs font-medium text-green-900 pill_shadow ring-inset ring-green-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 100.01 and away_from_target < 110 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 pill_shadow ring-inset ring-red-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 110 and away_from_target < 120 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-600 pill_shadow ring-inset ring-red-600/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 120 and away_from_target < 130 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-200 px-2 py-1 text-xs font-medium text-red-700 pill_shadow ring-inset ring-red-700/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% elseif away_from_target >= 130 and away_from_target < 140 %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-300 px-2 py-1 text-xs font-medium text-red-800 pill_shadow ring-inset ring-red-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% else %}
+                                                    <span class="inline-flex items-center rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-red-900 pill_shadow ring-inset ring-red-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
+                                                {% endif %}
+                                            </td>
+                                            <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                                {% set dl = (datePost == today) ? 'Today' : (leftDays == 1 and not pastExpiry) ? 'Tomorrow' : (pastExpiry and leftDays == 1) ? '<span style="color:red">Expired ' ~ leftDays ~ ' Day Ago</span>' : (pastExpiry) ? '<span style="color:red">Expired ' ~ leftDays ~ ' Days Ago</span>' : leftDays ~ " Days" %}
+                                                {{ dl|raw }}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
