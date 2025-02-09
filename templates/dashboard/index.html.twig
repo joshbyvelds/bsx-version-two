@@ -4,11 +4,13 @@
 
 {% block body %}
     <div class="wide_column">
-        {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
-        <div class="portfolio_wrapper">
-            {% include "dashboard/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
-            {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "dashboard/panels/futures.html.twig" %}{% endif %}
-        </div>
+        {% if settings.dashboard_portfolio_panel %}
+            {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
+            <div class="portfolio_wrapper">
+                {% include "dashboard/panels/portfolio.html.twig" with {'name':'Long Term Trades', 'updated':'12/29/2021', 'amount': 0, 'gain_total':0, 'gain_total_percent':0, 'gain_day':0, 'gain_day_percent':0} %}
+                {% if futures != "NO BUCKETS" and settings.futuresEnabled %}{% include "dashboard/panels/futures.html.twig" %}{% endif %}
+            </div>
+        {% endif %}
         {% include "dashboard/panels/graph.html.twig" %}
         {% if settings.dashboard_plays_panel %}{% include "dashboard/panels/plays.html.twig" %}{% endif %}
         {% if settings.dashboard_cc_panel %}{% include "dashboard/panels/cc.html.twig" %}{% end %}

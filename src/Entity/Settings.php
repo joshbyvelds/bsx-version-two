@@ -161,6 +161,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $dashboard_cc_panel;
 
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_portfolio_panel;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -750,6 +753,18 @@ class Settings
     public function setDashboardCcPanel(bool $value): self
     {
         $this->dashboard_cc_panel = $value;
+
+        return $this;
+    }
+
+    public function isDashboardPortfolioPanel(): ?bool
+    {
+        return $this->dashboard_portfolio_panel;
+    }
+
+    public function setDashboardPortfolioPanel(bool $value): self
+    {
+        $this->dashboard_portfolio_panel = $value;
 
         return $this;
     }
