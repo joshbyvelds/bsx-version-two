@@ -60,6 +60,9 @@ class WrittenOption
     #[ORM\Column(type: 'float')]
     private $buyout_price;
 
+    #[ORM\Column(type: 'float')]
+    private $ask;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -241,6 +244,18 @@ class WrittenOption
     public function setBuyoutPrice(float $buyoutPrice): self
     {
         $this->buyout_price = $buyoutPrice;
+
+        return $this;
+    }
+
+    public function getAsk(): ?float
+    {
+        return $this->ask;
+    }
+
+    public function setAsk(float $ask): self
+    {
+        $this->ask = $ask;
 
         return $this;
     }

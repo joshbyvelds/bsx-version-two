@@ -52,6 +52,7 @@
                                         <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Contract Info</th>
                                         <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Earned</th>
                                         <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">🎯%</th>
+                                        <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Ask</th>
                                         <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Days Left</th>
                                         <th scope="col" class="relative pl-3 py-3.5 pr-4 text-sm leading-5 font-semibold text-gray-900 sm:pr-0">Actions</th>
                                     </tr>
@@ -121,6 +122,7 @@
                                             <span class="inline-flex items-center rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-red-900 pill_shadow ring-inset ring-red-900/[0.20]">{{ away_from_target|number_format(2) }}%</span><br />
                                             {% endif %}
                                         </td>
+                                        <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">{{ wo.ask }}</td>
                                         <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
                                             {% set dl = (datePost == today) ? 'Today' : (leftDays == 1 and not pastExpiry) ? 'Tomorrow' : (pastExpiry and leftDays == 1) ? '<span style="color:red">Expired ' ~ leftDays ~ ' Day Ago</span>' : (pastExpiry) ? '<span style="color:red">Expired ' ~ leftDays ~ ' Days Ago</span>' : leftDays ~ " Days" %}
                                             {{ dl|raw }}

@@ -164,6 +164,12 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $dashboard_portfolio_panel;
 
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_total_value_panel;
+
+    #[ORM\Column(type: 'boolean')]
+    private $total_value_cc_type_assign;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -765,6 +771,30 @@ class Settings
     public function setDashboardPortfolioPanel(bool $value): self
     {
         $this->dashboard_portfolio_panel = $value;
+
+        return $this;
+    }
+
+    public function isDashboardTotalValuePanel(): ?bool
+    {
+        return $this->dashboard_total_value_panel;
+    }
+
+    public function setDashboardTotalValuePanel(bool $value): self
+    {
+        $this->dashboard_total_value_panel = $value;
+
+        return $this;
+    }
+
+    public function isTotalValueCcTypeAssign(): ?bool
+    {
+        return $this->total_value_cc_type_assign;
+    }
+
+    public function setTotalValueCcTypeAssign(bool $value): self
+    {
+        $this->total_value_cc_type_assign = $value;
 
         return $this;
     }

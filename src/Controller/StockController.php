@@ -42,7 +42,7 @@ class StockController extends AbstractController
     private $update_function = false;
     private $test_string = "";
 
-    private function updateStockInfo($doctrine, Stock $stock, $disable_can, $day_today, $hour_today)
+    private function updateStockInfo($user, $doctrine, Stock $stock, $disable_can, $day_today, $hour_today)
     {
         $this->update_function = true;
         if($stock->getCountry() == "CAN"){
@@ -148,7 +148,7 @@ class StockController extends AbstractController
                             $atomCount->setValue(0);
                             $em = $doctrine->getManager();
                             $em->flush();
-                            return $this->updateStockInfo($doctrine, $stock, $disable_can, $day_today, $hour_today);
+                            return $this->updateStockInfo($user, $doctrine, $stock, $disable_can, $day_today, $hour_today);
                         }
 
 
@@ -213,6 +213,22 @@ class StockController extends AbstractController
 
                     if ($last_year !== $today_year) {
                         $stock->setPriceYear($old_price);
+                    }
+                }
+
+                // update covered call ask if there are any..
+                forEach($user->getWrittenOptions() as $option){
+                    if($option->getStock() === $stock && !$option->isExpired() && !$option->isExercised()){
+                        $e = date_format($option->getExpiry(), "Y-m-d");
+                        $t = ((int)$option->getType() === 1) ? "c":"p";
+                        $s = number_format($option->getStrike(), 2);
+                        $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getTicker() . '&reqId=1'), true);
+                        $option_data = $option_data['options'];
+                        $option_data = $option_data[$e];
+                        $option_data = $option_data[$t];
+                        $option_data = $option_data[$s];
+                        $current = $option_data['a'];
+                        $option->setAsk($current);
                     }
                 }
             }
@@ -1275,7 +1291,7 @@ class StockController extends AbstractController
             {
                 $this->test_string = "2 - Force Update";
                 dump("Test 2");
-                $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
                     $stock->setLastPriceUpdate($date);
@@ -1289,7 +1305,7 @@ class StockController extends AbstractController
              if($numberDays >= 3){
                 $this->test_string = "3 - Over 3 Days since last update";
                  dump("Test 3");
-                $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
                     $stock->setLastPriceUpdate($date);
@@ -1304,7 +1320,7 @@ class StockController extends AbstractController
                 if(!$updated_on_weekend){
                     $this->test_string = "3.1 - Weekend Update";
                     dump("Test 3.1");
-                    $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                    $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new DateTime();
                         $stock->setLastPriceUpdate($date);
@@ -1328,7 +1344,7 @@ class StockController extends AbstractController
                 if($marketOpen){
                     $this->test_string = "4 - Mid Day Update";
                     dump("Test 4");
-                    $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                    $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new DateTime();
                         $stock->setLastPriceUpdate($date);
@@ -1357,7 +1373,7 @@ class StockController extends AbstractController
              if(!$updated){
                 $this->test_string = "6 - Normal Update";
                  dump("Test 6");
-                $ustatus = $this->updateStockInfo($doctrine, $stock,$disable_can,$day_today,$hour_today);
+                $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
                     $stock->setLastPriceUpdate($date);

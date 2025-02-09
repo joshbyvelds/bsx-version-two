@@ -27,6 +27,8 @@ class SettingsType extends AbstractType
             ->add('dashboard_portfolio_large', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_plays_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_cc_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_total_value_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('total_value_cc_type_assign',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('weekly_total_value', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_cash_equity_balance', CheckboxType::class, ['mapped' => true, 'required' => false])
