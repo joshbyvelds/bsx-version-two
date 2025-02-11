@@ -1,0 +1,13 @@
+<div class="panel large_panel">
+    <div class="sector" style="display:inline-block; width:50%;">
+        <canvas id="sector_chart"></canvas>
+    </div><!--
+ --><div class="weights" style="display:inline-block; width:50%;">
+        <ul>
+            {% for stock in weights %}
+            <li><span title="{{ stock.name }}">{{ stock.ticker }}</span> - <strong>{{ (stock.weight * 100)|number_format(2) }}%</strong></li>
+            {% endfor %}
+        </ul>
+
+    </div>
+</div>

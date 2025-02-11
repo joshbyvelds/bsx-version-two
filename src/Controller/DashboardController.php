@@ -69,6 +69,8 @@ class DashboardController extends AbstractController
 
         $cc = $settings->isDashboardCcPanel() ? $user->getWrittenOptions() : false;
 
+        $weights = $this->getTopWeights($stocks);
+
 
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
@@ -79,6 +81,7 @@ class DashboardController extends AbstractController
             'current_futures_week' => $current_futures_week,
             'settings' => $settings,
             'stocks' => $stocks,
+            'weights' => $weights,
             'portfolios' => $portfolios,
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
@@ -203,5 +206,56 @@ class DashboardController extends AbstractController
         }
 
         return new JsonResponse(array('success' => false, 'd' => $daily, 'w' => $weekly, 'progress' => $progress, 'weekly'=> $settings->isWeeklyTotalValue(), 'date'=> $totalValues->getDate()->format('w'), 'date2'=> $date->format('w'), 'total' => $total, 'message' => "Portfolio does not belong to user."));
+    }
+
+    private function getTopWeights($stocks): array{
+        $weight_stocks = [];
+        $total_value = 0;
+
+        foreach ($stocks as $stock){
+            $weight_stock_object = ['ticker' => $stock->getTicker(), 'name' => $stock->getName(), 'total' => 0, 'weight' => 0];
+            $stock_total_shares = 0;
+            $stock_total_value = 0;
+
+            if($stock->getSharesOwned() > 0) {
+
+                foreach ($stock->getShareBuys() as $buy) {
+                    if ($buy->getSold() < $buy->getAmount()) {
+                        $stock_total_shares += $buy->getAmount() - $buy->getSold();
+                    }
+                }
+
+                foreach ($stock->getCoveredCalls() as $cc) {
+                    if (!$cc->isExpired() && !$cc->isExercised()) {
+                        if ($cc->getStrike() > $stock->getCurrentPrice()) {
+                            $stock_total_shares -= 100 * $cc->getContracts();
+                            $stock_total_value += $cc->getContracts() * (($stock->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
+                        }
+                    }
+                }
+
+                if($stock_total_shares > 0) {
+                    $stock_total_value += ($stock->getCountry() === "USD") ? (($stock_total_shares * $stock->getCurrentPrice()) * 1.36) : ($stock_total_shares * $stock->getCurrentPrice());
+                    $weight_stock_object['total_value'] = $stock_total_value;
+                    $weight_stocks[] = $weight_stock_object;
+                    $total_value += $stock_total_value;
+                }
+            }
+        }
+
+        $returned_ws = [];
+        foreach ($weight_stocks as $wso)
+        {
+            $wso['weight'] = $wso['total_value'] / $total_value;
+            $test = $wso['total_value'] . " / " . $total_value . " = " . ($wso['total_value'] / $total_value);
+            //dump($test);
+            $returned_ws[] = $wso;
+        }
+
+        usort($returned_ws, function($a, $b) {
+            return strcmp($b['weight'], $a['weight']);
+        });
+
+        return $returned_ws;
     }
 }
