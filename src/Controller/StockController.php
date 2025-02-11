@@ -220,7 +220,7 @@ class StockController extends AbstractController
                 forEach($user->getWrittenOptions() as $option){
                     if($option->getStock() === $stock && !$option->isExpired() && !$option->isExercised()){
                         $e = date_format($option->getExpiry(), "Y-m-d");
-                        $t = ((int)$option->getType() === 1) ? "c":"p";
+                        $t = "c";
                         $s = number_format($option->getStrike(), 2);
                         $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getTicker() . '&reqId=1'), true);
                         $option_data = $option_data['options'];
