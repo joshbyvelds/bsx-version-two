@@ -156,6 +156,9 @@ class Settings
     private $weekly_total_value;
 
     #[ORM\Column(type: 'boolean')]
+    private $dashboard_sector_weight_panel;
+
+    #[ORM\Column(type: 'boolean')]
     private $dashboard_plays_panel;
 
     #[ORM\Column(type: 'boolean')]
@@ -783,6 +786,18 @@ class Settings
     public function setDashboardTotalValuePanel(bool $value): self
     {
         $this->dashboard_total_value_panel = $value;
+
+        return $this;
+    }
+
+    public function isDashboardSectorWeightPanel(): ?bool
+    {
+        return $this->dashboard_sector_weight_panel;
+    }
+
+    public function setDashboardSectorWeightPanel(bool $value): self
+    {
+        $this->dashboard_sector_weight_panel = $value;
 
         return $this;
     }

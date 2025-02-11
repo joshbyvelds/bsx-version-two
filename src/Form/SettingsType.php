@@ -28,6 +28,7 @@ class SettingsType extends AbstractType
             ->add('dashboard_plays_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_cc_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_total_value_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_sector_weight_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('total_value_cc_type_assign',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('weekly_total_value', CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_use_hot_cold_meter', CheckboxType::class, ['mapped' => true, 'required' => false])
