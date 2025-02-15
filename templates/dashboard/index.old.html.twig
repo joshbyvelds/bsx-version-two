@@ -13,6 +13,7 @@
             </div>
         {% endif %}
         {% if settings.dashboardSectorWeightPanel %}{% include "dashboard/panels/sector_weight.html.twig" with {'weights':weights} %}{% endif %}
+        {% if settings.dashboardNakedOptionsPanel %}{% include "dashboard/panels/naked_options.html.twig" %}{% endif %}
         {% if settings.dashboardCcPanel %}{% include "dashboard/panels/cc.html.twig" %}{% endif %}
         {% if settings.dashboardPlaysPanel %}{% include "dashboard/panels/plays.html.twig" %}{% endif %}
     </div><!--

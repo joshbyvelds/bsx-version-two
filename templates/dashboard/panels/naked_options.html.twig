@@ -1,0 +1,54 @@
+<div class="panel large_panel" style="padding:20px; background: #fff;">
+    <div class="bg-white text-start">
+        <div class="max-w-7xl mx-auto">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="mt-8 flow-root">
+                    <div class="mx-[-1rem] my-[-0.5rem] overflow-x-auto sm:mx-6 lg:mx-[-2rem]">
+                        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                            <table class="indent-0 border-inherit border-collapse min-w-full table-table table-body">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm leading-5 font-semibold text-gray-900 sm:pl-0">Stock</th>
+                                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm leading-5 font-semibold text-gray-900 sm:pl-0">Expiry Date</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Contracts</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Average</th>
+                                    <th scope="col" class="pl-3 py-3.5 pr-3 text-left text-sm leading-5 font-semibold text-gray-900">Current</th>
+                                </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                {% for stock in stocks %}
+                                {% for option in stock.options %}
+                                    {% if option.expired == false and option.totalContractsSold == 0 %}
+                                        <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
+                                            <div class="w-20 h-20 p-3 shadow rounded-full"
+                                                 style="background-color:#{{ stock.bgColor }};">
+                                                <a href="/stocks/details/{{ stock.id }}"><img
+                                                            src="/assets/images/company_logos/{{ stock.ticker }}.jpg"
+                                                            alt="{{ stock.ticker }} Logo"
+                                                            class="block align-middle max-w-full w-14 h-14 rounded-full"/></a>
+                                            </div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                            <div class="ml-4 text-left">{{ option.expiry|date("m/d/Y") }}</div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                            <div class="ml-4 text-left">{{ option.contracts }}</div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                            <div class="ml-4 text-left">{{ option.average }}</div>
+                                        </td>
+                                        <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+                                            <div class="ml-4 text-left">{{ option.current }}</div>
+                                        </td>
+                                    {% endif %}
+                                {% endfor %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
