@@ -25,6 +25,7 @@ class SettingsType extends AbstractType
             ->add('dashboard_transactions')
             ->add('dashboard_portfolio_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_portfolio_large', CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('dashboard_naked_options_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_plays_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_cc_panel',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('dashboard_total_value_panel',CheckboxType::class, ['mapped' => true, 'required' => false])

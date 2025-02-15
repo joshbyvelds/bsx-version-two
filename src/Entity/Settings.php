@@ -173,6 +173,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $total_value_cc_type_assign;
 
+    #[ORM\Column(type: 'boolean')]
+    private $dashboard_naked_options_panel;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -810,6 +813,18 @@ class Settings
     public function setTotalValueCcTypeAssign(bool $value): self
     {
         $this->total_value_cc_type_assign = $value;
+
+        return $this;
+    }
+
+    public function isDashboardNakedOptionsPanel(): ?bool
+    {
+        return $this->dashboard_naked_options_panel;
+    }
+
+    public function setDashboardNakedOptionsPanel(bool $dashboard_naked_options_panel): self
+    {
+        $this->dashboard_naked_options_panel = $dashboard_naked_options_panel;
 
         return $this;
     }
