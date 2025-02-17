@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\Debt;
+use App\Entity\Sector;
 use App\Entity\User;
 use App\Entity\Wallet;
 use App\Entity\TotalValue;
@@ -71,6 +72,8 @@ class DashboardController extends AbstractController
 
         $weights = $this->getTopWeights($stocks);
 
+        $sectors = $this->getSectorPercentages($doctrine->getRepository(Sector::class)->findAll(), $user);
+
 
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
@@ -82,6 +85,7 @@ class DashboardController extends AbstractController
             'settings' => $settings,
             'stocks' => $stocks,
             'weights' => $weights,
+            'sectors' => $sectors,
             'portfolios' => $portfolios,
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
@@ -247,8 +251,6 @@ class DashboardController extends AbstractController
         foreach ($weight_stocks as $wso)
         {
             $wso['weight'] = $wso['total_value'] / $total_value;
-            $test = $wso['total_value'] . " / " . $total_value . " = " . ($wso['total_value'] / $total_value);
-            //dump($test);
             $returned_ws[] = $wso;
         }
 
@@ -256,6 +258,53 @@ class DashboardController extends AbstractController
             return strcmp($b['weight'], $a['weight']);
         });
 
-        return $returned_ws;
+        return array_slice($returned_ws, 0, 10);
+    }
+
+    public function getSectorPercentages($sectors, $user): array
+    {
+        $total_value = 0;
+        $sector_values = [];
+        foreach ($sectors as $sector){
+            $sector_value = ['name' => $sector->getName(), 'total' => 0, 'percent' => 0];
+            foreach($sector->getStocks() as $stock){
+                $stock_total_shares = 0;
+
+                if($stock->getUser() === $user){
+                    if($stock->getSharesOwned() > 0) {
+
+                        foreach ($stock->getShareBuys() as $buy) {
+                            if ($buy->getSold() < $buy->getAmount()) {
+                                $stock_total_shares += $buy->getAmount() - $buy->getSold();
+                            }
+                        }
+
+                        foreach ($stock->getCoveredCalls() as $cc) {
+                            if (!$cc->isExpired() && !$cc->isExercised()) {
+                                if ($cc->getStrike() > $stock->getCurrentPrice()) {
+                                    $stock_total_shares -= 100 * $cc->getContracts();
+                                    $sector_value['total'] += $cc->getContracts() * (($stock->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
+                                }
+                            }
+                        }
+
+                        if($stock_total_shares > 0) {
+                            $sector_value['total'] += ($stock->getCountry() === "USD") ? (($stock_total_shares * $stock->getCurrentPrice()) * 1.36) : ($stock_total_shares * $stock->getCurrentPrice());
+                        }
+                    }
+                }
+            }
+
+            $sector_values[] = $sector_value;
+            $total_value += $sector_value['total'];
+        }
+
+        $new_sector_values = [];
+        foreach($sector_values as $sector_value){
+            $new_sector_values[] = ['name' => $sector_value['name'], 'total' => $sector_value['total'], 'percent' => ($sector_value['total']/$total_value)];
+        }
+
+        dump($new_sector_values);
+        return $new_sector_values;
     }
 }

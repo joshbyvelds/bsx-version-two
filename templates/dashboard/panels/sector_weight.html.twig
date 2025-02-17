@@ -1,13 +1,58 @@
-<div class="panel large_panel">
-    <div class="sector" style="display:inline-block; width:50%;">
-        <canvas id="sector_chart"></canvas>
+<div class="panel large_panel" style="padding:20px; background: #fff;">
+    <div class="sector" style="display:inline-block; width:50%; vertical-align: top; padding: 0 30px;">
+        <h3 style="text-align: center;">Sectors</h3>
+        <div style="margin: auto;"><canvas id="sector_chart"></canvas></div>
     </div><!--
- --><div class="weights" style="display:inline-block; width:50%;">
+ --><div class="weights" style="display:inline-block; width:50%; vertical-align: top; padding: 0 30px;">
+        <h3 style="text-align: center;">Top Weights:</h3>
         <ul>
             {% for stock in weights %}
             <li><span title="{{ stock.name }}">{{ stock.ticker }}</span> - <strong>{{ (stock.weight * 100)|number_format(2) }}%</strong></li>
             {% endfor %}
         </ul>
-
     </div>
 </div>
+
+<script>
+    const sector_ctx = document.getElementById('sector_chart').getContext('2d');
+    const sector_chart = new Chart(sector_ctx, {
+        type: 'pie',
+        data: {
+            labels: [
+                {% for sector in sectors %}
+                '{{ sector.name }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Sectors',
+                data: [
+                    {% for sector in sectors %}
+                    {% set percent = sector.percent * 100 %}
+                    {{ percent|number_format(2) }},
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#DC2626',
+                    '#EA580C',
+                    '#D97706',
+                    '#22C55E',
+                    '#10B981',
+                    '#06B6D4',
+                    '#65A30D',
+                    '#0EA5E9',
+                    '#3B82F6',
+                    '#6366F1',
+                    '#D946EF',
+                ],
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins:{
+                legend: {
+                    display: false //This will do the task
+                },
+            },
+        }
+    });
+</script>

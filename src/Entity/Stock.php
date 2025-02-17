@@ -94,6 +94,9 @@ class Stock
     #[ORM\Column(type: 'boolean')]
     private $no_fee;
 
+    #[ORM\ManyToOne(targetEntity: Sector::class, inversedBy: 'stocks')]
+    private $sector;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -525,6 +528,18 @@ class Stock
     public function setNoFee(bool $no_fee): self
     {
         $this->no_fee = $no_fee;
+
+        return $this;
+    }
+
+    public function getSector(): ?Sector
+    {
+        return $this->sector;
+    }
+
+    public function setSector(?Sector $sector): self
+    {
+        $this->sector = $sector;
 
         return $this;
     }
