@@ -172,7 +172,6 @@ class StockController extends AbstractController
                 dump($opc_link);
                 $result = file_get_contents($opc_link);
                 dump("Update:" . $stock->getTicker());
-                //dump($result);
                 $price = json_decode($result)->price->last;
                 $old_price = $stock->getCurrentPrice();
                 $stock->setCurrentPrice($price);
@@ -1192,7 +1191,7 @@ class StockController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
+            $use_locked_funds = $form->get("use_locked_funds")->getData();
             $currency = $form->get("payment_currency")->getData();
             $basic_fee = 9.95;
             $contract_fee = 1.25;
@@ -1216,7 +1215,7 @@ class StockController extends AbstractController
 
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
             if ($currency == 'can'){
-                if($form->get("use_locked_funds")->getData()){
+                if($use_locked_funds){
                     $wallet->unlock('CAN', $total_cost);
                 }
                 $wallet->withdraw('CAN', $total_cost);
@@ -1224,8 +1223,8 @@ class StockController extends AbstractController
             }
 
             if ($currency == 'usd'){
-                if($form->get("use_locked_funds")->getData()){
-                    $wallet->unlock('CAN', $total_cost);
+                if($use_locked_funds){
+                    $wallet->unlock('USD', $total_cost);
                 }
                 $wallet->withdraw('USD', $total_cost);
                 $transaction->setCurrency(2);

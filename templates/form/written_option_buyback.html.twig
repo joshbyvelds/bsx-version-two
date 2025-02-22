@@ -12,7 +12,7 @@
             <div class="px-4 py-6 sm:p-8">
                 <div class="grid max-w-[42rem] grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 ">
                     {% for input in form.children %}
-                        {% if input.vars.name != "save" and input.vars.name != "payment_currency" and input.vars.name != "_token" %}
+                        {% if input.vars.name != "save" and input.vars.name != "payment_currency" and input.vars.name != "use_locked_funds" and input.vars.name != "_token" %}
                             <div class="col-span-full">
                                 <label for="{{ input.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if input.vars.required == true %}required{% endif %}">{{ input.vars.label }}</label>
                                 <div class="mt-2">
@@ -21,6 +21,64 @@
                             </div>
                         {% endif %}
                     {% endfor %}
+
+                    <div class="col-span-full">
+                        <div class="mt-2">
+                            <div class="flex items-center">
+                                <button type="button" class="fee-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-transparent bg-gray-200" :class="use_locked_funds == true && 'checked'" x-on:click="use_locked_funds_selected()">
+                                    <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white"></span>
+                                </button>
+                                <span class="ml-3 text-sm">
+                                    <span class="font-medium">Use Locked Funds</span>
+                                </span>
+                            </div>
+                            <style>
+                                .fee-button{
+                                    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+                                    transition-duration: 200ms;
+                                    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                                }
+
+                                .fee-button:focus {
+                                    outline: 2px solid transparent;
+                                    outline-offset: 2px;
+                                    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                                    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                                    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+                                    --tw-ring-opacity: 1;
+                                    --tw-ring-color: rgb(79 70 229 / var(--tw-ring-opacity));
+                                    --tw-ring-offset-width: 2px;
+                                }
+
+                                .fee-button.checked{
+                                    --tw-bg-opacity: 1;
+                                    background-color: rgb(79 70 229 / var(--tw-bg-opacity));
+                                }
+
+                                .fee-button span{
+                                    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+                                    --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+                                    --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+                                    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+                                    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+                                    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+                                    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+                                    transition-duration: 200ms;
+                                    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                                }
+
+                                .fee-button.checked span{
+                                    --tw-translate-x: 1.25rem;
+                                    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+                                }
+
+                            </style>
+                            <div class="hidden">
+                                <input type="checkbox" id="written_option_buytoclose_use_locked_funds" name="written_option_buytoclose[use_locked_funds]" value="use_locked_funds" x-model="use_locked_funds">
+                            </div>
+
+                        </div>
+                    </div>
 
                     <div class="col-span-full">
                         <label for="{{ form.payment_currency.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.payment_currency.vars.required == true %}required{% endif %}">{{ form.payment_currency.vars.label }}</label>
@@ -52,7 +110,16 @@
         function OptionForm() {
 
             return {
-                selected_currency: "can",
+                use_locked_funds: ({{ form.use_locked_funds.vars.value }} === 1),
+                selected_currency: "{{ form.payment_currency.vars.value }}",
+
+                use_locked_funds_selected(){
+                    this.use_locked_funds = !this.use_locked_funds;
+                },
+
+                use_locked_funds_converted(){
+                    return (this.use_locked_funds) ? "1" : "0";
+                },
 
                 switchCurrency(id){
                     this.selected_currency = id;
