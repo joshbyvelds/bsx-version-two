@@ -833,6 +833,7 @@ class StockController extends AbstractController
             $wo->setStockExpiryPrice(0.00);
             $wo->setBuyout(0);
             $wo->setBuyoutPrice(0);
+            $wo->setAsk(0.00);
             $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             
             //create transaction for sale of option contract ( you did make money right?? )
