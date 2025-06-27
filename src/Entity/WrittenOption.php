@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\WrittenOptionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: WrittenOptionRepository::class)]
@@ -62,6 +64,14 @@ class WrittenOption
 
     #[ORM\Column(type: 'float')]
     private $ask;
+
+    #[ORM\OneToMany(mappedBy: 'WrittenOption', targetEntity: WrittenOptionRollover::class)]
+    private $writtenOptionRollovers;
+
+    public function __construct()
+    {
+        $this->writtenOptionRollovers = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -256,6 +266,36 @@ class WrittenOption
     public function setAsk(float $ask): self
     {
         $this->ask = $ask;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WrittenOptionRollover>
+     */
+    public function getWrittenOptionRollovers(): Collection
+    {
+        return $this->writtenOptionRollovers;
+    }
+
+    public function addWrittenOptionRollover(WrittenOptionRollover $writtenOptionRollover): self
+    {
+        if (!$this->writtenOptionRollovers->contains($writtenOptionRollover)) {
+            $this->writtenOptionRollovers[] = $writtenOptionRollover;
+            $writtenOptionRollover->setWrittenOption($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWrittenOptionRollover(WrittenOptionRollover $writtenOptionRollover): self
+    {
+        if ($this->writtenOptionRollovers->removeElement($writtenOptionRollover)) {
+            // set the owning side to null (unless already changed)
+            if ($writtenOptionRollover->getWrittenOption() === $this) {
+                $writtenOptionRollover->setWrittenOption(null);
+            }
+        }
 
         return $this;
     }

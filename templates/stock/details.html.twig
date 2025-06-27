@@ -348,6 +348,38 @@
                                     <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ stock.currentPrice|number_format(2) }}</td>
                                 {% endif %}
                             </tr>
+
+                            {% if cc.writtenOptionRollovers is not empty %}
+                            <tr>
+                                <td colspan="10">
+                                    <table style="font-size: 12px; text-align: center; width: 100%;">
+                                        <tr>
+                                            <th style="font-size: 14px;">Rollovers:</th>
+                                            <th>Price |&nbsp;</th>
+                                            <th>Amount |&nbsp;</th>
+                                            <th>Old Expiry |&nbsp;</th>
+                                            <th>New Expiry |&nbsp;</th>
+                                            <th>Old Strike |&nbsp;</th>
+                                            <th>New Strike |&nbsp;</th>
+                                            <th>Stock RO Price</th>
+                                        </tr>
+                                        {% for ro in cc.writtenOptionRollovers %}
+                                        <tr>
+                                            <td></td>
+                                            <td>{{ ro.price|number_format(2)  }}</td>
+                                            <td>{{ ro.amount|number_format(2) }}</td>
+                                            <td>{{ ro.oldExpiry|date("m/d/Y") }}</td>
+                                            <td>{{ ro.newExpiry|date("m/d/Y") }}</td>
+                                            <td>{{ ro.oldStrike|number_format(2)  }}</td>
+                                            <td>{{ ro.newStrike|number_format(2)  }}</td>
+                                            <td>{{ ro.stockRolloverPrice|number_format(2)  }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </table>
+
+                                </td>
+                            </tr>
+                            {% endif%}
                         {% endfor %}
                         </table>
                         {% endif %}

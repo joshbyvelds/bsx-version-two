@@ -22,6 +22,7 @@ use App\Form\WrittenOptionType;
 use App\Form\WrittenOptionRolloverType;
 use App\Entity\Atom;
 use App\Entity\WrittenOption;
+use App\Entity\WrittenOptionRollover;
 use App\Entity\Option;
 use App\Entity\Settings;
 use App\Entity\Stock;
@@ -1069,6 +1070,9 @@ class StockController extends AbstractController
 
         $nwo = new WrittenOption();
         $nwo->setContracts($wo->getContracts());
+
+        $ro = new WrittenOptionRollover();
+
         $form = $this->createForm(WrittenOptionRolloverType::class, $nwo);
         $form->handleRequest($request);
 
@@ -1077,9 +1081,20 @@ class StockController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $total = (float)$form->get("total")->getData();
+            $rolloverPrice = (($total / 100) / $wo->getContracts());
+
+            $ro->setWrittenOption($wo);
+            $ro->setPrice($rolloverPrice);
+            $ro->setAmount($total);
+            $ro->setOldExpiry($wo->getExpiry());
+            $ro->setNewExpiry($nwo->getExpiry());
+            $ro->setOldStrike($wo->getStrike());
+            $ro->setNewStrike($wo->getStrike());
+            $ro->setStockRolloverPrice($nwo->getStockBuyPrice());
+
             $wo->setExpiry($nwo->getExpiry());
             $wo->setStrike($nwo->getStrike());
-            $price = (float)$wo->getPrice() + (($total / 100) / $wo->getContracts());
+            $price = (float)$wo->getPrice() + $rolloverPrice;
             $wo->setPrice(round($price, 2));
 
             $transaction = new Transaction();
@@ -1150,6 +1165,7 @@ class StockController extends AbstractController
                 $transaction->setName("Cash Secured Put Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
             }
 
+            $em->persist($ro);
             $em->persist($transaction);
             $em->flush();
 
