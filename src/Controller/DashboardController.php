@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\HighInterestSavingsAccount;
 use App\Entity\ShareSell;
 use App\Entity\Transaction;
 use App\Form\ShareSellType;
@@ -74,6 +75,12 @@ class DashboardController extends AbstractController
 
         $sectors = $this->getSectorPercentages($doctrine->getRepository(Sector::class)->findAll(), $user);
 
+        $hisas = null;
+
+        if ($settings->isUseHisa()){
+            $hisas =  $doctrine->getRepository(HighInterestSavingsAccount::class)->findBy(['user' => $user->getId()]);
+        }
+
 
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
@@ -92,6 +99,7 @@ class DashboardController extends AbstractController
             'totalValues' => $totalValues,
             'covered_calls' => $cc,
             'debts' => $debt,
+            'hisas' => $hisas
         ]);
     }
 
@@ -105,6 +113,9 @@ class DashboardController extends AbstractController
         $total = (empty($total)) ? 0.0 : $total;
         $totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
         $date = new \DateTime();
+
+        // hack if we miss updates window..
+        // $date->modify("-1 day"); // how many days missed...
 
         $progress = 0;
         $weekly = ($settings->isWeeklyTotalValue() && ($date->format('W') !== $totalValues->getDate()->format('W') && $date->format('w') === "5"));

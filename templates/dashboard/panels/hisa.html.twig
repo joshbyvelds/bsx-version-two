@@ -1,0 +1,9 @@
+<div class="cash panel end">
+    <div class="title">{{ name }}</div>
+    <div class="subline">{{ bank }}</div>
+    <div class="amount">{{ amount|format_currency('USD', {fraction_digit: 2}) }}</div>
+{#    <div class="">IR: {{ interestRate }}</div>#}
+    <a class="cash_button" href="/hisa/new">Add New</a>
+    <a class="cash_button" href="/hisa/deposit">Deposit</a>
+    <a class="cash_button" href="/hisa/withdrawl">Withdrawl</a>
+</div>

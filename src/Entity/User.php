@@ -97,6 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'User', targetEntity: Debt::class)]
     private $debts;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: HighInterestSavingsAccount::class)]
+    private $highInterestSavingsAccounts;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -115,6 +118,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->FHSAContributions = new ArrayCollection();
         $this->RRSPContributions = new ArrayCollection();
         $this->totalValues = new ArrayCollection();
+        $this->highInterestSavingsAccounts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -761,6 +765,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($debt->getUser() === $this) {
                 $debt->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, HighInterestSavingsAccount>
+     */
+    public function getHighInterestSavingsAccounts(): Collection
+    {
+        return $this->highInterestSavingsAccounts;
+    }
+
+    public function addHighInterestSavingsAccount(HighInterestSavingsAccount $highInterestSavingsAccount): self
+    {
+        if (!$this->highInterestSavingsAccounts->contains($highInterestSavingsAccount)) {
+            $this->highInterestSavingsAccounts[] = $highInterestSavingsAccount;
+            $highInterestSavingsAccount->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHighInterestSavingsAccount(HighInterestSavingsAccount $highInterestSavingsAccount): self
+    {
+        if ($this->highInterestSavingsAccounts->removeElement($highInterestSavingsAccount)) {
+            // set the owning side to null (unless already changed)
+            if ($highInterestSavingsAccount->getUser() === $this) {
+                $highInterestSavingsAccount->setUser(null);
             }
         }
 

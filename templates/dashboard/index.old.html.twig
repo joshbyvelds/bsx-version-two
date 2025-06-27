@@ -23,6 +23,18 @@
         {% if wallet.lockedCdn != 0 or wallet.lockedUsd != 0 %}
             {% include "dashboard/panels/wallet_locked.html.twig" with {'amount_can': wallet.lockedCdn, 'amount_usd': wallet.lockedUsd} %}
         {% endif %}
+        {% if settings.useHisa %}
+            {% set hisaFound = false %}
+            {%  for hisa in hisas %}
+                {% set hisaFound = true %}
+                {% include "dashboard/panels/hisa.html.twig" with {'name':hisa.name, 'bank':hisa.bank, 'amount':hisa.amount, 'interestRate':hisa.interestRate} %}
+            {% endfor %}
+
+            {% if hisaFound == false %}
+                {% include "dashboard/panels/hisa_empty.html.twig" %}
+            {% endif %}
+
+        {% endif %}
         {% include "dashboard/panels/debt.html.twig" %}
         {% include "dashboard/panels/transfer.html.twig" %}
         {% include "dashboard/panels/stats.html.twig" %}

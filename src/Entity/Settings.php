@@ -176,6 +176,9 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $dashboard_naked_options_panel;
 
+    #[ORM\Column(type: 'boolean')]
+    private $useHISA;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -825,6 +828,18 @@ class Settings
     public function setDashboardNakedOptionsPanel(bool $dashboard_naked_options_panel): self
     {
         $this->dashboard_naked_options_panel = $dashboard_naked_options_panel;
+
+        return $this;
+    }
+
+    public function isUseHISA(): ?bool
+    {
+        return $this->useHISA;
+    }
+
+    public function setUseHISA(bool $useHISA): self
+    {
+        $this->useHISA = $useHISA;
 
         return $this;
     }

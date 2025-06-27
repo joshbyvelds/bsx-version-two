@@ -75,6 +75,7 @@ class SettingsType extends AbstractType
             ->add('fhsa_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('rrsp_limit')
             ->add('rrsp_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('use_hisa',CheckboxType::class, ['mapped' => true, 'required' => false])
 
             ->add('save', SubmitType::class, [
                 'attr' => [

@@ -30,28 +30,41 @@
             </div>
         </div>
 
-    <div class="settings_section">
-        <div class="details">
-            <h2>Gov't Registered Account Contribution Tracking</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
-        </div>
-
-        <div class="form">
-            <div class="switches row">
-                <div class="round inline">{{ form_widget(form.tfsa_enabled) }}<div class="back"><label class="but" for="settings_tfsa_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use TFSA</div></div>
-                <div class="round inline">{{ form_widget(form.fhsa_enabled) }}<div class="back"><label class="but" for="settings_fhsa_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use FHSA</div></div>
-                <div class="round inline">{{ form_widget(form.rrsp_enabled) }}<div class="back"><label class="but" for="settings_rrsp_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use RRSP</div></div>
+        <div class="settings_section">
+            <div class="details">
+                <h2>Gov't Registered Account Contribution Tracking</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
             </div>
 
-            <div class="switches row">
-                <div class="round inline">{{ form_widget(form.tfsa_track_balance) }}<div class="back"><label class="but" for="settings_tfsa_track_balance"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">TFSA Track Balance</div></div>
+            <div class="form">
+                <div class="switches row">
+                    <div class="round inline">{{ form_widget(form.tfsa_enabled) }}<div class="back"><label class="but" for="settings_tfsa_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use TFSA</div></div>
+                    <div class="round inline">{{ form_widget(form.fhsa_enabled) }}<div class="back"><label class="but" for="settings_fhsa_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use FHSA</div></div>
+                    <div class="round inline">{{ form_widget(form.rrsp_enabled) }}<div class="back"><label class="but" for="settings_rrsp_enabled"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use RRSP</div></div>
+                </div>
+
+                <div class="switches row">
+                    <div class="round inline">{{ form_widget(form.tfsa_track_balance) }}<div class="back"><label class="but" for="settings_tfsa_track_balance"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">TFSA Track Balance</div></div>
+                </div>
+
+                {{ form_row(form.tfsa_limit) }}
+                {{ form_row(form.fhsa_limit) }}
+                {{ form_row(form.rrsp_limit) }}
+            </div>
+        </div>
+
+        <div class="settings_section">
+            <div class="details">
+                <h2>High Interest Savings Account</h2>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad dolorum nostrum fuga illo necessitatibus, voluptates adipisci cupiditate nesciunt porro eum aliquid, dignissimos distinctio velit repellat nisi accusamus enim vel ipsa.</p>
             </div>
 
-            {{ form_row(form.tfsa_limit) }}
-            {{ form_row(form.fhsa_limit) }}
-            {{ form_row(form.rrsp_limit) }}
+            <div class="form switches">
+                <div class="switches row">
+                    <div class="round inline">{{ form_widget(form.use_hisa) }}<div class="back"><label class="but" for="settings_use_hisa"><span class="on">I</span><span class="off">0</span></label></div><div class="switch_label">Use HISA</div></div>
+                </div>
+            </div>
         </div>
-    </div>
 
         <div class="settings_section">
             <div class="details">
