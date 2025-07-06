@@ -26,18 +26,6 @@
     </style>
 
     <script>
-
-        class TypeComponent {
-            // ...
-            init(props) {
-                // create the cell
-                this.eGui = document.createElement('div');
-                this.eGui.innerHTML = props.value;
-            }
-            // ...
-        }
-
-
         // Grid Options: Contains all of the Data Grid configurations
         const gridOptions = {
             // Row Data: The data to be displayed.
@@ -53,23 +41,22 @@
                     type:"{{ transaction.type }}",
                     date:"{{ transaction.date|date("m/d/Y") }}",
                     currency:"{% if transaction.currency == 1 %}Canadian{% else %}American{% endif %}",
-                    amount_ca:"{% if transaction.type == 5 %}-${{ transaction.convertUsd|number_format(2) }}{% elseif transaction.type == 6 %}${{ transaction.convertUsd|number_format(2) }}{% else %}{% if transaction.currency == 1 %}${% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2) }}{% endif %}{% endif %}",
-                    amount_us:"{% if transaction.type == 5 %}${{ transaction.convertCdn|number_format(2) }}{% elseif transaction.type == 6 %}-${{ transaction.convertUsd|number_format(2) }}{% else %}{% if transaction.currency == 2 %}${% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2) }}{% endif %}{% endif %}",
+                    //amount_ca:"{% if transaction.type == 5 %}-${{ transaction.convertUsd|number_format(2) }}{% elseif transaction.type == 6 %}${{ transaction.convertUsd|number_format(2) }}{% else %}{% if transaction.currency == 1 %}${% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2) }}{% endif %}{% endif %}",
+                    //amount_us:"{% if transaction.type == 5 %}${{ transaction.convertCdn|number_format(2) }}{% elseif transaction.type == 6 %}-${{ transaction.convertUsd|number_format(2) }}{% else %}{% if transaction.currency == 2 %}${% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2) }}{% endif %}{% endif %}",
+                    amount_ca:{% if transaction.type == 5 %}-{{ transaction.convertUsd|number_format(2) }}{% elseif transaction.type == 6 %}{{ transaction.convertCdn|number_format(2,'.', '') }}{% else %}{% if transaction.currency == 1 %}{% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2,'.', '') }}{% else %}-99999{% endif %}{% endif %},
+                    amount_us:{% if transaction.type == 5 %}{{ transaction.convertCdn|number_format(2) }}{% elseif transaction.type == 6 %}-{{ transaction.convertUsd|number_format(2,'.', '') }}{% else %}{% if transaction.currency == 2 %}{% if transaction.type == 2 %}-{% endif %}{{ transaction.amount|number_format(2,'.', '') }}{% else %}-99999{% endif %}{% endif %},
                 },
                 {% endfor %}
             ],
             // Column Definitions: Defines the columns to be displayed.
             columnDefs: [
-                { field: "id", resizable: false, width: 60  },
-                {
-                    field: "name",
-                    filter: 'agTextColumnFilter',
-                },
-                { field: "type", resizable: false, width: 75, cellRenderer: params => {return '<div class="transaction"><div class="type" data-type="' + params.value + '"></div></div>';} },
-                { field: "date", resizable: false, width: 75, },
+                { field: "id", resizable: false, width: 25  },
+                { field: "name", filter: 'agTextColumnFilter'},
+                { field: "type", resizable: false, width: 30, cellRenderer: params => {return '<div class="transaction"><div class="type" data-type="' + params.value + '"></div></div>';} },
+                { field: "date", resizable: false, width: 50, },
                 // { field: "currency", width: 80, },
-                { field: "amount_ca", width: 75, headerName: 'Amount 🇨🇦' },
-                { field: "amount_us", width: 75, headerName: 'Amount 🇺🇸' },
+                { field: "amount_ca", resizable: false, width: 75, headerName: 'Amount 🇨🇦', cellRenderer: params => {return (params.value === -99999) ? "N/A" : "$" + params.value.toFixed(2) }},
+                { field: "amount_us", resizable: false, width: 75, headerName: 'Amount 🇺🇸', cellRenderer: params => {return (params.value === -99999) ? "N/A" : "$" + params.value.toFixed(2) }},
             ]
         };
 

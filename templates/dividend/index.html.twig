@@ -1,28 +1,411 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello DividendController!{% endblock %}
+{% block title %}BSX - Dividends{% endblock %}
 
 {% block body %}
-    <table class="dividend_table">
-        <tr>
-            <th></th>
-            <th>Company Name</th>
-            <th>Payment Date</th>
-            <th>Payment Amount</th>
-            <th>Total</th>
-        </tr>
 
-        {% set total = 0 %}
+    {% set total = 0 %}
 
-        {% for payment in dividend_payments %}
-            {% set total = total + payment.amount %}
-            <tr>
-                <td><img src="/assets/images/company_logos/{{ payment.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
-                <td>{{ payment.stock.name }}</td>
-                <td>{{ payment.paymentDate|date("m/d/Y") }}</td>
-                <td>{{ payment.amount|number_format(2) }}</td>
-                <td>{{ total|number_format(2) }}</td>
-            </tr>
+    <div class="inline-flex w-full rounded-md shadow-xs mb-5" role="group">
+        <a href="/dividends/add" class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Add Dividend Payment
+        </a>
+
+        {# ---- See if we can fix the width issue when switching grids.. ---- #}
+
+{#        <button type="button" data-type="payments" class="{% if current_type == "payments" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">#}
+{#            Payments#}
+{#        </button>#}
+{#        <button type="button" data-type="stocks" class="{% if current_type == "stocks" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">#}
+{#            Stock#}
+{#        </button>#}
+{#        <button type="button" data-type="months" class="{% if current_type == "months" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">#}
+{#            Months#}
+{#        </button>#}
+{#        <button type="button" data-type="quarters" class="{% if current_type == "quarters" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">#}
+{#            Quarters#}
+{#        </button>#}
+{#        <button type="button" data-type="years" class="{% if current_type == "years" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">#}
+{#            Years#}
+{#        </button>#}
+        <a href="/dividends" class="{% if current_type == "payments" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Payments
+        </a>
+        <a href="/dividends?type=stocks" class="{% if current_type == "stocks" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Stocks
+        </a>
+        <a href="/dividends?type=months" class="{% if current_type == "months" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Months
+        </a>
+        <a href="/dividends?type=quarters" class="{% if current_type == "quarters" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Quarters
+        </a>
+        <a href="/dividends?type=years" class="{% if current_type == "years" %}active_menu_item{% endif %} menu_item px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-e-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700">
+            Years
+        </a>
+    </div>
+
+    <div class="grid" data-type="payments">
+        <div id="myGridIndex" style="height: 680px"></div>
+    </div>
+
+    {% set stock_div_info = [] %}
+    {% set total = 0 %}
+
+    {% for stock in stocks %}
+        {% set total_amount = 0 %}
+        {% set num_of_payments = 0 %}
+        {% set total_payments = 0 %}
+        {% set last_payment = 0 %}
+        {% set last_amount = 0 %}
+        {% for dividend_payment in stock.dividends %}
+            {% set num_of_payments = num_of_payments + 1 %}
+            {% set last_payment = dividend_payment.paymentDate %}
+            {% set last_amount = dividend_payment.amount %}
+            {% set total_amount = total_amount + dividend_payment.amount %}
+            {% set total_payments = total_payments + 1 %}
         {% endfor %}
-    </table>
+
+
+        {% if total_amount > 0 %}
+            {% set average_payment_amount = total_amount / total_payments %}
+
+            {% set stock_info = {
+                'ticker': stock.ticker,
+                'name': stock.name,
+                'payments':num_of_payments,
+                'last_payment':last_payment,
+                'last_amount':last_amount,
+                'average_payment_amount':average_payment_amount,
+                'total_amount':total_amount
+            } %}
+            {% set stock_div_info = stock_div_info|merge({(stock.ticker):stock_info}) %}
+        {% endif %}
+    {% endfor %}
+
+
+    <div class="grid" data-type="stocks">
+        <div id="myGridStock" style="height: 680px"></div>
+    </div>
+
+    {% set months = [] %}
+    {% set total = 0 %}
+    {% set m_total = 0 %}
+    {% for dividend_payment in dividend_payments %}
+        {% set m_year = dividend_payment.paymentDate|date("Y") %}
+        {% set m_key = 'm_' ~ dividend_payment.paymentDate|date("F Y") %}
+        {% set m_name = dividend_payment.paymentDate|date("F Y") %}
+
+        {% if months[m_key] is defined %}
+            {% set m_total = m_total + dividend_payment.amount %}
+            {% set m_object = {'year':m_year, 'm_name':m_name, 'total':m_total} %}
+            {% set months = months|merge({(m_key):m_object}) %}
+        {% else %}
+            {% set m_total = dividend_payment.amount %}
+            {% set m_object = {'year':m_year, 'm_name':m_name,'total':m_total} %}
+            {% set months = months|merge({(m_key):m_object}) %}
+
+        {% endif %}
+    {% endfor %}
+
+    <div class="grid" data-type="months">
+        <div id="myGridMonths" style="height: 680px"></div>
+    </div>
+
+    {% set quarters = [] %}
+    {% set total = 0 %}
+    {% set q_total = 0 %}
+    {% for dividend_payment in dividend_payments %}
+        {% set q_year = dividend_payment.paymentDate|date("Y") %}
+        {% set q_month = dividend_payment.paymentDate|date("n") %}
+        {% set quarter = q_month / 3 %}
+        {% set quarter = quarter|round(0,'ceil') %}
+
+
+        {% if quarter == 1 %}
+            {% set q_key = q_year ~ " - First Quarter (Jan - Mar)" %}
+            {% set q_name = "First Quarter (Jan - Mar)" %}
+        {% endif %}
+
+        {% if quarter == 2 %}
+            {% set q_key = q_year ~ " - Second Quarter (Apr - Jun)" %}
+            {% set q_name = "Second Quarter (Apr - Jun)" %}
+        {% endif %}
+
+        {% if quarter == 3 %}
+            {% set q_key = q_year ~ " - Third Quarter (Jul - Sept)" %}
+            {% set q_name = "Third Quarter (Jul - Sept)" %}
+        {% endif %}
+
+        {% if quarter == 4 %}
+            {% set q_key = q_year ~ " - Fourth Quarter (Oct - Dec)" %}
+            {% set q_name = "Fourth Quarter (Oct - Dec)" %}
+        {% endif %}
+
+        {% if quarters[q_key] is defined %}
+            {% set q_total = q_total + dividend_payment.amount %}
+            {% set q_object = {'year':q_year, 'q_name':q_name, 'total':q_total} %}
+            {% set quarters = quarters|merge({(q_key):q_object}) %}
+        {% else %}
+            {% set q_total = dividend_payment.amount %}
+            {% set q_object = {'year':q_year, 'q_name':q_name, 'total':q_total} %}
+            {% set quarters = quarters|merge({(q_key):q_object}) %}
+        {% endif %}
+
+    {% endfor %}
+
+    <div class="grid" data-type="quarters">
+        <div id="myGridQuarters" style="height: 680px"></div>
+    </div>
+
+    {% set years = [] %}
+    {% set total = 0 %}
+    {% for dividend_payment in dividend_payments %}
+        {% set year = dividend_payment.paymentDate|date("Y") %}
+        {% set year = " " ~ year|raw %} {# I have to add a space or twig does not loop correctly, must be due to the key being a number #}
+
+        {% if years[year] is defined %}
+            {% set years = years|merge({(year):years[year] + dividend_payment.amount}) %}
+        {% else %}
+            {% set years = years|merge({(year):dividend_payment.amount}) %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="grid" data-type="years">
+        <div id="myGridYears" style="height: 680px"></div>
+    </div>
+
+    <style>
+        .active_menu_item{
+            background: lightgreen;
+        }
+
+        .ag-header-cell-label {
+            justify-content: center;
+        }
+
+        .transaction .type {
+            width: 35px;
+            height: 35px;
+            top: 20px;
+        }
+
+        .ag-row .ag-cell {
+            display: flex;
+            justify-content: center; /* align horizontal */
+            align-items: center;
+        }
+    </style>
+
+    <script>
+        let grid_payments = null;
+        let grid_stock = null;
+        let grid_months = null;
+        let grid_quarters = null;
+        let grid_years = null;
+
+        $(() => {
+           var currentType = "{{ current_type }}";
+           $(".menu_item").on("click", (event) => {
+               currentType = $(event.target).attr('data-type');
+               $(".grid").hide();
+               $(".grid[data-type=" + currentType + "]").show();
+               $(".active_menu_item").removeClass("active_menu_item");
+               $(event.target).addClass("active_menu_item");
+           });
+        });
+
+        // Grid Options: Contains all the Data Grid configurations
+        const gridOptions = {
+            // Row Data: The data to be displayed.
+            autoSizeStrategy: {
+                type: 'fitGridWidth',
+            },
+
+            rowData: [
+                {% set stock_totals = [] %}
+                {% set stock_total = 0 %}
+                {% for payment in dividend_payments %}
+
+                {% if stock_totals[payment.stock.ticker] is defined %}
+                    {% set stock_total = stock_totals[payment.stock.ticker] + payment.amount %}
+                    {% set stock_totals = stock_totals|merge({(payment.stock.ticker):stock_total}) %}
+                {% else %}
+                    {% set stock_totals = stock_totals|merge({(payment.stock.ticker):payment.amount}) %}
+                {% endif %}
+
+                {% set total = total + payment.amount %}
+                {
+                    id: {{ payment.id }},
+                    ticker: "{{ payment.stock.ticker }}",
+                    company: "{{ payment.stock.name }}",
+                    payment_date: "{{ payment.paymentDate|date("m/d/Y") }}",
+                    amount: {{ payment.amount|number_format(2) }},
+                    stock_total: {{ stock_totals[payment.stock.ticker]|number_format(2) }},
+                    total: {{ total|number_format(2) }}
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {field:"id", resizable: false, width: 25},
+                {field:"ticker", resizable: false, filter: 'agTextColumnFilter', width: 50, cellRenderer: params => {return '<img src="/assets/images/company_logos/'+ params.value +'.jpg" alt="" style="position: relative; top: 20px; width: 38px; height: 38px; border: solid 1px black; border-radius: 8px;">;'}},
+                {field:"company", resizable: false, filter: 'agTextColumnFilter'},
+                {field:"payment_date", resizable: false, width: 75},
+                {field:"amount", headerName:"Payout Amount", resizable: false, width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"stock_total", headerName:"Stock Total", resizable: false, width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"total", headerName:"Total Amount from Start of Account", width: 75, resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}}
+            ],
+            onFirstDataRendered: () => {
+                if ("{{ current_type }}" !== "payments") {
+                    $(".grid[data-type=payments]").hide();
+                }
+            },
+        };
+        const gridOptionsStock = {
+            // Row Data: The data to be displayed.
+            autoSizeStrategy: {
+                type: 'fitGridWidth',
+            },
+
+            rowData: [
+                {% set total = 0 %}
+                {% for key,stock_info in stock_div_info %}
+                {% set total = total + stock_info['total_amount'] %}
+                {
+                    ticker: "{{ stock_info.ticker }}",
+                    name: "{{ stock_info.name }}",
+                    payments: {{ stock_info.payments }},
+                    last_payment: "{{ stock_info.last_payment|date("m/d/Y") }}",
+                    last_amount: {{ stock_info.last_amount|number_format(2) }},
+                    average_payment_amount: {{ stock_info.average_payment_amount|number_format(2) }},
+                    stock_total: {{ stock_info.total_amount|number_format(2) }},
+                    //total_amount: {{ total|number_format(2) }}
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {field:"ticker", resizable: false, width: 50, cellRenderer: params => {return '<img src="/assets/images/company_logos/'+ params.value +'.jpg" alt="" style="position: relative; top: 20px; width: 38px; height: 38px; border: solid 1px black; border-radius: 8px;">;'}},
+                {field:"name", filter: 'agTextColumnFilter'},
+                {field:"payments", resizable: false, width: 75},
+                {field:"last_payment", resizable: false, headerName:"Last Payment", width: 75},
+                {field:"last_amount", resizable: false, headerName:"Last Amount", width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"average_payment_amount", resizable: false, headerName:"Average Payment Amount", width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"stock_total", resizable: false, headerName:"Stock Total", width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                //{field:"total_amount", resizable: false, headerName:"Total Amount", width: 75, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+            ],
+            onFirstDataRendered: () => {
+                if ("{{ current_type }}" !== "stocks") {
+                    $(".grid[data-type=stocks]").hide();
+                }
+            },
+        };
+        const gridOptionsMonths = {
+            // Row Data: The data to be displayed.
+            autoSizeStrategy: {
+                type: 'fitGridWidth',
+            },
+
+            rowData: [
+                {% set total = 0 %}
+                {% for key,month in months %}
+                {% set total = total + month['total'] %}
+                {
+                    year:"{{ month['year'] }}",
+                    month: "{{ month['m_name'] }}",
+                    payout_m:{{ month['total']|number_format(2) }},
+                    total:{{ total|number_format(2) }},
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {field:"year", resizable: false,},
+                {field:"month", resizable: false,},
+                {field:"payout_m", headerName:"Payout for Month", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"total", headerName:"Total Amount from Start of Account", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}}
+            ],
+            onFirstDataRendered: () => {
+                if ("{{ current_type }}" !== "months") {
+                    $(".grid[data-type=months]").hide();
+                }
+            },
+        };
+        const gridOptionsQuarters = {
+            // Row Data: The data to be displayed.
+            autoSizeStrategy: {
+                type: 'fitGridWidth',
+            },
+
+            rowData: [
+                {% set total = 0 %}
+                {% for key,quarter in quarters %}
+                {% set total = total + quarter['total'] %}
+                {
+                    year:"{{ quarter['year'] }}",
+                    quarter:"{{ quarter['q_name'] }}",
+                    payout:{{ quarter['total']|number_format(2) }},
+                    total:{{ total|number_format(2) }},
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {field:"year", resizable: false,},
+                {field:"quarter", resizable: false,},
+                {field:"payout", headerName:"Payout for Quarter", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"total", headerName:"Total Amount from Start of Account", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}}
+            ],
+            onFirstDataRendered: () => {
+                if ("{{ current_type }}" !== "quarters") {
+                    $(".grid[data-type=quarters]").hide();
+                }
+            },
+        };
+        const gridOptionsYears = {
+            // Row Data: The data to be displayed.
+            autoSizeStrategy: {
+                type: 'fitGridWidth',
+            },
+
+            rowData: [
+                {% set total = 0 %}
+                {% for key,year in years %}
+                {% set total = total + year %}
+                {
+                    year:"{{ key }}",
+                    payout:{{ year|number_format(2) }},
+                    total:{{ total|number_format(2) }},
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {field:"year", resizable: false,},
+                {field:"payout", headerName:"Payout for Entire Year", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}},
+                {field:"total", headerName:"Total Amount from Start of Account", resizable: false, cellRenderer: params => {return '$' + params.value.toFixed(2);}}
+            ],
+            onFirstDataRendered: () => {
+                if ("{{ current_type }}" !== "years") {
+                    $(".grid[data-type=years]").hide();
+                }
+            },
+        };
+
+        // Your Javascript code to create the Data Grid
+        const myGridElement = document.querySelector('#myGridIndex');
+        const myGridElementStock = document.querySelector('#myGridStock');
+        const myGridElementMonths = document.querySelector('#myGridMonths');
+        const myGridElementQuarters = document.querySelector('#myGridQuarters');
+        const myGridElementYears = document.querySelector('#myGridYears');
+
+        grid_payments = agGrid.createGrid(myGridElement, gridOptions);
+        grid_stock = agGrid.createGrid(myGridElementStock, gridOptionsStock);
+        grid_months = agGrid.createGrid(myGridElementMonths, gridOptionsMonths);
+        grid_quarters = agGrid.createGrid(myGridElementQuarters, gridOptionsQuarters);
+        grid_years = agGrid.createGrid(myGridElementYears, gridOptionsYears);
+
+
+    </script>
 {% endblock %}

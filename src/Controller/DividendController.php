@@ -16,71 +16,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class DividendController extends AbstractController
 {
     #[Route('/dividends', name: 'dividends')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
         $payments = $user->getDividends();
-        dump($payments);
+        $stocks = $user->getStocks();
+
+        if ($request->query->get('type')){
+            $type = $request->query->get('type');
+        } else {
+            $type = "payments";
+        }
 
         return $this->render('dividend/index.html.twig', [
+            'current_type' => $type,
             'dividend_payments' => $payments,
-            'settings' => $settings
-        ]);
-    }
-
-    #[Route('/dividends/stock', name: 'dividends_stock')]
-    public function stock(): Response
-    {
-        $user = $this->getUser();
-        $stocks = $user->getStocks();
-        $settings = $user->getSettings();
-        dump($stocks);
-
-        return $this->render('dividend/stock.html.twig', [
             'stocks' => $stocks,
-            'settings' => $settings
-        ]);
-    }
-
-    #[Route('/dividends/month', name: 'dividends_month')]
-    public function month(): Response
-    {
-        $user = $this->getUser();
-        $payments = $user->getDividends();
-        $settings = $user->getSettings();
-        dump($payments);
-
-        return $this->render('dividend/month.html.twig', [
-            'dividend_payments' => $payments,
-            'settings' => $settings
-        ]);
-    }
-
-    #[Route('/dividends/quarter', name: 'dividends_quarter')]
-    public function quarter(): Response
-    {
-        $user = $this->getUser();
-        $payments = $user->getDividends();
-        $settings = $user->getSettings();
-        dump($payments);
-
-        return $this->render('dividend/quarter.html.twig', [
-            'dividend_payments' => $payments,
-            'settings' => $settings
-        ]);
-    }
-
-    #[Route('/dividends/year', name: 'dividends_year')]
-    public function year(): Response
-    {
-        $user = $this->getUser();
-        $payments = $user->getDividends();
-        $settings = $user->getSettings();
-        dump($payments);
-
-        return $this->render('dividend/year.html.twig', [
-            'dividend_payments' => $payments,
             'settings' => $settings
         ]);
     }
