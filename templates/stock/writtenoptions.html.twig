@@ -73,6 +73,7 @@
                                         {% set current_per = ((wo.stock.currentPrice - (wo.strike - 0.02)) / (wo.strike - 0.02)) * 100 %}
                                         {% set ab_per = current_per %}
                                         {% set away_from_target = 100 + ab_per %}
+                                        {% set min_buyback = wo.price - 0.025 - (0.2 / wo.contracts)  %}
                                     <tr>
                                         <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
                                             <div class="w-28 h-28 p-3 shadow rounded-full" style="background-color:#{{ wo.stock.bgColor }};">
@@ -86,6 +87,7 @@
                                                 <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Expires:</span> {{ wo.expiry|date("m/d/Y") }}</div>
                                                 <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Price:</span> {{ wo.price|number_format(2) }}</div>
                                                 <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Strike:</span> ${{ wo.strike|number_format(2) }}</div>
+                                                <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Max Buyback Price:</span> ${{ min_buyback|number_format(2) }}</div>
                                             </div>
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">${{ earned|number_format(2) }}</td>

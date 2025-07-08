@@ -432,11 +432,17 @@
       max-width: 96rem !important;
     }
   }
+  .-m-1 {
+    margin: calc(var(--spacing) * -1);
+  }
   .-m-1\.5 {
     margin: calc(var(--spacing) * -1.5);
   }
   .m-0 {
     margin: calc(var(--spacing) * 0);
+  }
+  .m-3 {
+    margin: calc(var(--spacing) * 3);
   }
   .mx-\[-1rem\] {
     margin-inline: -1rem;
@@ -461,6 +467,9 @@
   }
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
+  }
+  .mr-1 {
+    margin-right: calc(var(--spacing) * 1);
   }
   .mr-1\.5 {
     margin-right: calc(var(--spacing) * 1.5);
@@ -625,6 +634,9 @@
   }
   .w-0 {
     width: calc(var(--spacing) * 0);
+  }
+  .w-1 {
+    width: calc(var(--spacing) * 1);
   }
   .w-1\/2 {
     width: calc(1/2 * 100%);
@@ -1727,6 +1739,9 @@
   .\!p-0 {
     padding: calc(var(--spacing) * 0) !important;
   }
+  .p-1 {
+    padding: calc(var(--spacing) * 1);
+  }
   .p-1\.5 {
     padding: calc(var(--spacing) * 1.5);
   }
@@ -2285,6 +2300,9 @@
   .shadow-initial {
     --tw-shadow-color: initial;
   }
+  .ring-amber-600 {
+    --tw-ring-color: var(--color-amber-600);
+  }
   .ring-amber-600\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-amber-600) 20%, transparent);
   }
@@ -2297,23 +2315,44 @@
   .ring-gray-900 {
     --tw-ring-color: var(--color-gray-900);
   }
+  .ring-green-600 {
+    --tw-ring-color: var(--color-green-600);
+  }
   .ring-green-600\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-green-600) 20%, transparent);
+  }
+  .ring-green-700 {
+    --tw-ring-color: var(--color-green-700);
   }
   .ring-green-700\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-green-700) 20%, transparent);
   }
+  .ring-green-900 {
+    --tw-ring-color: var(--color-green-900);
+  }
   .ring-green-900\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-green-900) 20%, transparent);
+  }
+  .ring-red-600 {
+    --tw-ring-color: var(--color-red-600);
   }
   .ring-red-600\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-red-600) 20%, transparent);
   }
+  .ring-red-700 {
+    --tw-ring-color: var(--color-red-700);
+  }
   .ring-red-700\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-red-700) 20%, transparent);
   }
+  .ring-red-900 {
+    --tw-ring-color: var(--color-red-900);
+  }
   .ring-red-900\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-red-900) 20%, transparent);
+  }
+  .ring-teal-600 {
+    --tw-ring-color: var(--color-teal-600);
   }
   .ring-teal-600\/\[0\.20\] {
     --tw-ring-color: color-mix(in oklab, var(--color-teal-600) 20%, transparent);
