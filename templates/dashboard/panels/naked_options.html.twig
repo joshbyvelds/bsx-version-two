@@ -19,6 +19,7 @@
                                 {% for stock in stocks %}
                                 {% for option in stock.options %}
                                     {% if option.expired == false and option.totalContractsSold == 0 %}
+                                    <tr>
                                         <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
                                             <div class="w-20 h-20 p-3 shadow rounded-full"
                                                  style="background-color:#{{ stock.bgColor }};">
@@ -40,6 +41,7 @@
                                         <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
                                             <div class="ml-4 text-left">{{ option.current }}</div>
                                         </td>
+                                    </tr>
                                     {% endif %}
                                 {% endfor %}
                                 {% endfor %}

@@ -68,6 +68,9 @@ class WrittenOption
     #[ORM\OneToMany(mappedBy: 'WrittenOption', targetEntity: WrittenOptionRollover::class)]
     private $writtenOptionRollovers;
 
+    #[ORM\Column(type: 'boolean')]
+    private $PartiallyExercised;
+
     public function __construct()
     {
         $this->writtenOptionRollovers = new ArrayCollection();
@@ -296,6 +299,18 @@ class WrittenOption
                 $writtenOptionRollover->setWrittenOption(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isPartiallyExercised(): ?bool
+    {
+        return $this->PartiallyExercised;
+    }
+
+    public function setPartiallyExercised(bool $PartiallyExercised): self
+    {
+        $this->PartiallyExercised = $PartiallyExercised;
 
         return $this;
     }

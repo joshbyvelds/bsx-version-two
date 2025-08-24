@@ -905,13 +905,19 @@ class StockController extends AbstractController
         ]);
     }
 
-    #[Route('/stocks/writtenoption/exercise/{id}', name: 'stocks_writtenoption_exercise')]
-    public function exerciseWrittenOption(ManagerRegistry $doctrine, Request $request, int $id): Response
+    #[Route('/stocks/writtenoption/exercise/{id}/{contracts}/{custom_fee}', name: 'stocks_writtenoption_exercise')]
+    public function exerciseWrittenOption(ManagerRegistry $doctrine, Request $request, int $id, int $contracts, float $custom_fee): Response
     {
         // get cc from id..
         $em = $doctrine->getManager();
         $wo = $em->getRepository(WrittenOption::class)->find($id);
-        $wo->setExercised(true);
+
+        if((int)$wo->getContracts() === $contracts){
+            $wo->setPartiallyExercised(true);
+            $wo->setContracts($wo->getContracts() - $contracts);
+        } else {
+            $wo->setExercised(true);
+        }
 
         // get stock from cc..
         $stock = $wo->getStock();
@@ -931,7 +937,7 @@ class StockController extends AbstractController
                 }
             }
     
-            $amount_to_sell = 100 * $wo->getContracts();
+            $amount_to_sell = 100 * $contracts;
     
             $buys_length = count($shareBuys);
             $current_buy = 0;
@@ -974,7 +980,7 @@ class StockController extends AbstractController
             $share_sell = new ShareSell();
             $share_sell->setStock($stock);
             $share_sell->setPrice($wo->getStrike());
-            $share_sell->setAmount(100 * $wo->getContracts());
+            $share_sell->setAmount(100 * $contracts);
             $share_sell->setDate($date);
             $share_sell->setNofee(false);
             $share_sell->setTransfer(false);
@@ -984,9 +990,9 @@ class StockController extends AbstractController
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
-            $transaction->setName($stock->getTicker() . ' - '. $wo->getContracts() .'* $' . number_format($wo->getStrike(),2) . ' Covered Call Exercised');
+            $transaction->setName($stock->getTicker() . ' - '. $contracts .'* $' . number_format($wo->getStrike(),2) . ' Covered Call Exercised');
     
-            $cost = ($wo->getStrike() * (100 * $wo->getContracts())) - 43.05;
+            $cost = ($wo->getStrike() * (100 * $contracts)) - (($custom_fee > 0) ? $custom_fee : 43.05);
             $currency = $wo->getPaymentCurrency();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
     
@@ -1011,8 +1017,8 @@ class StockController extends AbstractController
             $share_buy = new ShareBuy();
             $share_buy->setStock($stock);
             $share_buy->setPrice($wo->getStrike());
-            $share_buy->setAmount($wo->getContracts() * 100);
-            $share_buy->setAmount($wo->getContracts() * 100);
+            $share_buy->setAmount($contracts * 100);
+            $share_buy->setAmount($contracts * 100);
             $share_buy->setDate($date);
             $user = $share_buy->getStock()->getUser();
             $cost = $share_buy->getAmount() * $share_buy->getPrice();
