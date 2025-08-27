@@ -283,7 +283,7 @@
                             <tr>
                                 {% set cc_earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
 
-                                {% if cc.buyout %}
+                                {% if cc.buyout or cc.partiallyBoughtout %}
                                     {% set cc_earned = cc_earned - cc.buyoutPrice %}
                                 {% endif %}
 
@@ -320,7 +320,11 @@
                                     {% elseif cc.exercised %}
                                         <small>Exercised</small>
                                     {% else %}
-                                        <small>Ongoing</small>
+                                        {% if cc.partiallyBoughtout %}
+                                            <small>Ongoing/PBO</small>
+                                        {% else %}
+                                            <small>Ongoing</small>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                                 <td>${{ cc_earned|number_format(2) }}</td>

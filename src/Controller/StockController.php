@@ -830,6 +830,8 @@ class StockController extends AbstractController
 
             $wo->setUser($user);
             $wo->setExercised(false);
+            $wo->setPartiallyExercised(false);
+            $wo->setPartiallyBoughtout(false);
             $wo->setExpired(false);
             $wo->setStockExpiryPrice(0.00);
             $wo->setBuyout(0);

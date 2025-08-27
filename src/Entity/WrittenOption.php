@@ -71,6 +71,9 @@ class WrittenOption
     #[ORM\Column(type: 'boolean')]
     private $PartiallyExercised;
 
+    #[ORM\Column(type: 'boolean')]
+    private $partiallyBoughtout;
+
     public function __construct()
     {
         $this->writtenOptionRollovers = new ArrayCollection();
@@ -311,6 +314,18 @@ class WrittenOption
     public function setPartiallyExercised(bool $PartiallyExercised): self
     {
         $this->PartiallyExercised = $PartiallyExercised;
+
+        return $this;
+    }
+
+    public function isPartiallyBoughtout(): ?bool
+    {
+        return $this->partiallyBoughtout;
+    }
+
+    public function setPartiallyBoughtout(bool $partiallyBoughtout): self
+    {
+        $this->partiallyBoughtout = $partiallyBoughtout;
 
         return $this;
     }
