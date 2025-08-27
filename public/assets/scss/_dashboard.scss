@@ -338,16 +338,22 @@
     .title{
         display: inline-block;
         box-sizing: border-box;
-        width: calc(100% - 50px - 70px);
-        padding-left: 20px;
+        width: calc(100% - 50px - 150px);
         padding-top: 3px;
+        margin-left: 20px;
+        margin-right: 30px;
         vertical-align: top;
+        overflow:scroll;
+
         .name{
             display: block;
+            width: fit-content;
+            white-space: nowrap;
         }
+
         .amount{
             display: inline-block;
-            padding-top: 10px;
+            padding-top: 2px;
             color: red;
 
             &.green{
