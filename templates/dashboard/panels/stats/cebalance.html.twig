@@ -14,6 +14,88 @@
     </div>
 </div>
 
+{% set total_value_usd = 0.00 %}
+{% set total_value_can = 0.00 %}
+
+{% set total_value_buyback_usd = 0.00 %}
+{% set total_value_buyback_can = 0.00 %}
+
+{% for stock in stocks %}
+    {% set stock_total = 0 %}
+    {% set stock_amount = 0 %}
+    {% set cc_over_strike_total_buyback_can = 0 %}
+    {% set cc_over_strike_total_buyback_usd = 0 %}
+    {% set cc_over_strike_total_assign_can = 0 %}
+    {% set cc_over_strike_total_assign_usd = 0 %}
+    {% set buys = 0 %}
+
+    {% for buy in stock.shareBuys %}
+        {% if buy.sold < buy.amount %}
+            {% if buy.nofee == false %}{% endif %}
+            {% set remaining = buy.amount - buy.sold %}
+            {% set stock_amount = stock_amount + remaining %}
+        {% endif %}
+    {% endfor %}
+
+    {% for cc in stock.coveredCalls %}
+        {% if cc.expired == 0 and cc.exercised == 0 and cc.strike <= stock.currentPrice  %}
+            {% set stock_amount = stock_amount - (100 * cc.contracts) %}
+            {% if stock.country == "CAN" %}
+                {% set cc_over_strike_total_buyback_can = cc_over_strike_total_buyback_can + ((stock.currentPrice * cc.contracts * 100) - (cc.ask * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                {% set cc_over_strike_total_assign_can = cc_over_strike_total_assign_can + ((cc.strike * cc.contracts * 100) - 43.00) %}
+            {% else %}
+                {% set cc_over_strike_total_buyback_usd = cc_over_strike_total_buyback_usd + ((stock.currentPrice * cc.contracts * 100) - (cc.ask * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                {% set cc_over_strike_total_assign_usd = cc_over_strike_total_assign_usd + ((cc.strike * cc.contracts * 100) - 43.00) %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {% if stock_amount > 0 or cc_over_strike_total_buyback_can > 0 or cc_over_strike_total_buyback_usd > 0 %}
+        {% if stock.noFee == false %}
+            {% set fee = (buys * 9.95) %}
+        {% else %}
+            {% set fee = 0 %}
+        {% endif %}
+
+        {% set stock_total = (stock_amount * stock.currentPrice) + fee %}
+
+        {# TODO:: Add switch for assign and buyback for covered calls #}
+        {% if stock.country == "CAN" %}
+            {% set total_value_can = total_value_can + stock_total + cc_over_strike_total_assign_can %}
+            {% set total_value_buyback_can = total_value_buyback_can + stock_total + cc_over_strike_total_buyback_can %}
+        {% else %}
+            {% set total_value_usd = total_value_usd + stock_total + cc_over_strike_total_assign_usd %}
+            {% set total_value_buyback_usd = total_value_buyback_usd + stock_total + cc_over_strike_total_buyback_usd %}
+        {% endif %}
+
+        {#            {{ stock.name }}: {{ stock_total }} | {{ stock_amount }} | {{ stock.currentPrice }} | {{ cc_over_strike_total_usd }} | {{ total_value_can + total_value_usd }}<br />#}
+    {% endif %}
+
+    {% for option in stock.options %}
+        {% if option.expired == false and option.contracts >= 1 %}
+            {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
+            {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
+            {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
+            {% if stock.country == "CAN" %}
+                {% set total_value_can = total_value_can + option_current %}
+                {% set total_value_buyback_can = total_value_buyback_can + option_current %}
+            {% else %}
+                {% set total_value_usd = total_value_usd + option_current %}
+                {% set total_value_buyback_usd = total_value_buyback_usd + option_current %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+{% endfor %}
+
+{% set debt_total_cdn = 0 %}
+{% set debt_total_usd = 0 %}
+
+{% for debt in debts %}
+    {% set debt_total_cdn = debt_total_cdn + debt.cdn %}
+    {% set debt_total_usd = debt_total_usd + debt.usd %}
+{% endfor %}
+
 {% set total = 0 %}
 {% for stock in stocks %}
     {% for buy in stock.shareBuys %}
@@ -24,10 +106,28 @@
         {% endfor %}
 {% endfor %}
 
+{% set overall_total_assign = (((total_value_usd * 1.36) + total_value_can) - debt_total_cdn - (debt_total_usd * 1.36)) %}
+
+{% set hisa_cdn = 0 %}
+{% set hisa_usd = 0 %}
+
+{% if settings.useHisa %}
+    {% for hisa in hisas %}
+        {% if hisa.currency == "usd" %}
+            {% set hisa_usd = hisa_usd + hisa.amount %}
+        {% else %}
+            {% set hisa_cdn = hisa_cdn + hisa.amount %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
 <script>
-const cash = {{ wallet.CAN }};
-const equities = {{ total }};
+const cash = {{ wallet.CAN + wallet.lockedCdn + hisa_cdn + ((wallet.USD + wallet.lockedUsd + hisa_usd) * 1.36) }};
+const equities = {{ overall_total_assign }};
 const percent = +((cash / (cash + equities)) * 100).toFixed(1);
+
+console.log("Cash:" + cash);
+console.log("Total:" + equities);
 
 document.getElementById("hc_percent_used").innerHTML = percent + "%";
 
