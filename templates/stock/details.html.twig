@@ -93,7 +93,8 @@
     {% set breakeven_cc = 0 %}
     {% for cc in stock.coveredCalls %}
         {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
-        {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}
+        {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}}
+
         {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
     {% endfor %}
 
@@ -266,7 +267,7 @@
                         {% if stock.coveredCalls is empty %}
                             No covered calls sold on this stock
                         {% else %}
-                        <table>
+                        <table style="text-align:center;">
                             <tr>
                                 <th>Price |</th>
                                 <th><small>Contracts</small> |</th>

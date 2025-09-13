@@ -209,7 +209,7 @@
             <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
                 <div class="inside">
                     <div class="inside_content">
-                        {{ stock.name }}<br />
+                        {{ stock.name }}| {{ option_update_ids }}<br />
                         <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
                         <small>${{ diff|number_format(2) }}</small><br />
                         {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
@@ -219,6 +219,385 @@
         {% endif %}
     {% endfor %}
     </div>
+
+    <h3>Quick Rundown</h3>
+    <div id="stockGrid" style="height: 500px">
+
+    </div>
+
+    <script>
+        class CompanyLogoRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('img');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+                companyLogo.src = `/assets/images/company_logos/${params.value.toLowerCase()}.jpg`;
+                companyLogo.setAttribute('class', 'logo');
+                companyLogo.setAttribute('style', 'width:120px; margin-top: 10px; border-radius: 12px;  box-shadow: 0 0 20px -8px rgba(0,0,0,0.5);');
+
+                this.eGui = document.createElement('span');
+                this.eGui.setAttribute('class', 'imgSpanLogo');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class MoneyRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = "$" + params.value.toFixed(2);
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-$" + Math.abs(params.value).toFixed(2);
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class PercentRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = params.value.toFixed(2) + "%";
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-" + Math.abs(params.value).toFixed(2) + "%";
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        let gridApi;
+
+        // Grid Options: Contains all of the Data Grid configurations
+        const gridOptions = {
+            rowHeight: 140,
+
+            // Row Data: The data to be displayed.
+            rowData: [
+                {% set absolute_total_expense = 0 %}
+                {% set absolute_total_sold = 0 %}
+                {% set absolute_total_earned = 0 %}
+                {% set absolute_total_unrealized = 0 %}
+                {% set abosulte_sold_pl = 0 %}
+                {% set absolute_total_pl = 0 %}
+                {% set absolute_shares_current_value = 0 %}
+                {% set absolute_shares_buy_cost_unsold = 0 %}
+
+                {% for stock in stocks %}
+                    {% set stock_amount = 0 %}
+                    {% set stock_buy_cost_total = 0 %}
+                    {% set stock_dividend = 0 %}
+                    {% set stock_amount = 0 %}
+                    {% set stock_average = 0 %}
+                    {% set stock_money_total = 0 %}
+                    {% set stock_earned = stock.earned %}
+                    {% set stock_current = stock.currentPrice %}
+                    {% set stock_breakeven = 0 %}
+                    {% set stock_pl = 0 %}
+                    {% set shares_buy_cost_total = 0 %}
+                    {% set buys = 0 %}
+                    {% set sells = 0 %}
+                    {% set d_bought = "" %}
+                    {% set d_sold = "" %}
+                    {% set buy_average = 0 %}
+                    {% set shares_total_sold = 0 %}
+                    {% set shares_buy_cost_unsold = 0 %}
+                    {% set total_expense = 1 %}
+                    {% set total_sold = 1 %}
+                    {% set option_contracts_being_played = 0 %}
+
+                {% set today = "now"|date('d-m-Y') %}
+                    {% set lastBuyDate = today %}
+                    {% set breakeven_fee = false %}
+
+
+                    {% for buy in stock.shareBuys %}
+                        {% set d_bought = buy.date %}
+                        {% if stock.noFee or buy.noFee %}
+                            {% set shares_buy_cost_total = shares_buy_cost_total + (buy.amount * buy.price) %}
+                        {% else %}
+                            {% set breakeven_fee = true %}
+                            {% set shares_buy_cost_total = shares_buy_cost_total + (buy.amount * buy.price) + 9.95 %}
+                        {% endif %}
+
+                        {% if buy.sold < buy.amount %}
+                            {% set remaining = buy.amount - buy.sold %}
+                            {% set buys = buys + 1 %}
+                            {% set stock_amount = stock_amount + remaining %}
+                            {% set buy_average = remaining * buy.price %}
+                            {% set stock_average = stock_average + buy_average %}
+                            {% set stock_money_total = stock_money_total + buy_average %}
+                            {% set lastBuyDate = buy.date|date('d-m-Y') %}
+                            {% if stock.noFee or buy.noFee %}
+                                {% set shares_buy_cost_unsold = shares_buy_cost_unsold + ((buy.amount * buy.price)) %}
+                            {% else %}
+                                {% set shares_buy_cost_unsold = shares_buy_cost_unsold + ((buy.amount * buy.price) + 9.95) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set total_expense = total_expense + shares_buy_cost_total %}
+
+                    {# {{ shares_buy_cost_total }} | {{ stock_amount }} | {{ buy_average }} | {{ stock_average }} #}
+
+
+                    {% if stock_amount > 0 %}
+                        {% set stock_average = stock_average / stock_amount %}
+                        {% if stock.noFee or breakeven_fee == false %}
+                            {% set fee = 0 %}
+                        {% else %}
+                            {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+                        {% endif %}
+                        {% set stock_breakeven = fee + stock_average %}
+                        {% set diff = stock_current - stock_breakeven %}
+                        {% set stock_pl = diff * stock_amount %}
+                    {% endif %}
+
+                    {% for sell in stock.shareSells %}
+                        {% set sells = sells + 1 %}
+                        {% if stock.noFee %}
+                            {% set shares_total_sold = shares_total_sold + (sell.amount * sell.price) %}
+                            {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
+                        {% else %}
+                            {% set shares_total_sold = shares_total_sold + (sell.amount * sell.price) - 9.95 %}
+                            {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
+                        {% endif %}
+                        {% set d_sold = sell.date %}
+                    {% endfor %}
+
+                    {% set total_sold = shares_total_sold %}
+
+                    {% for divi in stock.dividends %}
+                        {% set stock_dividend = stock_dividend + divi.amount %}
+                    {% endfor %}
+
+                    {% set total_sold = total_sold + stock_dividend %}
+
+                    {% set stock_earned = stock_earned + stock_dividend - shares_buy_cost_total %}
+                    {% set cc_total = 0 %}
+                    {% set breakeven_cc = 0 %}
+                    {% set buyDateDifference = date(today).diff(date(lastBuyDate))%}
+                    {% set daysSinceLastBuy = buyDateDifference.days %}
+                    {% set option_amount = 0 %}
+                    {% set options_total = 0 %}
+                    {% set options_rollover = 0 %}
+
+                    {% set cc_over_strike_total = 0 %}
+                    {% set cc_over_strike_shares = 0 %}
+
+                    {% for cc in stock.coveredCalls %}
+                        {% set total_expense = total_expense + cc.buyoutPrice %}
+                        {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
+                        {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}
+                        {% set total_sold = total_sold + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts))  %}
+                        {% if stock_amount > 0 %}
+                            {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
+                        {% else %}
+                            {% set breakeven_cc = 0 %}
+                        {% endif %}
+
+                        {% if cc.strike <= stock_current and cc.expired == 0 and cc.buyout == 0 and cc.exercised == 0 %}
+                            {% set cc_over_strike_total = (cc.strike * cc.contracts * 100) %}
+                            {% set cc_over_strike_shares = cc_over_strike_shares + (100 * cc.contracts) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% for option in stock.options %}
+                        {% set options_rollover = 0 %}
+                        {% for rollover in option.optionRollovers %}
+                            {% set options_rollover = options_rollover + ((((rollover.oldPrice - rollover.newPrice) * rollover.contracts) * 100) - 9.95 - (1.25 * rollover.contracts)) %}
+                        {% endfor %}
+
+                        {% set total_expense = total_expense + (1.25 * option.totalContracts) + (9.95 * option.buys) + (option.average * option.totalContracts * 100) %}
+                        {% set option_fees = (9.95 * (option.buys + option.sells)) + (1.25 * option.totalContracts) + 1.25 * option.totalContractsSold %}
+                        {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100))) + options_rollover %}
+
+                        {% set total_sold = total_sold + (option.totalContractsSold * (option.sellPrice * 100)) + options_rollover %}
+
+                        {% if option.totalContracts > option.totalContractsSold and option.expired == 0 %}
+                            {% set option_contracts_being_played = option_contracts_being_played + (option.totalContracts - option.totalContractsSold) %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set shares_current_value = ((stock_amount - cc_over_strike_shares) * stock_current) + cc_over_strike_total - 9.95 %}
+
+                    {% if stock_amount == 0 and option_contracts_being_played == 0 %}
+                        {% set unrealized_total = 0 %}
+                    {% else %}
+                        {% set unrealized_total = shares_current_value %}
+                    {% endif %}
+
+                    {% set earned_total = (shares_total_sold - shares_buy_cost_total + stock_dividend + cc_total + options_total) %}
+
+                    {% set sold_pl = (total_expense * -1) + total_sold %}
+
+                    {% set total_pl = unrealized_total + earned_total %}
+
+                    {% set absolute_shares_current_value = absolute_shares_current_value + shares_current_value %}
+
+                    {% set absolute_shares_buy_cost_unsold = absolute_shares_buy_cost_unsold + shares_buy_cost_unsold %}
+
+                    {% set absolute_total_expense = absolute_total_expense + total_expense %}
+
+                    {% set absolute_total_sold = absolute_total_sold + total_sold %}
+
+                    {% set absolute_total_earned = absolute_total_earned + earned_total %}
+
+                    {% set absolute_total_unrealized = absolute_total_unrealized + unrealized_total %}
+
+                    {% set abosulte_sold_pl = abosulte_sold_pl + sold_pl %}
+
+                    {% set absolute_total_pl = absolute_total_pl + total_pl %}
+
+                // [ (Final Value - Starting Value) / |Starting Value| ] × 100
+                    // 45 - 36 = 9
+                    // 9 / 36 = 0.25
+                    // 0.25 × 100 = 25%
+
+                    {% set unrealized_percent = 0 %}
+                    {% set total_percent = 0 %}
+
+                    {% if (shares_current_value - shares_buy_cost_unsold) != 0 and shares_buy_cost_unsold != 0 %}
+                        {% set unrealized_percent = (((shares_current_value - shares_buy_cost_unsold) / shares_buy_cost_unsold) * 100) %}
+                    {% endif %}
+
+                    {% if (earned_total - total_expense) != 0 and total_expense != 0 %}
+                        {% set earned_percent = (((earned_total - total_expense) / total_expense) * 100) + 100 %}
+                    {% endif %}
+
+                    {% if (total_sold - total_expense) != 0 and total_expense != 0 %}
+                        {% set sold_percent = (((total_sold - total_expense) / total_expense) * 100) %}
+                    {% endif %}
+
+                    {% if ((total_sold + unrealized_total) - total_expense) != 0 and total_expense != 0 %}
+                        {% set total_percent = ((((total_sold + unrealized_total) - total_expense) / total_expense) * 100) %}
+                    {% endif %}
+
+                { pinned: null, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
+                {% endfor %}
+            ],
+
+            pinnedBottomRowData: [
+                {% if (absolute_shares_current_value - absolute_shares_buy_cost_unsold) != 0 and absolute_shares_buy_cost_unsold != 0 %}
+                    {% set absolute_unrealized_percent = (((absolute_shares_current_value - absolute_shares_buy_cost_unsold) / absolute_shares_buy_cost_unsold) * 100) %}
+                {% endif %}
+
+                {% if (absolute_total_earned - absolute_total_expense) != 0 and absolute_total_expense != 0 %}
+                    {% set absolute_earned_percent = (((absolute_total_earned - absolute_total_expense) / absolute_total_expense) * 100) + 100 %}
+                {% endif %}
+
+                {% if (absolute_total_sold - absolute_total_expense) != 0 and absolute_total_expense != 0 %}
+                    {% set absolute_sold_percent = (((absolute_total_sold - absolute_total_expense) / absolute_total_expense) * 100) %}
+                {% endif %}
+
+                {% if ((absolute_total_sold + absolute_total_unrealized) - absolute_total_expense) != 0 and absolute_total_expense != 0 %}
+                    {% set absolute_total_percent = ((((absolute_total_sold + absolute_total_unrealized) - absolute_total_expense) / absolute_total_expense) * 100) %}
+                {% endif %}
+
+                { pinned: 'bottom', bought:{{ absolute_total_expense|number_format(2,'.', '') }}, sold:{{ absolute_total_sold|number_format(2,'.', '') }}, company: "TOTAL", shares:0, earned:{{ absolute_total_earned|number_format(2,'.', '') }}, unrealised_total:{{ absolute_total_unrealized|number_format(2,'.', '') }}, total_pl:{{ absolute_total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ absolute_unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ absolute_earned_percent|number_format(2, '.', '') }}, total_percent:{{ absolute_total_percent|number_format(2, '.', '') }}, sold_pl:{{ abosulte_sold_pl|number_format(2, '.', '') }}, sold_percent:{{ absolute_sold_percent|number_format(2, '.', '') }} },
+            ],
+
+            defaultColDef: {
+                flex: 1,
+                cellStyle: { textAlign: 'center' }
+            },
+
+            // Column Definitions: Defines the columns to be displayed.
+            columnDefs: [
+                {
+                    headerName: "COMPANY",
+                    field: "company",
+                    cellRenderer: CompanyLogoRenderer,
+                    cellClass: "logoCell",
+                    width: 100,
+                    filter: false,
+                    onCellClicked: (event) => {
+                        let id = event.data.id;
+                        window.open("/stocks/details/" + id);
+                    },
+                },
+                { field: "shares", headerName: "SHARES",width: 100, },
+                { field: "earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
+                { field: "unrealised_total", headerName: "UNREALISED P/L", width: 100, cellRenderer: MoneyRenderer},
+                { field: "sold_pl", headerName: "SOLD P/L",width: 100, cellRenderer: MoneyRenderer},
+                { field: "total_pl", headerName: "TOTAL P/L",width: 100, cellRenderer: MoneyRenderer},
+
+                { field: "unrealised_percent", headerName: "UNREALIZED %", width: 100, cellRenderer: PercentRenderer},
+                //{ field: "earned_percent", headerName: "EARNED %",width: 100, cellRenderer: PercentRenderer},
+                { field: "sold_percent", headerName: "SOLD %",width: 100,cellRenderer: PercentRenderer},
+                { field: "total_percent", headerName: "TOTAL %",width: 100,cellRenderer: PercentRenderer},
+
+                { field: "bought", headerName: "Bought", cellRenderer: MoneyRenderer},
+                { field: "sold", headerName: "Sold", cellRenderer: MoneyRenderer},
+            ],
+        };
+
+        // Your Javascript code to create the Data Grid
+        const myGridElement = document.querySelector('#stockGrid');
+        gridApi = agGrid.createGrid(myGridElement, gridOptions);
+    </script>
 
     <h3>All Stock Details</h3>
     <div style="display:none;" class="all_stocks" id="stock_details_table">
