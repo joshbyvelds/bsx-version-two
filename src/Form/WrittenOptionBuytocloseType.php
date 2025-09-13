@@ -37,22 +37,41 @@ class WrittenOptionBuytocloseType extends AbstractType
                 'attr' => array(
                     'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
                     'placeholder' => 0,
+                    'x-on:click' => 'adjustContracts',
+                    'x-bind' => 'contracts',
                 )
             ))
             ->add('price', TextType::class, [
                 'label' => 'Buyback Price',
                 'attr' => [
                     'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
-                    'placeholder' => '$0.00'
+                    'placeholder' => '$0.00',
                 ],
             ])
             ->add('stock_price', TextType::class, [
-                'label' => 'Stock Price',
+                'label' => 'Stock Price on Contract Close',
                 'attr' => [
                     'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
-                    'placeholder' => '$0.00'
+                    'placeholder' => '$0.00',
+                     'x-bind' => 'share_price',
                 ],
             ])
+
+            ->add('sell_shares', CheckboxType::class, [
+                'label'    => 'Sell Shares as well?',
+                'required' => false,
+            ])
+
+            ->add('number_of_shares', NumberType::class, [
+                'label'    => 'Number of Shares',
+                'attr' => array(
+                    'id' => 'shares',
+                    'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
+                    'placeholder' => 0,
+                    'x-bind' => 'shares',
+                )
+            ])
+
             ->add('payment_currency',ChoiceType::class,[
                 'label' => 'Payment Currency',
                 'choices' => array(

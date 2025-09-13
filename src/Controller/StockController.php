@@ -1216,43 +1216,136 @@ class StockController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $stock = $wo->getStock();
             $use_locked_funds = $form->get("use_locked_funds")->getData();
+            $sell_shares = $form->get("sell_shares")->getData();
+            $shares = $form->get("number_of_shares")->getData();
+            $stock_price = $form->get("stock_price")->getData();
             $currency = $form->get("payment_currency")->getData();
             $basic_fee = 9.95;
             $contract_fee = 1.25;
             $contracts = $form->get("contracts")->getData();
-            $total_cost = (($form->get("price")->getData() * 100) * $contracts) + $basic_fee + ($contract_fee * $contracts);
+            $buyout_price = (($form->get("price")->getData() * 100) * $contracts) + $basic_fee + ($contract_fee * $contracts);
+            $total_cost = $buyout_price;
+
+            if ($sell_shares) {
+                $total_cost = $total_cost - ($stock_price * $shares);
+            }
+
             $wo->setExpired(true);
-            $wo->setStockExpiryPrice($form->get("stock_price")->getData());
+            $wo->setStockExpiryPrice($stock_price);
             $wo->setBuyout(true);
-            $wo->setBuyoutPrice($total_cost);
+            $wo->setBuyoutPrice($buyout_price);
+
+            if($sell_shares) {
+                // remove shares from shareBuy Objects
+                $shareBuys = $stock->getShareBuys()->getValues();
+                usort($shareBuys, [$this, "sort_buys_by_price"]);
+                $totalSharesLeft = 0;
+
+                foreach ($shareBuys as $sb) {
+                    $bought = $sb->getAmount();
+                    $sold = $sb->getSold();
+                    if ($bought > $sold) {
+                        $totalSharesLeft += ($bought - $sold);
+                    }
+                }
+
+                $amount_to_sell = $shares;
+
+                $buys_length = count($shareBuys);
+                $current_buy = 0;
+
+                //loop though share buys and remove
+                while ($amount_to_sell > 0) {
+                    if ($current_buy == $buys_length) {
+                        $amount_to_sell = 0;
+                        // TODO:: Show an Error message here..
+
+                        // return $this->render('form/index.html.twig', [
+                        //     'error' => 'You dont own enough of these shares',
+                        //     'form' => $form->createView(),
+                        // ]);
+                    }
+
+                    $a = (int)$shareBuys[$current_buy]->getAmount() - $shareBuys[$current_buy]->getSold();
+
+                    // if we have enough shares in the earlist buy to cover sell
+                    if ($a >= $amount_to_sell) {
+                        $shareBuys[$current_buy]->addSold($amount_to_sell);
+                        $amount_to_sell = 0;
+                        $em->persist($shareBuys[$current_buy]);
+                    } else {
+                        $shareBuys[$current_buy]->addSold($a);
+                        $amount_to_sell -= $a;
+                        $current_buy++;
+                    }
+                }
+
+                // if we are selling the last amount of shares we own (or all of them), remove stock from the playing list..
+                if ($amount_to_sell === $totalSharesLeft) {
+                    $stock->setBeingPlayedShares(false);
+                } else {
+                    $stock->setSharesOwned($totalSharesLeft - $amount_to_sell);
+                }
+
+                // sell 100 shares of stock at strike
+                $date = new DateTime();
+                $share_sell = new ShareSell();
+                $share_sell->setStock($stock);
+                $share_sell->setPrice($stock_price);
+                $share_sell->setAmount(100 * $contracts);
+                $share_sell->setDate($date);
+                $share_sell->setNofee(false);
+                $share_sell->setTransfer(false);
+
+                $em->persist($share_sell);
+            }
 
             $transaction = new Transaction();
             $date = new DateTime();
-            $transaction->setType(2);
             $transaction->setDate($date);
             $transaction->setUser($user);
             $option_strike = "$". number_format($wo->getStrike(), 2);
             $option_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             $word = ($contracts === 1) ? " Covered Call Option " : " Covered Call Options ";
             $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
-            $transaction->setAmount($total_cost);
-
-            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
-            if ($currency == 'can'){
-                if($use_locked_funds){
-                    $wallet->unlock('CAN', $total_cost);
-                }
-                $wallet->withdraw('CAN', $total_cost);
-                $transaction->setCurrency(1);
+            if($sell_shares) {
+                $transaction->setName('CC Bought Back & Sold Shares: ' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ', ' . $shares  . ' Shares');
             }
 
-            if ($currency == 'usd'){
-                if($use_locked_funds){
-                    $wallet->unlock('USD', $total_cost);
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            if ($total_cost < 0) {
+                $transaction->setType(1);
+                $transaction->setAmount(abs($total_cost));
+                if ($currency == 'can'){
+                    $wallet->deposit('CAN', abs($total_cost));
+                    $transaction->setCurrency(1);
                 }
-                $wallet->withdraw('USD', $total_cost);
-                $transaction->setCurrency(2);
+
+                if ($currency == 'usd'){
+                    $wallet->deposit('USD', abs($total_cost));
+                    $transaction->setCurrency(2);
+                }
+            } else {
+                $transaction->setType(2);
+                $transaction->setAmount($total_cost);
+                if ($currency == 'can'){
+                    if($use_locked_funds){
+                        $wallet->unlock('CAN', $total_cost);
+                    }
+                    $wallet->withdraw('CAN', $total_cost);
+                    $transaction->setCurrency(1);
+                }
+
+                if ($currency == 'usd'){
+                    if($use_locked_funds){
+                        $wallet->unlock('USD', $total_cost);
+                    }
+                    $wallet->withdraw('USD', $total_cost);
+                    $transaction->setCurrency(2);
+                }
             }
 
             $em->persist($transaction);

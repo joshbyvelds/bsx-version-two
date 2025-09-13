@@ -112,17 +112,24 @@
             return {
                 use_locked_funds: ({{ form.use_locked_funds.vars.value }} === 1),
                 selected_currency: "{{ form.payment_currency.vars.value }}",
+                shares:1,
+                contracts:2,
+                share_price:3,
 
                 use_locked_funds_selected(){
                     this.use_locked_funds = !this.use_locked_funds;
                 },
 
-                use_locked_funds_converted(){
-                    return (this.use_locked_funds) ? "1" : "0";
-                },
-
                 switchCurrency(id){
                     this.selected_currency = id;
+                },
+
+                adjustContracts(){
+                    document.getElementById("shares").val = (this.contracts * 100);
+                },
+
+                use_locked_funds_converted(){
+                    return (this.use_locked_funds) ? "1" : "0";
                 },
             }
         }
