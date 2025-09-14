@@ -578,7 +578,16 @@
                         window.open("/stocks/details/" + id);
                     },
                 },
-                { field: "shares", headerName: "SHARES",width: 100, },
+                {
+                    field: "shares",
+                    headerName: "SHARES",
+                    width: 100,
+                    filter: 'agNumberColumnFilter', // Explicitly specify the number filter
+                    filterParams: {
+                        buttons: ['apply', 'clear', 'reset'], // Customize buttons
+                        //allowedCharPattern: '[0-9\\.]' // Allow only numbers and decimal points
+                    }
+                },
                 { field: "earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
                 { field: "unrealised_total", headerName: "UNREALISED P/L", width: 100, cellRenderer: MoneyRenderer},
                 { field: "sold_pl", headerName: "SOLD P/L",width: 100, cellRenderer: MoneyRenderer},
@@ -589,8 +598,8 @@
                 { field: "sold_percent", headerName: "SOLD %",width: 100,cellRenderer: PercentRenderer},
                 { field: "total_percent", headerName: "TOTAL %",width: 100,cellRenderer: PercentRenderer},
 
-                { field: "bought", headerName: "Bought", cellRenderer: MoneyRenderer},
-                { field: "sold", headerName: "Sold", cellRenderer: MoneyRenderer},
+                //{ field: "bought", headerName: "Bought", cellRenderer: MoneyRenderer},
+                //{ field: "sold", headerName: "Sold", cellRenderer: MoneyRenderer},
             ],
         };
 
