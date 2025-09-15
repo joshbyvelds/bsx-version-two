@@ -94,8 +94,9 @@
     {% for cc in stock.coveredCalls %}
         {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
         {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}}
-
-        {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
+        {% if stock_amount > 0 %}
+            {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
+        {% endif %}
     {% endfor %}
 
     {% set buyDateDifference = date(today).diff(date(lastBuyDate))%}
