@@ -27,7 +27,7 @@
             {% set hisaFound = false %}
             {%  for hisa in hisas %}
                 {% set hisaFound = true %}
-                {% include "dashboard/panels/hisa.html.twig" with {'name':hisa.name, 'bank':hisa.bank, 'amount':hisa.amount, 'interestRate':hisa.interestRate} %}
+                {% include "dashboard/panels/hisa.html.twig" with {'id':hisa.id,'name':hisa.name, 'bank':hisa.bank, 'amount':hisa.amount, 'interestRate':hisa.interestRate} %}
             {% endfor %}
 
             {% if hisaFound == false %}

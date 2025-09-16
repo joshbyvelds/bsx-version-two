@@ -107,4 +107,18 @@ class HighInterestSavingsAccount
 
         return $this;
     }
+
+    public function withdraw(float $amount): self
+    {
+        $this->amount -= $amount;
+
+        return $this;
+    }
+
+    public function deposit(float $amount): self
+    {
+        $this->amount += $amount;
+
+        return $this;
+    }
 }
