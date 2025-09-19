@@ -134,6 +134,35 @@ class Wallet
         return $this;
     }
 
+    public function transfer(string $currency, string $type, float $amount): self
+    {
+        if($currency === "CAN"){
+            if ($type === "unlock"){
+                $this->locked_cdn -= $amount;
+                $this->CAN += $amount;
+            }
+
+            if ($type === "lock"){
+                $this->locked_cdn += $amount;
+                $this->CAN -= $amount;
+            }
+        }
+
+        if ($currency === "USD"){
+            if ($type === "unlock"){
+                $this->locked_usd -= $amount;
+                $this->USD += $amount;
+            }
+
+            if ($type === "lock"){
+                $this->locked_usd += $amount;
+                $this->USD -= $amount;
+            }
+        }
+
+        return $this;
+    }
+
     public function unlock(string $currency, float $amount): self
     {
         if($currency === "CAN"){

@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BSX - Dashboard{% endblock %}
+
+{% block body %}
+    <div class="grid gap-y-10 gap-x-8 sm:grid-cols-3">
+        <div class="px-4 sm:p-0">
+            <h2 class="m-0 text-base font-semibold leading-7 text-gray-900">Some Form</h2>
+            <p class="mt-1 text-sm leading-6 text-gray-600">some explaination</p>
+        </div>
+        <form name="{{ form.vars.full_name }}" method="{{ form.vars.method }}" x-data="LockTransferForm()" class="bg-white shadow-sm ring-offset-1 ring-gray-900 sm:rounded-xl sm:col-span-2">
+            <div class="px-4 py-6 sm:p-8">
+                <div class="grid max-w-[42rem] grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 ">
+
+
+                    {% for input in form.children %}
+                        {% if input.vars.name != "save" and input.vars.name != "_token" %}
+                            {% if input.vars.name == "type" %}
+                                <div class="col-span-full">
+                                    <label for="{{ form.type.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.type.vars.required == true %}required{% endif %}">{{ form.type.vars.label }}</label>
+                                    <div class="mt-2 grid grid-cols-2 gap-3">
+                                        {% for choice in form.type.vars.choices %}
+                                        <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_type == '{{ choice.value }}' && '!bg-indigo-600 text-white'" x-on:click="switchType('{{ choice.value }}')">{{ choice.label }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% elseif input.vars.name == "currency" %}
+                                    <div class="col-span-full">
+                                        <label for="{{ form.currency.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.currency.vars.required == true %}required{% endif %}">{{ form.currency.vars.label }}</label>
+                                        <div class="mt-2 grid grid-cols-2 gap-3">
+                                            {% for choice in form.currency.vars.choices %}
+                                                <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_currency == '{{ choice.value }}' && '!bg-indigo-600 text-white'" x-on:click="switchCurrency('{{ choice.value }}')">{{ choice.label }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                            {% else %}
+                                <div class="col-span-full">
+                                    <label for="{{ input.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if input.vars.required == true %}required{% endif %}">{{ input.vars.label }}</label>
+                                    <div class="mt-2">
+                                        {{ form_widget(input) }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-x-6 border-t-[1px] border-gray-900 px-4 py-4 sm:px-8">
+                <button type="submit" id="{{ form.vars.name }}_save" name="{{ form.vars.name }}[save]" class="normal-case cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow">Save</button>
+            </div>
+
+            {% if error %}
+                <br />
+                {{ error }}
+            {% endif %}
+            {{ form_row(form._token) }}
+
+            <input type="hidden" name="wallet_locked_transfer[currency]" id="wallet_locked_transfer_currency" x-model="selected_currency" />
+            <input type="hidden" name="wallet_locked_transfer[type]" id="wallet_locked_transfer_type" x-model="selected_type" />
+        </form>
+
+        {# render tailwind class that form inputs will use.. #}
+        <div class="block hidden w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6"></div>
+    </div>
+
+    <script>
+        function LockTransferForm() {
+
+            return {
+                selected_currency: "CAN",
+                selected_type: "unlock",
+
+                switchCurrency(id) {
+                    this.selected_currency = id;
+                },
+
+                switchType(id) {
+                    this.selected_type = id;
+                },
+            }
+        }
+    </script>
+{% endblock %}

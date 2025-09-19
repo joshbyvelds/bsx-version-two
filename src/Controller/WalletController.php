@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Form\WalletLockedTransferType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -249,5 +250,45 @@ class WalletController extends AbstractController
         $em->persist($wallet);
         $em->flush();
         return $this->redirectToRoute('dashboard');
+    }
+
+    #[Route('/wallet/locktransfer', name: 'wallet_lock_transfer')]
+    public function locktransfer(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $em = $doctrine->getManager();
+        $settings = $user->getSettings();
+
+        // Update Wallet
+        //TODO:: Get the users wallet.. for now use the demo
+        $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+        $wallet->unlock('CAN', $wallet->getLockedCdn());
+        $form = $this->createForm(WalletLockedTransferType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $em = $doctrine->getManager();
+
+            $currency = $form->get("currency")->getData();
+            $type = $form->get("type")->getData();
+            $amount = $form->get("amount")->getData();
+
+            $wallet->transfer($currency, $type, $amount);
+
+            $em->persist($wallet);
+            $em->flush();
+            return $this->redirectToRoute('dashboard');
+        } else {
+            foreach ($form->getErrors(true) as $error) {
+                echo $error->getMessage();
+            }
+        }
+
+        return $this->render('form/lock_transfer.html.twig', [
+            'error' => '',
+            'form' => $form->createView(),
+            'settings' => $settings,
+        ]);
     }
 }
