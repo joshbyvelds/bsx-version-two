@@ -67,6 +67,9 @@ class Stock
     #[ORM\Column(type: 'string', length: 6)]
     private $bg_color;
 
+    #[ORM\OneToMany(mappedBy: 'stock', targetEntity: Play::class, orphanRemoval: true)]
+    private $plays;
+
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareSell::class, orphanRemoval: true)]
     private $shareSells;
 
@@ -104,6 +107,7 @@ class Stock
         $this->shareSells = new ArrayCollection();
         $this->options = new ArrayCollection();
         $this->coveredCalls = new ArrayCollection();
+        $this->plays = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -387,6 +391,36 @@ class Stock
             // set the owning side to null (unless already changed)
             if ($shareSell->getStock() === $this) {
                 $shareSell->setStock(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Play>
+     */
+    public function getPlays(): Collection
+    {
+        return $this->plays;
+    }
+
+    public function addPlay(Play $play): self
+    {
+        if (!$this->plays->contains($play)) {
+            $this->plays[] = $play;
+            $play->setStock($this);
+        }
+
+        return $this;
+    }
+
+    public function removePlay(Play $play): self
+    {
+        if ($this->plays->removeElement($play)) {
+            // set the owning side to null (unless already changed)
+            if ($play->getStock() === $this) {
+                $play->setStock(null);
             }
         }
 

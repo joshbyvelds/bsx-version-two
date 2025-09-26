@@ -417,13 +417,29 @@
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         <table style="width:100%;">
                             <tr>
-                                <th>Range</th>
-                                <th>Amount</th>
+                                <th>Play Name</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Amount Earned</th>
                             </tr>
-                            <tr>
-                                <td>01/03/2024 - 03/17/2024</td>
-                                <td>$1,234.46</td>
+                            {% for play in stock.plays %}
+                                {% set current_price = play.stock.currentPrice %}
+
+                                {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
+                                {% set bought = bought + (play.contractsAverage * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
+
+                                {% set sold = play.totalSold + play.writtenOptionTotal %}
+                                {% set total_percent = (((sold) - bought) / bought) * 100 %}
+
+                                {% set earned = sold - bought %}
+
+                                <tr>
+                                <td>{{ play.name }}</td>
+                                <td>{{ play.startDate|date("m/d/Y") }}</td>
+                                <td>{{ play.endDate|date("m/d/Y") }}</td>
+                                <td>${{ earned|number_format(2) }}</td>
                             </tr>
+                            {% endfor %}
                         </table>
                     </dd>
                 </div>

@@ -3,39 +3,186 @@
 {% block title %}Hello PlaysController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <div id="playsGrid" style="height: 500px">
 
-<div class="example-wrapper">
-    <a href="/plays/add/">Add Play</a>
+    </div>
 
-    <h3>List of Finished Plays</h3>
-    <table>
-        <thead>
-            <th>Company | </th>
-            <th>Ticker | </th>
-            <th>Earned</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% set total_earned = 0 %}
-        {% set old_cc = [] %}
-        {% for play in plays %}
-            {% if play.finished %}
-                {% set total_earned = total_earned + play.earned %}
-                <tr>
-                    <td><img src="/assets/images/company_logos/{{ play.stock.ticker }}.jpg" alt="" style='width: 60px; height: 60px; border-radius: 12px;'></td>
-                    <td>{{ play.stock.ticker }}</td>
-                    <td>${{ play.earned|number_format(2) }}</td>
-                </tr>
-            {% endif %}
-        {% endfor %}
-        <tr>
-            <td colspan="3">TOTAL = {{ total_earned|number_format(2) }}</td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+    <script>
+        class CompanyLogoRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('img');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+                companyLogo.src = `/assets/images/company_logos/${params.value.toLowerCase()}.jpg`;
+                companyLogo.setAttribute('class', 'logo');
+                companyLogo.setAttribute('style', 'width:120px; margin-top: 10px; border-radius: 12px;  box-shadow: 0 0 20px -8px rgba(0,0,0,0.5);');
+
+                this.eGui = document.createElement('span');
+                this.eGui.setAttribute('class', 'imgSpanLogo');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class MoneyRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = "$" + params.value.toFixed(2);
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-$" + Math.abs(params.value).toFixed(2);
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class PercentRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = params.value.toFixed(2) + "%";
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-" + Math.abs(params.value).toFixed(2) + "%";
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+
+        let gridApi;
+        const myGridElement = document.querySelector('#playsGrid');
+
+        // Grid Options: Contains all of the Data Grid configurations
+        const gridOptions = {
+            rowHeight: 140,
+            rowData: [
+
+                {% for play in plays %}
+                    {% set current_price = play.stock.currentPrice %}
+
+                    {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
+                    {% set bought = bought + (play.contractsAverage * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
+
+                    {% set sold = play.totalSold + play.writtenOptionTotal %}
+                    {% set total_percent = (((sold) - bought) / bought) * 100 %}
+
+                    {% set earned = sold - bought %}
+
+                {
+                    'company': '{{ play.stock.ticker }}',
+                    'name': '{{ play.name }}',
+                    'finished': '{{ play.finished }}',
+                    'start_date': '{{ play.startDate|date("m/d/Y") }}',
+                    'end_date': {% if play.finished %}'{{ play.endDate|date("m/d/Y") }}'{% else %}'present'{% endif %},
+                    'share_average': {{ play.shareAverage }},
+                    'shares_remaining':{{ play.sharesRemaining }},
+                    'shares_total':{{ play.sharesTotal }},
+                    'shares_earned':{{ play.sharesEarned }},
+                    'contracts_average':{{ play.contractsAverage }},
+                    'contracts_remaining':{{ play.contractsRemaining }},
+                    'contracts_total':{{ play.contractsTotal }},
+                    'options_earned':{{ play.optionsEarned }},
+                    'bought': {{ bought }},
+                    'sold': {{ sold }},
+                    'written_option_total': {{ play.writtenOptionTotal }},
+                    'total_earned':{{ earned }},
+                    'total_percent':{{ total_percent }}
+                },
+                {% endfor %}
+
+            ],
+
+            defaultColDef: {
+                flex: 1,
+                cellStyle: { textAlign: 'center' }
+            },
+
+            columnDefs: [
+                {
+                    headerName: "COMPANY",
+                    field: "company",
+                    cellRenderer: CompanyLogoRenderer,
+                    cellClass: "logoCell",
+                    width: 100,
+                    filter: false,
+                    onCellClicked: (event) => {
+                        let id = event.data.id;
+                        window.open("/stocks/details/" + id);
+                    },
+                },
+                { field: "name", headerName: "NAME", width: 50},
+                { field: "start_date", headerName: "START",width: 50 },
+                { field: "end_date", headerName: "END",width: 50 },
+                { field: "total_earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
+                { field: "bought", headerName: "Bought", width: 50, cellRenderer: MoneyRenderer },
+                { field: "sold", headerName: "Sold", width: 50, cellRenderer: MoneyRenderer },
+                { field: "total_percent", headerName: "TOTAL %",width: 100,cellRenderer: PercentRenderer},
+            ],
+        }
+
+
+        gridApi = agGrid.createGrid(myGridElement, gridOptions);
+    </script>
 {% endblock %}

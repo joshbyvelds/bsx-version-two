@@ -102,8 +102,13 @@
             {% set diff = 0 %}
         {% else %}
             {% if stock_amount != 0 %}
-                {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
-                {% set diff = (stock_current - stock_breakeven) * stock_amount %}
+                {% if stock_current != stock_breakeven %}
+                    {% set percent = ((stock_current / stock_breakeven) * 100) - 100 %}
+                    {% set diff = (stock_current - stock_breakeven) * stock_amount %}
+                {% else %}
+                    {% set percent = 0 %}
+                    {% set diff = 0 %}
+                {% endif %}
             {% endif %}
         {% endif %}
 
@@ -403,7 +408,7 @@
                     {# {{ shares_buy_cost_total }} | {{ stock_amount }} | {{ buy_average }} | {{ stock_average }} #}
 
 
-                    {% if stock_amount > 0 %}
+                    {% if stock_amount > 0 and stock_average != 0 and stock_amount != 0 %}
                         {% set stock_average = stock_average / stock_amount %}
                         {% if stock.noFee or breakeven_fee == false %}
                             {% set fee = 0 %}
