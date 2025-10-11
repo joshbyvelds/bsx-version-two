@@ -192,14 +192,12 @@ class HISAController extends AbstractController
         $transaction->setName('HISA ('. $hisa->getName() .') Interest Payment');
 
         if ($currency == 'can'){
-            $wallet->deposit('CAN', $amount);
-            $hisa->withdraw($amount);
+            $hisa->deposit($amount);
             $transaction->setCurrency(1);
         }
 
         if ($currency == 'usd'){
-            $wallet->deposit('USD', $amount);
-            $hisa->withdraw($amount);
+            $hisa->deposit($amount);
             $transaction->setCurrency(2);
         }
 
