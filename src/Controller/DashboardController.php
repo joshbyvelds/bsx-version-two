@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\HighInterestSavingsAccount;
 use App\Entity\ShareSell;
 use App\Entity\Transaction;
+use App\Entity\WeeklyPortfolioTotal;
 use App\Form\ShareSellType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -64,7 +65,16 @@ class DashboardController extends AbstractController
         $stocks = $user->getStocks();
 
         //check if we need to update the Total Value Chart
-        $totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
+        $weeklyPortfolioTotals = $user->getWeeklyPortfolioTotals()->toArray();
+
+        $lastStartDate = $weeklyPortfolioTotals[count($weeklyPortfolioTotals) - 1]->getStartDate();
+        if($lastStartDate >= new \DateTime('now')){
+            unset($weeklyPortfolioTotals[count($weeklyPortfolioTotals) - 1]);
+        }
+
+        $n = 20;
+        $lastWeeklyPortfolioTotals = array_slice($weeklyPortfolioTotals, -$n);
+        //$totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
 
         // get Debt if any..
         $debt = $doctrine->getRepository(Debt::class)->findBy(['user' => $user->getId()]);
@@ -96,11 +106,96 @@ class DashboardController extends AbstractController
             'portfolios' => $portfolios,
             'plays' => $plays,
             'transactions' => array_slice($transactions, -$transactions_limit),
-            'totalValues' => $totalValues,
+            'totalValues' => $lastWeeklyPortfolioTotals,
             'covered_calls' => $cc,
             'debts' => $debt,
             'hisas' => $hisas
         ]);
+    }
+
+    #[Route('/dashboard/updateWeeklyPortfolioTotal', name: 'dashboard_set_weekly_portfolio_total')]
+    public function setWeeklyPortfolioTotal(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $em = $doctrine->getManager();
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $new = false;
+
+        $total = $request->get('total');
+        $total = (empty($total)) ? 0.0 : $total;
+        $weeklyPortfolioTotals = $user->getWeeklyPortfolioTotals()->toArray();
+        $lastEntry = $weeklyPortfolioTotals[count($weeklyPortfolioTotals) - 1];
+        $lastEndDate = $lastEntry->getEndDate()->modify('+1 day');
+
+        $d_m1 = false;
+        $d_m2 = false;
+        $d_m3 = false;
+
+        $d_y1 = false;
+        $d_y2 = false;
+        $d_y3 = false;
+
+        $monday = false;
+        $friday = false;
+
+        if($lastEndDate < new \DateTime('now')){
+            $new = true;
+            $lastEntry->setCurrent(false);
+
+            $monday = clone $lastEndDate;
+            $friday = clone $lastEndDate;
+            $monday = $monday->modify('next monday');
+            $friday = $friday->modify('next friday');
+
+            $newWeeklyTotal = new WeeklyPortfolioTotal();
+            $newWeeklyTotal->setUser($user);
+            $newWeeklyTotal->setStartDate($monday);
+            $newWeeklyTotal->setEndDate($friday);
+            $newWeeklyTotal->setAmount(round($total,2));
+            $newWeeklyTotal->setCurrent(true);
+            $newWeeklyTotal->setEndofmonth(false);
+            $newWeeklyTotal->setEndofyear(false);
+
+            $month1 = $lastEndDate->format('Y-m');
+            $month2 = $monday->format('Y-m');
+            $month3 = $friday->format('Y-m');
+
+            $year1 = $lastEndDate->format('Y');
+            $year2 = $monday->format('Y');
+            $year3 = $friday->format('Y');
+
+            $d_m1 = $month1;
+            $d_m2 = $month2;
+            $d_m3 = $month3;
+
+            $d_y1 = $year1;
+            $d_y2 = $year2;
+            $d_y3 = $year3;
+
+            if ($month1 !== $month2) {
+                $lastEntry->setEndofmonth(true);
+            }
+
+            if ($month2 !== $month3) {
+                $newWeeklyTotal->setEndofmonth(true);
+            }
+
+            if ($year1 !== $year2) {
+                $lastEntry->setEndofyear(true);
+            }
+
+            if ($year2 !== $year3) {
+                $newWeeklyTotal->setEndofyear(true);
+            }
+
+            $em->persist($newWeeklyTotal);
+        } else {
+            $lastEntry->setAmount(round($total,2));
+        }
+
+        $em->flush();
+
+        return new JsonResponse(array('new' => $new, 'lastEndDate' => $lastEndDate, 'monday' => $monday, 'friday' => $friday, 'm1' => $d_m1, 'm2' => $d_m2, 'm3' => $d_m3, 'y1' => $d_y1, 'y2' => $d_y2, 'y3' => $d_y3));
     }
 
     #[Route('/dashboard/settotalvaluecolumn', name: 'dashboard_setTotalValue')]

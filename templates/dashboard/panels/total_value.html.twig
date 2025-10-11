@@ -139,61 +139,71 @@
     <canvas id="total_chart"></canvas>
     <script>
         let total_data_values = [
-            {{ totalValues.value1 }},
-            {{ totalValues.value2 }},
-            {{ totalValues.value3 }},
-            {{ totalValues.value4 }},
-            {{ totalValues.value5 }},
-            {{ totalValues.value6 }},
-            {{ totalValues.value7 }},
-            {{ totalValues.value8 }},
-            {{ totalValues.value9 }},
-            {{ totalValues.value10 }},
-            {{ totalValues.value11 }},
-            {{ totalValues.value12 }},
-            {{ totalValues.value13 }},
-            {{ totalValues.value14 }},
-            {{ totalValues.value15 }},
-            {{ totalValues.value16 }},
-            {{ totalValues.value17 }},
-            {{ totalValues.value18 }},
-            {{ totalValues.value19 }},
-            {{ totalValues.value20 }}
+            {{ totalValues[0].amount }},
+            {{ totalValues[1].amount }},
+            {{ totalValues[2].amount }},
+            {{ totalValues[3].amount }},
+            {{ totalValues[4].amount }},
+            {{ totalValues[5].amount }},
+            {{ totalValues[6].amount }},
+            {{ totalValues[7].amount }},
+            {{ totalValues[8].amount }},
+            {{ totalValues[9].amount }},
+            {{ totalValues[10].amount }},
+            {{ totalValues[11].amount }},
+            {{ totalValues[12].amount }},
+            {{ totalValues[13].amount }},
+            {{ totalValues[14].amount }},
+            {{ totalValues[15].amount }},
+            {{ totalValues[16].amount }},
+            {{ totalValues[17].amount }},
+            {{ totalValues[18].amount }},
+            {{ totalValues[19].amount }},
         ];
 
-        total_data_values[{{ totalValues.fill }} - 1] = {{ overall_total }}
+        {% set smallest_value = totalValues[0].amount %}
 
-        const label = {% if settings.weeklyTotalValue %}'Total Value over 20 weeks..'{% else %}'Total Value over 20 days..'{% endif %}
+        {% for value in totalValues %}
+            {% if value.amount < smallest_value %}
+                {% set smallest_value = value.amount %}
+            {% endif %}
+        {% endfor %}
+
+        {% if smallest_value >= 20 %}
+            {% set smallest_value = smallest_value - (smallest_value * 0.07) %}
+        {% endif %}
+
+        const label = 'Total Value over 20 weeks..';
 
 
 
         const data_total = {
             labels: [
-                "{{ totalValues.valueDate1|date("D m/d")  }}",
-                "{{ totalValues.valueDate2|date("D m/d")  }}",
-                "{{ totalValues.valueDate3|date("D m/d")  }}",
-                "{{ totalValues.valueDate4|date("D m/d")  }}",
-                "{{ totalValues.valueDate5|date("D m/d")  }}",
-                "{{ totalValues.valueDate6|date("D m/d")  }}",
-                "{{ totalValues.valueDate7|date("D m/d")  }}",
-                "{{ totalValues.valueDate8|date("D m/d")  }}",
-                "{{ totalValues.valueDate9|date("D m/d")  }}",
-                "{{ totalValues.valueDate10|date("D m/d")  }}",
-                "{{ totalValues.valueDate11|date("D m/d")  }}",
-                "{{ totalValues.valueDate12|date("D m/d")  }}",
-                "{{ totalValues.valueDate13|date("D m/d")  }}",
-                "{{ totalValues.valueDate14|date("D m/d")  }}",
-                "{{ totalValues.valueDate15|date("D m/d")  }}",
-                "{{ totalValues.valueDate16|date("D m/d")  }}",
-                "{{ totalValues.valueDate17|date("D m/d")  }}",
-                "{{ totalValues.valueDate18|date("D m/d")  }}",
-                "{{ totalValues.valueDate19|date("D m/d")  }}",
-                "{{ totalValues.valueDate20|date("D m/d")  }}",
-
+                "{{ totalValues[0].endDate|date("D m/d")  }}",
+                "{{ totalValues[1].endDate|date("D m/d")  }}",
+                "{{ totalValues[2].endDate|date("D m/d")  }}",
+                "{{ totalValues[3].endDate|date("D m/d")  }}",
+                "{{ totalValues[4].endDate|date("D m/d")  }}",
+                "{{ totalValues[5].endDate|date("D m/d")  }}",
+                "{{ totalValues[6].endDate|date("D m/d")  }}",
+                "{{ totalValues[7].endDate|date("D m/d")  }}",
+                "{{ totalValues[8].endDate|date("D m/d")  }}",
+                "{{ totalValues[9].endDate|date("D m/d")  }}",
+                "{{ totalValues[10].endDate|date("D m/d")  }}",
+                "{{ totalValues[11].endDate|date("D m/d")  }}",
+                "{{ totalValues[12].endDate|date("D m/d")  }}",
+                "{{ totalValues[13].endDate|date("D m/d")  }}",
+                "{{ totalValues[14].endDate|date("D m/d")  }}",
+                "{{ totalValues[15].endDate|date("D m/d")  }}",
+                "{{ totalValues[16].endDate|date("D m/d")  }}",
+                "{{ totalValues[17].endDate|date("D m/d")  }}",
+                "{{ totalValues[18].endDate|date("D m/d")  }}",
+                "{{ totalValues[19].endDate|date("D m/d")  }}",
             ],
             datasets: [{
                 label: label,
                 data: total_data_values,
+                borderRadius: 5,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(255, 159, 64, 0.2)',
@@ -247,7 +257,8 @@
             options: {
                 scales: {
                     y: {
-                        beginAtZero: true
+                        //beginAtZero: true
+                        min: {{ smallest_value|round }},
                     }
                 }
             },
@@ -255,7 +266,7 @@
         const total_ctx = document.getElementById('total_chart');
         let total_chart = new Chart(total_ctx, config_total);
 
-        $.post("/dashboard/settotalvaluecolumn", {total:{{ overall_total }}}, (json) => {
+        $.post("/dashboard/updateWeeklyPortfolioTotal", {total:{{ overall_total }}}, (json) => {
             console.log(json.total);
         });
     </script>
