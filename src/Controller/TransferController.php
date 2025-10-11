@@ -85,6 +85,8 @@ class TransferController extends AbstractController
             $em->persist($transaction_receiver);
             $em->flush();
 
+            return $this->redirectToRoute('dashboard');
+
         }
 
         return $this->render('transfer/cdn.html.twig', [
@@ -95,13 +97,66 @@ class TransferController extends AbstractController
     }
 
     #[Route('/transfer/usd', name: 'app_transfer_usd')]
-    public function usd(ManagerRegistry $doctrine): Response
+    public function usd(ManagerRegistry $doctrine, Request $request): Response
     {
         $user = $this->getUser();
         $settings = $user->getSettings();
 
+        $error = "";
+        $form = $this->createForm(TransferCdnType::class);
+        $form->handleRequest($request);
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $doctrine->getManager();
+            $amount = (float)$form->get("amount")->getData();
+            $wallet = $user->getWallet();
+            $user2 = $form->get("user")->getData();
+            $wallet2 = $user2->getWallet();
+
+            if ($amount > (float)$wallet->getUSD()){
+                $error = "Not enough Cash in wallet for this transfer";
+                return $this->render('transfer/usd.html.twig', [
+                    'settings' => $settings,
+                    'error' => $error,
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            // move money..
+            $wallet->withdraw("USD", $amount);
+            $wallet2->deposit("USD", $amount);
+
+            // create transaction for both users..
+            $transaction_sender = new Transaction();
+            $date = new \DateTime();
+            $transaction_sender->setType(8);
+            $transaction_sender->setAmount($amount);
+            $transaction_sender->setCurrency(2);
+            $transaction_sender->setDate($date);
+            $transaction_sender->setUser($user);
+            $transaction_sender->setName('Sent $'. $amount . ' USD to ' . $user2->getUsername());
+            $em->persist($transaction_sender);
+
+            $transaction_receiver = new Transaction();
+            $date = new \DateTime();
+            $transaction_receiver->setType(8);
+            $transaction_receiver->setAmount($amount);
+            $transaction_receiver->setCurrency(2);
+            $transaction_receiver->setDate($date);
+            $transaction_receiver->setUser($user2);
+            $transaction_receiver->setName('Received $'. number_format($amount, 2) . ' USD from ' . $user->getUsername());
+            $em->persist($transaction_receiver);
+            $em->flush();
+
+            return $this->redirectToRoute('dashboard');
+
+        }
+
         return $this->render('transfer/usd.html.twig', [
             'settings' => $settings,
+            'error' => $error,
+            'form' => $form->createView(),
         ]);
     }
 
