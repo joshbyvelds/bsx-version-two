@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HistoryController!{% endblock %}
+
+{% block body %}
+
+    <div id="historyGrid" style="height:800px;"></div>
+
+    <script>
+        class MoneyRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = "$" + params.value.toFixed(2);
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-$" + Math.abs(params.value).toFixed(2);
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class PercentRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = params.value.toFixed(2) + "%";
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-" + Math.abs(params.value).toFixed(2) + "%";
+                }
+
+
+                this.eGui = document.createElement('span');
+                if(params.value > 0){
+                    this.eGui.setAttribute('style', 'color:green;');
+                } else if (params.value < 0) {
+                    this.eGui.setAttribute('style', 'color:red;');
+                }
+
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        let gridApi;
+        const myGridElement = document.querySelector('#historyGrid');
+
+        const gridOptions = {
+            // Row Data: The data to be displayed.
+
+            rowData: [
+                {% for week in weeks %}
+                {
+                    {% if loop.index0 == 0  %}
+                        {% set last_week_amount = week.amount %}
+                        {% set month_amount = week.amount %}
+                        {% set year_amount = week.amount %}
+                    {% endif %}
+
+                    {# // [ (Final Value - Starting Value) / |Starting Value| ] × 100 #}
+                    {% if last_week_amount != week.amount %}
+                        {% set week_change = (((week.amount - last_week_amount) / last_week_amount) * 100) %}
+                    {% else %}
+                        {% set week_change = 0 %}
+                    {% endif %}
+
+                    {% if month_amount != week.amount %}
+                        {% set month_change = (((week.amount - month_amount) / month_amount) * 100) %}
+                    {% else %}
+                        {% set month_change = 0 %}
+                    {% endif %}
+
+                    {% if year_amount != week.amount %}
+                        {% set year_change = (((week.amount - year_amount) / year_amount) * 100) %}
+                    {% else %}
+                        {% set year_change = 0 %}
+                    {% endif %}
+
+                    'week_start': "{{ week.startDate|date("m/d/Y") }}",
+                    'week_end': "{{ week.endDate|date("m/d/Y") }}",
+                    'amount': {{ week.amount|number_format(2, '.', '') }},
+                    'week_change': {{ week_change|number_format(2, '.', '') }},
+                    'month_change': {{ month_change|number_format(2, '.', '') }},
+                    'year_change': {{ year_change|number_format(2,'.','') }}
+
+                    {% set last_week_amount = week.amount %}
+
+                    {% if week.endofmonth %}
+                        {% set month_amount = week.amount %}
+                    {% endif %}
+
+                    {% if week.endofyear %}
+                        {% set year_amount = week.amount %}
+                    {% endif %}
+                },
+                {% endfor %}
+            ],
+            // Column Definitions: Defines the columns to be displayed.
+
+            defaultColDef: {
+                flex: 1,
+                cellStyle: { textAlign: 'center' }
+            },
+
+            columnDefs: [
+                {field:"week_start", headerName:"Start Date"},
+                {field:"week_end", headerName:"End Date"},
+                {field:"amount", headerName:"Amount", cellRenderer: MoneyRenderer},
+                {field:"week_change", headerName:"Week Change",cellRenderer: PercentRenderer},
+                {field:"month_change", headerName:"Month Change",cellRenderer: PercentRenderer},
+                {field:"year_change", headerName:"Year Change", cellRenderer: PercentRenderer},
+            ],
+        };
+
+        gridApi = agGrid.createGrid(myGridElement, gridOptions);
+
+    </script>
+{% endblock %}

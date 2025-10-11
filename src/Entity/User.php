@@ -100,6 +100,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: HighInterestSavingsAccount::class)]
     private $highInterestSavingsAccounts;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: WeeklyPortfolioTotal::class)]
+    private $weeklyPortfolioTotals;
+
     public function __construct()
     {
         $this->transactions = new ArrayCollection();
@@ -119,6 +122,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->RRSPContributions = new ArrayCollection();
         $this->totalValues = new ArrayCollection();
         $this->highInterestSavingsAccounts = new ArrayCollection();
+        $this->weeklyPortfolioTotals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -795,6 +799,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($highInterestSavingsAccount->getUser() === $this) {
                 $highInterestSavingsAccount->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WeeklyPortfolioTotal>
+     */
+    public function getWeeklyPortfolioTotals(): Collection
+    {
+        return $this->weeklyPortfolioTotals;
+    }
+
+    public function addWeeklyPortfolioTotal(WeeklyPortfolioTotal $weeklyPortfolioTotal): self
+    {
+        if (!$this->weeklyPortfolioTotals->contains($weeklyPortfolioTotal)) {
+            $this->weeklyPortfolioTotals[] = $weeklyPortfolioTotal;
+            $weeklyPortfolioTotal->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWeeklyPortfolioTotal(WeeklyPortfolioTotal $weeklyPortfolioTotal): self
+    {
+        if ($this->weeklyPortfolioTotals->removeElement($weeklyPortfolioTotal)) {
+            // set the owning side to null (unless already changed)
+            if ($weeklyPortfolioTotal->getUser() === $this) {
+                $weeklyPortfolioTotal->setUser(null);
             }
         }
 
