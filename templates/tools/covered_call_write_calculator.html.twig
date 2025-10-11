@@ -1,24 +1,28 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}BSX - Day Trade Calculator{% endblock %}
+{% block title %}BSX - Covered Call Write Calculator{% endblock %}
 
 {% block body %}
     <table id="dt_table">
         <tr>
             <th>Price</th>
             <th>Contracts</th>
+            <th>Buyback</th>
             <th>Total</th>
         </tr>
 
         <tr class="calc_row">
             <td>
-                <input id="price" type="text">
+                <input id="price" type="text" style="border:solid 1px black; padding:5px;">
             </td>
             <td>
-                <input id="contracts" type="text">
+                <input id="contracts" type="text" style="border:solid 1px black; padding:5px;">
             </td>
             <td>
-                <input id="total" type="text" readonly>
+                <input id="buyback" value="0" type="text" style="border:solid 1px black; padding:5px;">
+            </td>
+            <td>
+                <input id="total" type="text" readonly style="border:solid 1px black;padding:5px;">
             </td>
         </tr>
     </table>
@@ -37,13 +41,14 @@
         function calculate(){
             var price = parseFloat($("#price").val());
             var contracts = parseInt($("#contracts").val());
+            var buyback = parseFloat($("#buyback").val());
             var $total = $("#total");
             var fee = 9.95;
             var contract_fee = 1.25;
 
             console.log(price + " | " + contracts);
 
-            total = ((price * 100) * contracts) - (fee + (contract_fee * contracts)); 
+            total = ((price * 100) * contracts) - (fee + (contract_fee * contracts)) - ((buyback > 0) ? ((contracts * (buyback * 100)) + (contract_fee * contracts)) : 0);
             $total.val("$" + total.toFixed(2));
         }
     </script>
