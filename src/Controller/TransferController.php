@@ -54,6 +54,8 @@ class TransferController extends AbstractController
                 $error = "Not enough Cash in wallet for this transfer";
                 return $this->render('transfer/cdn.html.twig', [
                     'settings' => $settings,
+                    'form_title' => 'Transfer Canadian Dollars To User',
+                    'form_description' => 'Securely transfer Canadian dollars (CDN) from your account to the selected user. Select user from the dropdown and transfer amount. Review the information carefully before submitting to ensure accuracy.',
                     'error' => $error,
                     'form' => $form->createView(),
                 ]);
@@ -91,6 +93,8 @@ class TransferController extends AbstractController
 
         return $this->render('transfer/cdn.html.twig', [
             'settings' => $settings,
+            'form_title' => 'Transfer Canadian Dollars To User',
+            'form_description' => 'Securely transfer Canadian dollars (CDN) from your account to the selected user. Select user from the dropdown and transfer amount. Review the information carefully before submitting to ensure accuracy.',
             'error' => $error,
             'form' => $form->createView(),
         ]);
@@ -118,6 +122,8 @@ class TransferController extends AbstractController
                 $error = "Not enough Cash in wallet for this transfer";
                 return $this->render('transfer/usd.html.twig', [
                     'settings' => $settings,
+                    'form_title' => 'Transfer United States Dollars to User',
+                    'form_description' => 'Securely transfer U.S. dollars (USD) from your account to the selected user. Select user from the dropdown and transfer amount. Review the information carefully before submitting to ensure accuracy.',
                     'error' => $error,
                     'form' => $form->createView(),
                 ]);
@@ -153,8 +159,10 @@ class TransferController extends AbstractController
 
         }
 
-        return $this->render('transfer/usd.html.twig', [
+        return $this->render('form/index.html.twig', [
             'settings' => $settings,
+            'form_title' => 'Transfer United States Dollars to User',
+            'form_description' => 'Securely transfer U.S. dollars (USD) from your account to the selected user. Select user from the dropdown and transfer amount. Review the information carefully before submitting to ensure accuracy.',
             'error' => $error,
             'form' => $form->createView(),
         ]);
@@ -277,6 +285,8 @@ class TransferController extends AbstractController
 
         return $this->render('transfer/shares.html.twig', [
             'form' => $form->createView(),
+            'form_title' => 'Transfer Shares',
+            'form_description' => 'Use this form to transfer company stock shares from your account to another user. Enter the recipient’s details, the number of shares, and any relevant transfer notes. Review all information carefully before submitting to ensure accuracy and compliance.',
             'error' => $error,
             'settings' => $settings,
         ]);

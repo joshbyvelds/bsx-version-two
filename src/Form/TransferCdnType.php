@@ -32,8 +32,13 @@ class TransferCdnType extends AbstractType
             ->add('user', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => 'username',
+                'label' => 'Transfer To',
+                'attr' => ['class' => 'block w-full px-4 py-2 mt-1 text-base text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'placeholder' => '$0.00']
             ])
-            ->add('amount', NumberType::class)
+            ->add('amount', NumberType::class, [
+                'label' => 'Amount',
+                'attr' => ['class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6', 'placeholder' => '$0.00']
+            ])
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'

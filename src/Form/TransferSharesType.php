@@ -52,7 +52,10 @@ class TransferSharesType extends AbstractType
                 },
                 'query_builder' => function (EntityRepository $er) {},
             ])
-            ->add('amount', IntegerType::class)
+            ->add('amount', IntegerType::class, [
+                'label' => 'Amount',
+                'attr' => ['class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6', 'placeholder' => '$0.00']
+            ])
             ->add('last_shares', CheckboxType::class, [
                 'required' => false,
             ])
