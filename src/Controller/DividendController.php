@@ -60,12 +60,15 @@ class DividendController extends AbstractController
             // Update Wallet..
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
+            $total = $data->getAmount();
+            $currency = $form->get("currency")->getData();
+
             // get currency
-            if ($form->get("currency")->getData() === "can") {
-                $wallet->deposit('CAN', $data->getAmount());
+            if ($currency === "can") {
+                $wallet->deposit('CAN', $total);
                 $transaction->setCurrency(1);
             } else {
-                $wallet->deposit('USD', $data->getAmount());
+                $wallet->deposit('USD', $total);
                 $transaction->setCurrency(2);
             }
 
@@ -75,6 +78,15 @@ class DividendController extends AbstractController
             $transaction->setName('Dividend Payment - ' . $stock->getTicker());
             $transaction->setAmount($data->getAmount());
             $transaction->setDate($data->getPaymentDate());
+
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+
+            if(($total * $profit_percent) > 0.01) {
+                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                    $profit_wallet_amount = round($total * $profit_percent, 2);
+                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+                }
+            }
 
             $em->persist($wallet);
             $em->persist($transaction);
