@@ -10,6 +10,8 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+
 
 class SettingsType extends AbstractType
 {
@@ -76,6 +78,10 @@ class SettingsType extends AbstractType
             ->add('rrsp_limit')
             ->add('rrsp_enabled',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('use_hisa',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('ten_percent_wallet_name', TextType::class, ['mapped' => true, 'required' => false])
+            ->add('use_ten_percent_wallet',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('ten_percent_auto_deposit',CheckboxType::class, ['mapped' => true, 'required' => false])
+            ->add('ten_percent_deposit_percentage',NumberType::class, ['mapped' => true, 'required' => false])
 
             ->add('save', SubmitType::class, [
                 'attr' => [

@@ -1,0 +1,10 @@
+<div class="cash panel end">
+    <div class="title">{{ settings.tenPercentWalletName }}</div>
+    <div class="amount">{{ amount_can|format_currency('USD', {fraction_digit: 2}) }}<small style="font-size:30%;">CAD</small> | {{ amount_usd|format_currency('USD', {fraction_digit: 2}) }}<small style="font-size:30%;">USD</small></div>
+    <div class="text-center">
+        {% if settings.isTenPercentAutoDeposit == false %}
+            <a class="cash_button" href="/wallet/percent/deposit">Deposit</a>
+        {% endif %}
+        <a class="cash_button" href="/wallet/percent/withdrawl" {% if settings.isTenPercentAutoDeposit %}style="width:100%;"{% endif %}>Withdrawl</a>
+    </div>
+</div>

@@ -83,7 +83,10 @@ class RegistrationController extends AbstractController
             $settings->setRRSPLimit(0);
             $settings->setRRSPEnabled(false);
             $settings->setWeeklyTotalValue(false);
-
+            $settings->setTenPercentWalletName('Profit Wallet');
+            $settings->setUseTenPercentWallet(false);
+            $settings->setTenPercentAutoDeposit(false);
+            $settings->setTenPercentDepositPercentage(0.00);
 
             // Create a Wallet
             $wallet->setUser($user);

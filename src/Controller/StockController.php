@@ -469,6 +469,8 @@ class StockController extends AbstractController
         $form = $this->createForm(ShareSellType::class, $share_sell);
         $form->handleRequest($request);
 
+        $shareAverage = 0;
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
@@ -480,9 +482,13 @@ class StockController extends AbstractController
                 $bought = $sb->getAmount();
                 $sold = $sb->getSold();
                 if($bought > $sold){
-                    $totalSharesLeft += ($bought - $sold);
+                    $bms = ($bought - $sold);
+                    $totalSharesLeft += $bms;
+                    $shareAverage += ($bms * $sb->getPrice());
                 }
             }
+
+            $shareAverage = round($shareAverage / $totalSharesLeft, 2);
 
             $amount_to_sell = $data->getAmount();
  
@@ -548,7 +554,19 @@ class StockController extends AbstractController
                 $wallet->deposit('USD', $cost);
                 $transaction->setCurrency(2);
             }
-            
+
+            $trade_profit = ($cost - ($shareAverage *  $amount_to_sell) - 9.95);
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+
+
+            if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                if(($trade_profit * $profit_percent) > 0.01) {
+                    $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
+                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+                }
+            }
+
+
             $transaction->setAmount($cost);
 
             $em->persist($transaction);
@@ -733,8 +751,10 @@ class StockController extends AbstractController
 
             $user = $option->getStock()->getUser();
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+
+            $contracts_sold = $form->get("contracts")->getData();
             
-            $option->setContracts($option->getContracts() - $form->get("contracts")->getData());
+            $option->setContracts($option->getContracts() - $contracts_sold);
             $transaction = new Transaction();
             $date = new DateTime();
             $transaction->setType(1);
@@ -744,13 +764,13 @@ class StockController extends AbstractController
             $option_type = ($option->getType() === 1) ? 'C' : 'P';
             $option_strike = $option->getStrike();
             $option_expiry = date_format($option->getExpiry(), 'Y-m-d');
-            $transaction->setName('Sold' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Sold' . ' ' . $contracts_sold . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
 
             //dump($transaction->getName());
 
             $total = $form->get("total")->getData();
             $currency = $form->get("payment_currency")->getData();
-            
+
             if ($currency == 'can'){
                 $wallet->deposit('CAN', $total);
                 $transaction->setCurrency(1);
@@ -767,6 +787,16 @@ class StockController extends AbstractController
 
             if($option->getContracts() === 0){
                 $option->getStock()->setBeingPlayedOption(false);
+            }
+
+            $trade_profit = ($total - ($option->getAverage() *  $contracts_sold * 100) - 9.95 - ($contracts_sold * 1.25));
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+
+            if(($trade_profit * $profit_percent) > 0.01) {
+                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                    $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
+                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+                }
             }
 
 
@@ -885,6 +915,16 @@ class StockController extends AbstractController
     
                 if ($currency == 'usd'){
                     $wallet->lock('USD', $lock_amount);
+                }
+            }
+
+            $trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+
+            if(($trade_profit * $profit_percent) > 0.01) {
+                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                    $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
+                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }
             }
 
@@ -1171,6 +1211,16 @@ class StockController extends AbstractController
                 $transaction->setName("Covered Call Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
             } else {
                 $transaction->setName("Cash Secured Put Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
+            }
+
+            $trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+
+            if(($trade_profit * $profit_percent) > 0.01) {
+                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                    $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
+                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+                }
             }
 
             $em->persist($ro);

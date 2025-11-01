@@ -179,6 +179,18 @@ class Settings
     #[ORM\Column(type: 'boolean')]
     private $useHISA;
 
+    #[ORM\Column(type: 'boolean')]
+    private $use_ten_percent_wallet;
+
+    #[ORM\Column(type: 'boolean')]
+    private $ten_percent_auto_deposit;
+
+    #[ORM\Column(type: 'float')]
+    private $ten_percent_deposit_percentage;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    private $ten_percent_wallet_name;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -840,6 +852,54 @@ class Settings
     public function setUseHISA(bool $useHISA): self
     {
         $this->useHISA = $useHISA;
+
+        return $this;
+    }
+
+    public function isUseTenPercentWallet(): ?bool
+    {
+        return $this->use_ten_percent_wallet;
+    }
+
+    public function setUseTenPercentWallet(bool $use_ten_percent_wallet): self
+    {
+        $this->use_ten_percent_wallet = $use_ten_percent_wallet;
+
+        return $this;
+    }
+
+    public function isTenPercentAutoDeposit(): ?bool
+    {
+        return $this->ten_percent_auto_deposit;
+    }
+
+    public function setTenPercentAutoDeposit(bool $ten_percent_auto_deposit): self
+    {
+        $this->ten_percent_auto_deposit = $ten_percent_auto_deposit;
+
+        return $this;
+    }
+
+    public function getTenPercentDepositPercentage(): ?float
+    {
+        return $this->ten_percent_deposit_percentage;
+    }
+
+    public function setTenPercentDepositPercentage(float $ten_percent_deposit_percentage): self
+    {
+        $this->ten_percent_deposit_percentage = $ten_percent_deposit_percentage;
+
+        return $this;
+    }
+
+    public function getTenPercentWalletName(): ?string
+    {
+        return $this->ten_percent_wallet_name;
+    }
+
+    public function setTenPercentWalletName(string $ten_percent_wallet_name): self
+    {
+        $this->ten_percent_wallet_name = $ten_percent_wallet_name;
 
         return $this;
     }

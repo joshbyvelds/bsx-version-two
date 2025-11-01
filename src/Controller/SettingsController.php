@@ -72,6 +72,11 @@ class SettingsController extends AbstractController
             $settings->setRRSPEnabled(false);
             $settings->setWeeklyTotalValue(false);
             $settings->useHISA(false);
+            $settings->setTenPercentWalletName('Profit Wallet');
+            $settings->setUseTenPercentWallet(false);
+            $settings->setTenPercentAutoDeposit(false);
+            $settings->setTenPercentDepositPercentage(0.00);
+
             $em->persist($settings);
             $em->flush();
         }

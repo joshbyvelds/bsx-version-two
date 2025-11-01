@@ -29,6 +29,12 @@ class Wallet
     #[ORM\Column(type: 'float')]
     private $locked_usd;
 
+    #[ORM\Column(type: 'float')]
+    private $ten_percent_cdn;
+
+    #[ORM\Column(type: 'float')]
+    private $ten_percent_usd;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -179,5 +185,76 @@ class Wallet
     
         return $this;
     }
-    
+
+    public function getTenPercentCdn(): ?float
+    {
+        return $this->ten_percent_cdn;
+    }
+
+    public function setTenPercentCdn(float $ten_percent_cdn): self
+    {
+        $this->ten_percent_cdn = $ten_percent_cdn;
+
+        return $this;
+    }
+
+    public function getTenPercentUsd(): ?float
+    {
+        return $this->ten_percent_usd;
+    }
+
+    public function setTenPercentUsd(float $ten_percent_usd): self
+    {
+        $this->ten_percent_usd = $ten_percent_usd;
+
+        return $this;
+    }
+
+    public function percentWithdraw(string $currency, float $amount): self
+    {
+        if($currency === "CAN"){
+            $this->CAN += $amount;
+            $this->ten_percent_cdn -= $amount;
+        }
+
+
+        if($currency === "USD"){
+            $this->USD += $amount;
+            $this->ten_percent_usd -= $amount;
+        }
+
+        return $this;
+    }
+
+    public function percentDeposit(string $currency, float $amount): self
+    {
+        if($currency === "CAN"){
+            $this->CAN -= $amount;
+            $this->ten_percent_cdn += $amount;
+        }
+
+
+        if($currency === "USD"){
+            $this->USD -= $amount;
+            $this->ten_percent_usd += $amount;
+        }
+
+
+        return $this;
+    }
+
+    public function percentAutoDeposit(string $currency, float $amount): self
+    {
+        if($currency === "CAN"){
+            $this->ten_percent_cdn += $amount;
+        }
+
+
+        if($currency === "USD"){
+            $this->ten_percent_usd += $amount;
+        }
+
+
+        return $this;
+    }
 }

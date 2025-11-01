@@ -200,12 +200,79 @@ class WalletController extends AbstractController
 
         return $this->render('form/currency_convert.html.twig', [
             'page_title' => 'Convert Currency',
+            'form_title' => 'Convert Currency',
             'error' => false,
             'form' => $form->createView(),
             'settings' => $settings,
         ]);
     }
 
+    //// PROFIT WALLET...
+
+    #[Route('/wallet/percent/withdrawl', name: 'wallet_percent_withdrawl')]
+    public function percentWithdrawl(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $form = $this->createForm(WalletAdjustmentType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $data = $form->getData();
+            $em = $doctrine->getManager();
+
+            // Update Wallet
+            //TODO:: Get the users wallet.. for now use the demo
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            $wallet->percentWithdraw('USD', $data['usd']);
+            $wallet->percentWithdraw('CAN', $data['can']);
+            $em->persist($wallet);
+            $em->flush();
+
+            return $this->redirectToRoute('dashboard');
+        }
+
+        return $this->render('form/index.html.twig', [
+            'form_title' => 'Withdrawl from Profit Wallet',
+            'page_title' => 'Withdrawl from Profit Wallet',
+            'form' => $form->createView(),
+            'error' => "",
+            'settings' => $settings,
+        ]);
+    }
+
+    #[Route('/wallet/percent/deposit', name: 'wallet_percent_deposit')]
+    public function percentDeposit(ManagerRegistry $doctrine, Request $request): Response
+    {
+        $user = $this->getUser();
+        $settings = $user->getSettings();
+        $form = $this->createForm(WalletAdjustmentType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted()){
+            $data = $form->getData();
+            $em = $doctrine->getManager();
+
+            // Update Wallet
+            $wallet = $em->getRepository(Wallet::class)->find($user->getId());
+            $wallet->percentDeposit('USD', $data['usd']);
+            $wallet->percentDeposit('CAN', $data['can']);
+            $em->persist($wallet);
+            $em->flush();
+
+            return $this->redirectToRoute('dashboard');
+        }
+
+        return $this->render('form/index.html.twig', [
+            'page_title' => 'Deposit to Profit Wallet',
+            'form_title' => 'Deposit to Profit Wallet',
+            'form' => $form->createView(),
+            'error' => "",
+            'settings' => $settings,
+        ]);
+    }
+
+    /// LOCKED WALLET...
     #[Route('/wallet/unlockall', name: 'wallet_unlock_all')]
     public function unlockAll(ManagerRegistry $doctrine, Request $request): Response
     {
