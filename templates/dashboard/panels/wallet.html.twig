@@ -1,6 +1,6 @@
 <div class="cash panel end">
     <div class="title">Free Cash</div>
-    <div class="amount">{{ amount_can|format_currency('USD', {fraction_digit: 2}) }} / {{ amount_usd|format_currency('USD', {fraction_digit: 2}) }}</div>
+    <div class="amount">{{ amount_can|format_currency('USD', {fraction_digit: 2}) }}<small style="font-size:30%;">CAD</small> | {{ amount_usd|format_currency('USD', {fraction_digit: 2}) }}<small style="font-size:30%;">USD</small></div>
     <div class="text-center">
         <a class="cash_button" href="/wallet/deposit">Deposit</a>
         <a class="cash_button" href="/wallet/withdrawl">Withdrawl</a>

@@ -1,7 +1,7 @@
 <div class="cash panel end" style="height:305px;">
     <div class="title">{{ name }}</div>
     <div class="subline">{{ bank }}</div>
-    <div class="amount">{{ amount|format_currency('USD', {fraction_digit: 2}) }}</div>
+    <div class="amount">{{ amount|format_currency('USD', {fraction_digit: 2}) }}<small style="font-size:30%;">CAD</small></div>
 {#    <div class="">IR: {{ interestRate }}</div>#}
     <a class="cash_button" href="/hisa/interest/{{ id }}">Interest</a>
     <a class="cash_button" href="/hisa/deposit/{{ id }}">Deposit</a>
