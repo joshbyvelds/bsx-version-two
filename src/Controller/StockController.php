@@ -559,7 +559,7 @@ class StockController extends AbstractController
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
 
-            if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+            if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
                 if(($trade_profit * $profit_percent) > 0.01) {
                     $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
@@ -793,7 +793,7 @@ class StockController extends AbstractController
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
             if(($trade_profit * $profit_percent) > 0.01) {
-                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
                     $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }
@@ -922,7 +922,7 @@ class StockController extends AbstractController
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
             if(($trade_profit * $profit_percent) > 0.01) {
-                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
                     $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }
@@ -1217,7 +1217,7 @@ class StockController extends AbstractController
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
             if(($trade_profit * $profit_percent) > 0.01) {
-                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
                     $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }

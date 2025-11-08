@@ -82,7 +82,7 @@ class DividendController extends AbstractController
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
             if(($total * $profit_percent) > 0.01) {
-                if ($settings->isUseTenPercentWallet() && $settings->isUseTenPercentAutoDeposit()) {
+                if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
                     $profit_wallet_amount = round($total * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }
