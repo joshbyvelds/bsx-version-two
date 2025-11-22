@@ -117,12 +117,23 @@
                         {% set year_change = 0 %}
                     {% endif %}
 
+                    {% if loop.index0 == 0  %}
+                        {% set high_point = week.amount %}
+                        {% set high_point_diff = 0.00 %}
+                    {% else %}
+                        {% set high_point_diff = (((week.amount - high_point) / high_point) * 100)  %}
+                        {% if week.amount > high_point %}
+                            {% set high_point = week.amount %}
+                        {% endif %}
+                    {% endif %}
+
                     'week_start': "{{ week.startDate|date("m/d/Y") }}",
                     'week_end': "{{ week.endDate|date("m/d/Y") }}",
                     'amount': {{ week.amount|number_format(2, '.', '') }},
                     'week_change': {{ week_change|number_format(2, '.', '') }},
                     'month_change': {{ month_change|number_format(2, '.', '') }},
-                    'year_change': {{ year_change|number_format(2,'.','') }}
+                    'year_change': {{ year_change|number_format(2,'.','') }},
+                    'high_diff': {{ high_point_diff|number_format(2,'.','')  }}
 
                     {% set last_week_amount = week.amount %}
 
@@ -150,6 +161,7 @@
                 {field:"week_change", headerName:"Week Change",cellRenderer: PercentRenderer},
                 {field:"month_change", headerName:"Month Change",cellRenderer: PercentRenderer},
                 {field:"year_change", headerName:"Year Change", cellRenderer: PercentRenderer},
+                {field:"high_diff", headerName:"High Point Diff", cellRenderer: PercentRenderer},
             ],
         };
 
