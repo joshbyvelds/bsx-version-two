@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 
+use App\Entity\Play;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -930,6 +931,12 @@ class StockController extends AbstractController
 
             $wo->getStock()->addEarned($total);
 
+            if ($form->get("part_of_play")->getData() === true) {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->addToWrittenOptionTotal($total);
+            }
+
             $em->persist($transaction);
             $em->persist($wo);
             $em->flush();
@@ -938,9 +945,11 @@ class StockController extends AbstractController
         }
 
         $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id AND p.shares_owned > 99 ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
 
         return $this->render('form/write_option.html.twig', [
             'stocks' => $myStocks,
+            'plays' => $myPlays,
             'error' => "",
             'form' => $form->createView(),
             'settings' => $settings,
@@ -1246,6 +1255,7 @@ class StockController extends AbstractController
         $em = $doctrine->getManager();
         $wo = $em->getRepository(WrittenOption::class)->find($id);
         $wo->setExpired(true);
+        $wo->setStockExpiryPrice($wo->getStock()->getCurrentPrice());
         $em->flush();
 
         return $this->redirectToRoute('stocks_written_options');

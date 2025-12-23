@@ -28,18 +28,18 @@ class WrittenOptionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-        ->add('Stock', EntityType::class, [
-            'label' => 'Company Stock',
-            'class' => 'App\Entity\Stock',
-            'choice_label' => 'name',
-            'query_builder' => function (EntityRepository $er) {
-                $user_id = $this->user_id;
-                return $er->createQueryBuilder('s')
-                ->where('s.user = :user')
-                ->andWhere('s.sharesOwned >= 100')
-                ->setParameter('user', $user_id);
-            },
-        ])
+            ->add('Stock', EntityType::class, [
+                'label' => 'Company Stock',
+                'class' => 'App\Entity\Stock',
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                    ->where('s.user = :user')
+                    ->andWhere('s.sharesOwned >= 100')
+                    ->setParameter('user', $user_id);
+                },
+            ])
             ->add('contract_type',ChoiceType::class,[
                 'label' => 'Contract Type',
                 'choices' => array(
@@ -73,6 +73,29 @@ class WrittenOptionType extends AbstractType
                 'label' => 'Lock Payment? (for rollover) ',
                 'required' => false,
             ])
+
+            ->add('part_of_play',CheckboxType::class,[
+                'label' => 'Part of Play?',
+                'required' => false,
+                'mapped' => false,
+            ])
+
+            ->add('play', EntityType::class, [
+                'attr' => [
+                    'class' => 'block w-full rounded-md bg-white py-1.5 pl-3 pr-10 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body',
+                ],
+                'mapped' => false,
+                'label' => 'Play',
+                'class' => 'App\Entity\Play',
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                        ->where('s.User = :user')
+                        ->setParameter('user', $user_id);
+                },
+            ])
+
 
             ->add('save', SubmitType::class, [
                 'attr' => [

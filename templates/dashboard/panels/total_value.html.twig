@@ -52,6 +52,8 @@
             {% set total_value_buyback_usd = total_value_buyback_usd + stock_total + cc_over_strike_total_buyback_usd %}
         {% endif %}
 
+{#        {{ stock.name }}: ${{ (stock_total + cc_over_strike_total_buyback_usd)|number_format(2,'.','') }}<br />#}
+
         {#            {{ stock.name }}: {{ stock_total }} | {{ stock_amount }} | {{ stock.currentPrice }} | {{ cc_over_strike_total_usd }} | {{ total_value_can + total_value_usd }}<br />#}
     {% endif %}
 
@@ -69,8 +71,9 @@
             {% endif %}
         {% endif %}
     {% endfor %}
-
 {% endfor %}
+
+{#TOTAL: ${{ total_value_buyback_usd|number_format(2,'.','') }}<br />#}
 
 {% set debt_total_cdn = 0 %}
 {% set debt_total_usd = 0 %}

@@ -381,4 +381,10 @@ class Play
 
         return $this;
     }
+
+    public function addToWrittenOptionTotal(float $amount): ?float
+    {
+        $this->written_option_total += $amount;
+        return $this->written_option_total;
+    }
 }
