@@ -288,11 +288,11 @@
             {{ form_row(form._token) }}
 
             <input type="hidden" name="written_option[Stock]" id="written_option_Stock" x-model="selectedStock" />
-            <input type="hidden" name="written_option[play]" id="written_option_play" x-model="selectedPlay" />
             <input type="hidden" name="written_option[contract_type]" id="written_option_contract_type" x-model="selected_type" />
             <input type="hidden" name="written_option[payment_currency]" id="written_option_payment_currency" x-model="selected_currency" />
             <input type="hidden" name="written_option[payment_locked]" id="written_option_payment_locked" x-model="payment_locked_converted()" />
             <input type="hidden" name="written_option[part_of_play]" id="written_option_part_of_play" x-model="part_of_play_converted()" />
+            <input type="hidden" name="written_option[play]" id="written_option_play" x-model="selectedPlay" />
         </form>
 
         {# render tailwind class that form inputs will use.. #}
@@ -408,7 +408,6 @@
 
                 togglePlayDropdown(){
                     this.dropdownPlayOpen = (!this.dropdownPlayOpen);
-                    alert(this.dropdownPlayOpen);
                 }
             }
         }

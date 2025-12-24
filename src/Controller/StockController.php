@@ -441,6 +441,12 @@ class StockController extends AbstractController
             
             $transaction->setAmount($cost);
 
+            if ($form->get("part_of_play")->getData() === true) {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
+            }
+
             $em->persist($transaction);
             $em->persist($share_buy);
             $em->flush();
@@ -449,10 +455,13 @@ class StockController extends AbstractController
         }
 
         $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
 
         return $this->render('form/share_buy.html.twig', [
             'error' => "",
             'stocks' => $myStocks,
+            'plays' => $myPlays,
             'form' => $form->createView(),
             'settings' => $settings,
         ]);
@@ -570,6 +579,12 @@ class StockController extends AbstractController
 
             $transaction->setAmount($cost);
 
+            if ($form->get("part_of_play")->getData() === true) {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->sellShares($data->getAmount(), $cost);
+            }
+
             $em->persist($transaction);
             $em->persist($share_sell);
             $em->flush();
@@ -578,9 +593,12 @@ class StockController extends AbstractController
         }
 
         $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
 
         return $this->render('form/share_sell.html.twig', [
             'stocks' => $myStocks,
+            'plays' => $myPlays,
             'error' => $error,
             'form' => $form->createView(),
             'settings' => $settings,
@@ -648,6 +666,12 @@ class StockController extends AbstractController
             $option->getStock()->subtractEarned($cost);
             $option->getStock()->setBeingPlayedOption(true);
 
+            if ($form->get("part_of_play")->getData() === true) {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->addToContractBuys($form->get("contracts")->getData(), $form->get("average")->getData(), $cost);
+            }
+
             $em->persist($transaction);
             $em->persist($option);
             $em->flush();
@@ -673,8 +697,10 @@ class StockController extends AbstractController
         $form = $this->createForm(OptionBuyType::class);
         $form->handleRequest($request);
 
+        $em = $doctrine->getManager();
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $doctrine->getManager();
+
             $data = $form->getData();
             $option = $form->get("option")->getData();
 
@@ -724,14 +750,23 @@ class StockController extends AbstractController
             $option->getStock()->subtractEarned($cost);
             $option->getStock()->setBeingPlayedOption(true);
 
+            if ($form->get("part_of_play")->getData() === true) {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->sellContracts($form->get("contracts")->getData(), $cost);
+            }
+
             $em->persist($transaction);
             $em->flush();
             return $this->redirectToRoute('dashboard');
         }
 
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
         return $this->render('form/option_buy.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'plays' => $myPlays,
             'settings' => $settings,
         ]);
     }
@@ -745,9 +780,10 @@ class StockController extends AbstractController
         $form = $this->createForm(OptionSellType::class);
         $form->handleRequest($request);
 
+        $em = $doctrine->getManager();
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            $em = $doctrine->getManager();
             $option = $form->get("option")->getData();
 
             $user = $option->getStock()->getUser();
@@ -807,9 +843,13 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
+
         return $this->render('form/option_sell.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
+            'plays' => $myPlays,
             'settings' => $settings,
         ]);
     }

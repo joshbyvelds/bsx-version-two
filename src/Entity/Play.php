@@ -387,4 +387,33 @@ class Play
         $this->written_option_total += $amount;
         return $this->written_option_total;
     }
+
+    public function addToShareBuys(int $amount, float $average)
+    {
+        $this->share_average = (($this->share_average * $this->shares_total) + ($amount * $average)) / ($this->shares_total + $amount);
+        $this->shares_remaining += $amount;
+        $this->shares_total += $amount;
+        $this->shares_earned -= (($amount * $average) - 9.95);
+    }
+
+    public function sellShares(int $amount, float $sold_for)
+    {
+        $this->shares_remaining -= $amount;
+        $this->total_sold += $sold_for;
+    }
+
+    public function addToContractBuys(int $contracts, float $average, float $spent)
+    {
+        $this->contracts_average = (($this->contracts_average * $this->contracts_total) + ($contracts * $average)) / ($this->contracts_total + $contracts);
+        $this->contracts_total += $contracts;
+        $this->contracts_total_buys += $contracts;
+        $this->options_earned -= $spent;
+    }
+
+    public function sellContracts(int $amount, float $sold_for)
+    {
+        $this->contracts_total_sells += $amount;
+        $this->options_earned += $sold_for;
+        $this->total_sold += $sold_for;
+    }
 }

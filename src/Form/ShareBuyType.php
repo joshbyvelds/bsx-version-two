@@ -63,6 +63,28 @@ class ShareBuyType extends AbstractType
                 'multiple'=>false,
                 'expanded'=>true
             ])
+            ->add('part_of_play',CheckboxType::class,[
+                'label' => 'Part of Play?',
+                'required' => false,
+                'mapped' => false,
+            ])
+
+            ->add('play', EntityType::class, [
+                'attr' => [
+                    'class' => 'block w-full rounded-md bg-white py-1.5 pl-3 pr-10 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body',
+                ],
+                'mapped' => false,
+                'label' => 'Play',
+                'class' => 'App\Entity\Play',
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                        ->where('s.User = :user')
+                        ->setParameter('user', $user_id);
+                },
+            ])
+
             ->add('cost', TextType::class, ['label' => 'Cost', 'attr' => ['class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6', 'placeholder' => '$0.00'], 'mapped' => false])
             ->add('nofee', CheckboxType::class, ['required' => false])
             ->add('save', SubmitType::class, [
