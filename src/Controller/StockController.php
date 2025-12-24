@@ -115,9 +115,9 @@ class StockController extends AbstractController
                             $marketClosedForDay = (($weekend_today && $this->settings->isStockUpdateOnWeekend()) || (!$weekend_today && $today_hour > 16));
 
                             if($marketClosedForDay) {
-                                if ($last_day !== $today_day) {
-                                    $stock->setPriceYesterday($old_price);
-                                }
+//                                if ($last_day !== $today_day) {
+//                                    $stock->setPriceYesterday($old_price);
+//                                }
 
                                 if ($last_week !== $today_week) {
                                     $stock->setPriceWeek($old_price);

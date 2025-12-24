@@ -169,12 +169,6 @@
                         <table style="width:100%;">
                             <tr>
                                 <td>
-                                    <h2>Yesterday</h2>
-                                    {% set percent_change = ((stock_current / stock.priceYesterday) * 100) - 100 %}
-                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYesterday|number_format(2) }}
-                                </td>
-
-                                <td>
                                     <h2>Week</h2>
                                     {% set percent_change = ((stock_current / stock.priceWeek) * 100) - 100 %}
                                     <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.priceWeek|number_format(2) }}
@@ -246,28 +240,34 @@
                         {% endif %}
 
                         {% set total_debt = stock_buy_cost_total + cc_debt + options_debt %}
-                        {% set total_returned =  total_sold + stock_dividend + cc_earned + options_earned %}
-                        {% set share_value = (stock_amount * stock.currentPrice) %}
+                        {% set total_returned = total_sold + stock_dividend + cc_earned + options_earned %}
+                        {% set share_value = (stock_amount * stock.currentPrice) - 9.95 %}
 
-                        {% set status_total_value = total_returned + share_value %}
+                        {% set status_total_return = total_returned %}
+                        {% set status_total_return_with_current_share_value = total_returned + share_value %}
 
-                        {% set percent_increase = (((status_total_value - total_debt) / total_debt) * 100) %}
+                        {% set remaining_till_gold = (total_returned - (total_debt + 9.95))|abs  %}
+
+                        {% set percent_increase = (((status_total_return - total_debt) / total_debt) * 100) %}
+                        {% set percent_increase_with_current_share_value = (((status_total_return_with_current_share_value - total_debt) / total_debt) * 100) %}
 
                         <div id="status_debug" style="display:none;">
                             sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br /><br />
-                            Total Debt: ${{ total_debt }}<br />
+                            Total Debt: ${{ total_debt|number_format(2)  }}<br />
                             Share Value: {{ stock_amount }} * {{ stock.currentPrice }} = ${{ share_value|number_format(2) }}<br />
-                            Total Sold: ${{ total_returned }}<br />
+                            Total Sold: ${{ total_returned|number_format(2)  }}<br />
+                            Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }} | {{ stock_amount }} Shares / {{ remaining_till_gold|abs|number_format(2) }} = ${{ (remaining_till_gold|abs/stock_amount)|number_format(2) }}<br />
                             Percent Increase: {{ percent_increase|number_format(2) }}%;<br />
+                            Percent Increase with Current Share Value: {{ percent_increase_with_current_share_value|number_format(2) }}%;<br />
                         </div>
 
-                        {% if total_debt >= total_returned %}
+                        {% if total_debt >= status_total_return_with_current_share_value %}
                             <div class="bg-rose-700" style="display:inline-block; width:20px; height:20px;"></div> UNDERWATER
                             {% set range_stage = 1 %}
                             {% set percent_plus = 0 %}
                             {% set block_percent = (100 + percent_increase) %}
                         {% else %}
-                            {% set percent_increase = ((((total_returned + share_value) - total_debt) / total_debt) * 100) %}
+                            {% set percent_increase = ((((status_total_return_with_current_share_value) - total_debt) / total_debt) * 100) %}
                             {% if percent_increase < 100 %}
                                 <div class="bg-green-700" style="display:inline-block; width:20px; height:20px;"></div> PROFITABLE
                                 {% set range_stage = 2 %}
@@ -315,30 +315,32 @@
 
                         {% set marker_percent = percent_plus + (block_percent * 0.4) %}
 
+                        {% set middle = "[" ~ percent_increase|number_format(2) ~ "%]"  %}
+
                         <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
                             <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
-                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> - </span>{% endif %}<span class="right">0%</span></div><!--
-                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> - </span>{% endif %}<span class="right">100%</span></div><!--
-                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> - </span>{% endif %}<span class="right">200%</span></div><!--
-                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">200%</span><span class="middle"> - </span>{% endif %}<span class="right">300%</span></div><!--
-                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">300%</span><span class="middle"> - </span>{% endif %}<span class="right">400%</span></div><!--
-                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">400%</span><span class="middle"> - </span>{% endif %}<span class="right">500%</span></div>
+                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">0%</span></div><!--
+                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">100%</span></div><!--
+                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">200%</span></div><!--
+                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">200%</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">300%</span></div><!--
+                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">300%</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">400%</span></div><!--
+                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">400%</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">500%</span></div>
                         </div>
                     </dd>
                 </div>
 
-                {# Status Range Meter #}
+                {# Gold Status Range Meter #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Status Range Meter</dt>
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Gold Status Meter</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
 
                         {% set min_price = 0 %}
-                        {% set profit_price = ((stock_buy_cost_total + options_cost) * 1) / stock_amount|abs %}
-                        {% set gold_price_1 = ((stock_buy_cost_total + options_cost) * 2) / stock_amount|abs %}
-                        {% set gold_price_2 = ((stock_buy_cost_total + options_cost) * 4) / stock_amount|abs %}
-                        {% set gold_price_3 = ((stock_buy_cost_total + options_cost) * 8) / stock_amount|abs %}
-                        {% set gold_price_4 = ((stock_buy_cost_total + options_cost) * 16) / stock_amount|abs %}
-                        {% set gold_price_5 = ((stock_buy_cost_total + options_cost) * 32) / stock_amount|abs %}
+                        {% set profit_price = ((remaining_till_gold) * 1) / stock_amount|abs %}
+                        {% set gold_price_1 = ((remaining_till_gold) * 2) / stock_amount|abs %}
+                        {% set gold_price_2 = ((remaining_till_gold) * 4) / stock_amount|abs %}
+                        {% set gold_price_3 = ((remaining_till_gold) * 8) / stock_amount|abs %}
+                        {% set gold_price_4 = ((remaining_till_gold) * 16) / stock_amount|abs %}
+                        {% set gold_price_5 = ((remaining_till_gold) * 32) / stock_amount|abs %}
 
                         {% set marker_percent = ((stock.currentPrice / gold_price_5) * 100) %}
 
@@ -412,6 +414,7 @@
                                     left: 50%;
                                     top: 50%;
                                     transform: translate(-50%, -50%);
+                                    font-size: 10px;
                                 }
 
                                 .right{
@@ -432,25 +435,27 @@
                             }
                         </style>
 
+                        {% set middle = "[$" ~ stock.currentPrice|round(2,"floor")|number_format(2) ~ "]"  %}
+
                         <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
                             <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
-                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">$0.00</span><span class="middle"> - </span>{% endif %}<span class="right">${{ profit_price|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">${{ profit_price|number_format(2) }}</span><span class="middle"> - </span>{% endif %}<span class="right">${{ gold_price_1|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">${{ gold_price_1|number_format(2) }}</span><span class="middle"> - </span>{% endif %}<span class="right">${{ gold_price_2|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">${{ gold_price_2|number_format(2) }}</span><span class="middle"> - </span>{% endif %}<span class="right">${{ gold_price_3|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">${{ gold_price_3|number_format(2) }}</span><span class="middle"> - </span>{% endif %}<span class="right">${{ gold_price_4|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">${{ gold_price_4|number_format(2) }}</span><span class="middle"> - </span>{% endif %}<span class="right">${{ gold_price_5|number_format(2) }}</span></div>
+                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">$0.00</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">${{ profit_price|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">${{ profit_price|number_format(2) }}</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_1|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">${{ gold_price_1|number_format(2) }}</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_2|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">${{ gold_price_2|number_format(2) }}</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_3|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">${{ gold_price_3|number_format(2) }}</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_4|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">${{ gold_price_4|number_format(2) }}</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_5|number_format(2) }}</span></div>
                         </div>
 
                         <button id="legend_btn" class="my-5 bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" onclick="showLegend();">Show Legend</button>
 
                         <div class="legend py-5" id="price_range_legend" style="display:none;">
                             Profit Price = ${{ profit_price|number_format(2) }}<br />
-                            Gold 1 Price = ${{ gold_price_1|number_format(2) }} - Sell {{ stock_amount / 2 }} Shares to enable Gold Status<br />
-                            Gold 2 Price = ${{ gold_price_2|number_format(2) }} - Sell {{ stock_amount / 4 }} Shares to enable Gold Status<br />
-                            Gold 3 Price = ${{ gold_price_3|number_format(2) }} - Sell {{ stock_amount / 8 }} Shares to enable Gold Status<br />
-                            Gold 4 Price = ${{ gold_price_4|number_format(2) }} - Sell {{ stock_amount / 16 }} Shares to enable Gold Status<br />
-                            Gold 5 Price = ${{ gold_price_5|number_format(2) }} - Sell {{ stock_amount / 32 }} Shares to enable Gold Status<br />
+                            Gold 1 Price = ${{ gold_price_1|number_format(2) }} - Sell {{ (stock_amount / 2)|round(0,'ceil')  }} Shares to enable Gold Status<br />
+                            Gold 2 Price = ${{ gold_price_2|number_format(2) }} - Sell {{ (stock_amount / 4)|round(0,'ceil')  }} Shares to enable Gold Status<br />
+                            Gold 3 Price = ${{ gold_price_3|number_format(2) }} - Sell {{ (stock_amount / 8)|round(0,'ceil')  }} Shares to enable Gold Status<br />
+                            Gold 4 Price = ${{ gold_price_4|number_format(2) }} - Sell {{ (stock_amount / 16)|round(0,'ceil')  }} Shares to enable Gold Status<br />
+                            Gold 5 Price = ${{ gold_price_5|number_format(2) }} - Sell {{ (stock_amount / 32)|round(0,'ceil')  }} Shares to enable Gold Status<br />
                         </div>
 
 
