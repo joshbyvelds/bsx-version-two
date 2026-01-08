@@ -21,9 +21,13 @@ class Sector
     #[ORM\OneToMany(mappedBy: 'sector', targetEntity: Stock::class)]
     private $stocks;
 
+    #[ORM\OneToMany(mappedBy: 'sector', targetEntity: Company::class)]
+    private $companies;
+
     public function __construct()
     {
         $this->stocks = new ArrayCollection();
+        $this->companies = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -67,6 +71,36 @@ class Sector
             // set the owning side to null (unless already changed)
             if ($stock->getSector() === $this) {
                 $stock->setSector(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Company>
+     */
+    public function getCompanies(): Collection
+    {
+        return $this->companies;
+    }
+
+    public function addCompany(Company $company): self
+    {
+        if (!$this->companies->contains($company)) {
+            $this->companies[] = $company;
+            $company->setSector($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCompany(Company $company): self
+    {
+        if ($this->companies->removeElement($company)) {
+            // set the owning side to null (unless already changed)
+            if ($company->getSector() === $this) {
+                $company->setSector(null);
             }
         }
 

@@ -91,7 +91,6 @@ class DashboardController extends AbstractController
             $hisas =  $doctrine->getRepository(HighInterestSavingsAccount::class)->findBy(['user' => $user->getId()]);
         }
 
-
         return $this->render('dashboard/index.old.html.twig', [
             'page_title' => 'Dashboard',
             'show_nav' => true,

@@ -441,11 +441,11 @@ class StockController extends AbstractController
             
             $transaction->setAmount($cost);
 
-            if ($form->get("part_of_play")->getData() === true) {
-                $play_id = $form->get("play")->getData();
-                $play = $em->getRepository(Play::class)->find($play_id);
-                $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
-            }
+//            if ($form->get("part_of_play")->getData() === true) {
+//                $play_id = $form->get("play")->getData();
+//                $play = $em->getRepository(Play::class)->find($play_id);
+//                $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
+//            }
 
             $em->persist($transaction);
             $em->persist($share_buy);

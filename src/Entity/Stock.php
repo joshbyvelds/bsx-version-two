@@ -100,6 +100,10 @@ class Stock
     #[ORM\ManyToOne(targetEntity: Sector::class, inversedBy: 'stocks')]
     private $sector;
 
+    #[ORM\ManyToOne(targetEntity: Company::class, inversedBy: 'stocks')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $company;
+
     public function __construct()
     {
         $this->dividends = new ArrayCollection();
@@ -574,6 +578,18 @@ class Stock
     public function setSector(?Sector $sector): self
     {
         $this->sector = $sector;
+
+        return $this;
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): self
+    {
+        $this->company = $company;
 
         return $this;
     }
