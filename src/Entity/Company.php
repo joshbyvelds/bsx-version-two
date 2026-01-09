@@ -49,6 +49,18 @@ class Company
     #[ORM\OneToMany(mappedBy: 'company', targetEntity: Stock::class)]
     private $stocks;
 
+    #[ORM\Column(type: 'datetime')]
+    private $lastPriceUpdate;
+
+    #[ORM\Column(type: 'boolean')]
+    private $no_fee;
+
+    #[ORM\Column(type: 'string', length: 3)]
+    private $country;
+
+    #[ORM\Column(type: 'string', length: 6)]
+    private $type;
+
     public function __construct()
     {
         $this->stocks = new ArrayCollection();
@@ -205,6 +217,54 @@ class Company
                 $stock->setCompany(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLastPriceUpdate(): ?\DateTimeInterface
+    {
+        return $this->lastPriceUpdate;
+    }
+
+    public function setLastPriceUpdate(\DateTimeInterface $lastPriceUpdate): self
+    {
+        $this->lastPriceUpdate = $lastPriceUpdate;
+
+        return $this;
+    }
+
+    public function isNoFee(): ?bool
+    {
+        return $this->no_fee;
+    }
+
+    public function setNoFee(bool $no_fee): self
+    {
+        $this->no_fee = $no_fee;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(string $country): self
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }

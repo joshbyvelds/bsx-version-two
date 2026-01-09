@@ -46,27 +46,6 @@ class Stock
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareBuy::class, orphanRemoval: true)]
     private $shareBuys;
 
-    #[ORM\Column(type: 'float')]
-    private $current_price;
-
-    #[ORM\Column(type: 'float')]
-    private $price_yesterday;
-
-    #[ORM\Column(type: 'float')]
-    private $price_week;
-
-    #[ORM\Column(type: 'float')]
-    private $price_month;
-
-    #[ORM\Column(type: 'float')]
-    private $price_year;
-
-    #[ORM\Column(type: 'datetime')]
-    private $last_price_update;
-
-    #[ORM\Column(type: 'string', length: 6)]
-    private $bg_color;
-
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: Play::class, orphanRemoval: true)]
     private $plays;
 
