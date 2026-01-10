@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 
+use App\Entity\Company;
 use App\Entity\Play;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
@@ -47,7 +48,7 @@ class StockController extends AbstractController
     private function updateStockInfo($user, $doctrine, Stock $stock, $disable_can, $day_today, $hour_today)
     {
         $this->update_function = true;
-        if($stock->getCountry() == "CAN"){
+        if($stock->getCompany()->getCountry() == "CAN"){
             dump("Debug Dump #2 - Update Canadian Stock");
             if(!$disable_can && $stock->isBeingPlayedShares()){
                 dump("Debug Dump #3 - Stock updates is enabled and we have shares");
@@ -66,8 +67,8 @@ class StockController extends AbstractController
                         dump("Debug Dump #5 - API update has limit not been reached ");
                         $this->can_updated = true;
                         // Call API, to get info..
-                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
-                        dump("Update:" . $stock->getTicker());
+                        $json = file_get_contents('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' . $stock->getCompany()->getTicker() .'.TRT&outputsize=compact&apikey=9OH2YI0MYLGXGW30');
+                        dump("Update:" . $stock->getCompany()->getTicker());
                         $this->can_count++;
                         $date = new DateTime('now');
                         $now = $date->format('Y-m-d H:i:s');
@@ -86,15 +87,15 @@ class StockController extends AbstractController
 
                         if($c_date){
                             $price = $data["Time Series (Daily)"][$c_date]["4. close"];
-                            $old_price = $stock->getCurrentPrice();
-                            $stock->setCurrentPrice($price);
+                            $old_price = $stock->getCompany()->getCurrentPrice();
+                            $stock->getCompany()->setCurrentPrice($price);
                             $this->update_price = $price;
 
 
-                            $stock->setCurrentPrice($price);
+                            $stock->getCompany()->setCurrentPrice($price);
                             $this->update_price = $price;
 
-                            $last = $stock->getLastPriceUpdate();
+                            $last = $stock->getCompany()->getLastPriceUpdate();
                             $today = new DateTime();
 
                             $today_hour = $today->format('H');
@@ -120,15 +121,15 @@ class StockController extends AbstractController
 //                                }
 
                                 if ($last_week !== $today_week) {
-                                    $stock->setPriceWeek($old_price);
+                                    $stock->getCompany()->setPriceWeek($old_price);
                                 }
 
                                 if ($last_month !== $today_month) {
-                                    $stock->setPriceMonth($old_price);
+                                    $stock->getCompany()->setPriceMonth($old_price);
                                 }
 
                                 if ($last_year !== $today_year) {
-                                    $stock->setPriceYear($old_price);
+                                    $stock->getCompany()->setPriceYear($old_price);
                                 }
                             }
 
@@ -156,7 +157,7 @@ class StockController extends AbstractController
 
                         //updateStockInfo($doctrine, $stock, $disable_can, $day_today, $hour_today);
 
-                        dump($stock->getTicker() . ": No Update, can only do 5 Candaian stock updates per minute");
+                        dump($stock->getCompany()->getTicker() . ": No Update, can only do 5 Candaian stock updates per minute");
                         return "C2";
                     }
                 }
@@ -167,19 +168,19 @@ class StockController extends AbstractController
             }
         }
 
-        if($stock->getCountry() == "USD"){
+        if($stock->getCompany()->getCountry() == "USD"){
             // get current price
             if($stock->isBeingPlayedShares()){
-                $opc_link = 'https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=' . $stock->getTicker() . '&reqId=0';
+                $opc_link = 'https://www.optionsprofitcalculator.com/ajax/getStockPrice?stock=' . $stock->getCompany()->getTicker() . '&reqId=0';
                 dump($opc_link);
                 $result = file_get_contents($opc_link);
-                dump("Update:" . $stock->getTicker());
+                dump("Update:" . $stock->getCompany()->getTicker());
                 $price = json_decode($result)->price->last;
-                $old_price = $stock->getCurrentPrice();
-                $stock->setCurrentPrice($price);
+                $old_price = $stock->getCompany()->getCurrentPrice();
+                $stock->getCompany()->setCurrentPrice($price);
                 $this->update_price = $price;
 
-                $last = $stock->getLastPriceUpdate();
+                $last = $stock->getCompany()->getLastPriceUpdate();
                 $today = new DateTime();
 
                 $today_hour = $today->format('H');
@@ -201,19 +202,19 @@ class StockController extends AbstractController
 
                 if($marketClosedForDay) {
                     if ($last_day !== $today_day) {
-                        $stock->setPriceYesterday($old_price);
+                        $stock->getCompany()->setPriceYesterday($old_price);
                     }
 
                     if ($last_week !== $today_week) {
-                        $stock->setPriceWeek($old_price);
+                        $stock->getCompany()->setPriceWeek($old_price);
                     }
 
                     if ($last_month !== $today_month) {
-                        $stock->setPriceMonth($old_price);
+                        $stock->getCompany()->setPriceMonth($old_price);
                     }
 
                     if ($last_year !== $today_year) {
-                        $stock->setPriceYear($old_price);
+                        $stock->getCompany()->setPriceYear($old_price);
                     }
                 }
 
@@ -223,7 +224,7 @@ class StockController extends AbstractController
                         $e = date_format($option->getExpiry(), "Y-m-d");
                         $t = "c";
                         $s = number_format($option->getStrike(), 2);
-                        $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getTicker() . '&reqId=1'), true);
+                        $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getCompany()->getTicker() . '&reqId=1'), true);
                         $option_data = $option_data['options'];
                         $option_data = $option_data[$e];
                         $option_data = $option_data[$t];
@@ -246,7 +247,7 @@ class StockController extends AbstractController
                         $e = date_format($option->getExpiry(), "Y-m-d");
                         $t = ((int)$option->getType() === 1) ? "c":"p";
                         $s = number_format($option->getStrike(), 2);
-                        $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getTicker() . '&reqId=1'), true);
+                        $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $stock->getCompany()->getTicker() . '&reqId=1'), true);
                         $option_data = $option_data['options'];
                         $option_data = $option_data[$e];
                         $option_data = $option_data[$t];
@@ -321,7 +322,7 @@ class StockController extends AbstractController
             if($buy->getSold() < $buy->getAmount()) {
                 $remaining = $buy->getAmount() - $buy->getSold();
                 $shares += $remaining;
-                $total += ($remaining * $buy->getPrice()) + (($stock->isNoFee() || $buy->isNofee()) ? 0 : 9.95);
+                $total += ($remaining * $buy->getPrice()) + (($stock->getCompany()->isNoFee() || $buy->isNofee()) ? 0 : 9.95);
             }
         }
 
@@ -355,6 +356,8 @@ class StockController extends AbstractController
         ]);
     }
 
+
+
     #[Route('/stocks/add', name: 'stocks_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
@@ -364,18 +367,16 @@ class StockController extends AbstractController
         $form = $this->createForm(StockType::class, $stock);
         $form->handleRequest($request);
 
+        $companies = $doctrine->getRepository(Company::class)->findAll();
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $stock->setUser($this->getUser());
             $stock->setEarned(0);
             $stock->setCurrentPrice(0);
-            $stock->setDelisted(false);
             $stock->setBeingPlayedShares(true);
             $stock->setBeingPlayedOption(false);
             $stock->setSharesOwned(0);
-            $date = new DateTime();
-            $stock->setLastPriceUpdate($date);
-            $stock->setBgColor("ffffff");
 
             $em = $doctrine->getManager();
             $em->persist($stock);
@@ -387,6 +388,7 @@ class StockController extends AbstractController
         return $this->render('form/stock.html.twig', [
             'error' => "",
             'form' => $form->createView(),
+            'companies' => $companies,
             'settings' => $settings,
         ]);
     }
@@ -408,7 +410,7 @@ class StockController extends AbstractController
             $STOCK = $em->getRepository(Stock::class)->find($form->get("Stock")->getData());
             $share_buy->setStock($STOCK);
             
-            if($share_buy->getStock()->isNoFee()){
+            if($share_buy->getStock()->getCompany()->isNoFee()){
                 $cost = $share_buy->getAmount() * $share_buy->getPrice();
             } else {
                 $cost = $form->get("cost")->getData();
@@ -427,7 +429,7 @@ class StockController extends AbstractController
             $transaction->setUser($user);
             $word = ($share_buy->getAmount() === 1) ? 'Share' : 'Shares';
             
-            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getTicker() . ' ' . $word);
+            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getCompany()->getTicker() . ' ' . $word);
             
             if ($currency == 'can'){
                 $wallet->withdraw('CAN', $cost);
@@ -548,7 +550,7 @@ class StockController extends AbstractController
             $transaction->setDate($date);
             $transaction->setUser($user);
             $word = ($data->getAmount() === 1) ? 'Share' : 'Shares';
-            $transaction->setName('Sold' . ' ' . $data->getAmount() . ' ' . $share_sell->getStock()->getTicker() . ' ' . $word);
+            $transaction->setName('Sold' . ' ' . $data->getAmount() . ' ' . $share_sell->getStock()->getCompany()->getTicker() . ' ' . $word);
 
             $cost = $form->get("cost")->getData();
             $currency = $form->get("payment_currency")->getData();
@@ -643,9 +645,9 @@ class StockController extends AbstractController
             $option_type = ($form->get("type")->getData() === 1) ? 'C' : 'P';
             $option_strike = $form->get("strike")->getData();
             $option_expiry = date_format($form->get("expiry")->getData(), 'Y-m-d');
-            $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getCompany()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
             
-            $option->setName($option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry);
+            $option->setName($option->getStock()->getCompany()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry);
             //dump($transaction->getName());
 
             $cost = $form->get("cost")->getData();
@@ -727,7 +729,7 @@ class StockController extends AbstractController
             $option_type = ($option->getType() === 1) ? 'C' : 'P';
             $option_strike = $option->getStrike();
             $option_expiry = date_format($option->getExpiry(), 'Y-m-d');
-            $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Bought' . ' ' . $form->get("contracts")->getData() . ' ' . $option->getStock()->getCompany()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
 
 
             //dump($transaction->getName());
@@ -801,7 +803,7 @@ class StockController extends AbstractController
             $option_type = ($option->getType() === 1) ? 'C' : 'P';
             $option_strike = $option->getStrike();
             $option_expiry = date_format($option->getExpiry(), 'Y-m-d');
-            $transaction->setName('Sold' . ' ' . $contracts_sold . ' ' . $option->getStock()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Sold' . ' ' . $contracts_sold . ' ' . $option->getStock()->getCompany()->getTicker() . ' ' . $option_strike . $option_type . ' ' . $option_expiry . ' ' . $word);
 
             //dump($transaction->getName());
 
@@ -918,9 +920,9 @@ class StockController extends AbstractController
             $transaction->setUser($user);
 
             if($wo->getContractType() === 1){
-                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Covered Call");
+                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getCompany()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Covered Call");
             } else {
-                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Cash Secured Put");
+                $transaction->setName("Sold " . $wo->getContracts() . " " . $wo->getStock()->getCompany()->getTicker(). " " . $wo->getStrike() . " " . $wo_expiry . " Cash Secured Put");
             }
 
             // Update Wallet
@@ -1127,7 +1129,7 @@ class StockController extends AbstractController
             $transaction->setUser($user);
             $word = ($share_buy->getAmount() === 1) ? 'Share' : 'Shares';
             
-            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getTicker() . ' ' . $word);
+            $transaction->setName('Bought' . ' ' . $share_buy->getAmount() . ' ' . $share_buy->getStock()->getCompany()->getTicker() . ' ' . $word);
             
             if ($currency == 'can'){
                 $wallet->unlock('CAN', $cost);
@@ -1257,9 +1259,9 @@ class StockController extends AbstractController
 
             $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             if($wo->getContractType() === 1){
-                $transaction->setName("Covered Call Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
+                $transaction->setName("Covered Call Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getCompany()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
             } else {
-                $transaction->setName("Cash Secured Put Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
+                $transaction->setName("Cash Secured Put Rollover - " . $wo->getContracts() . " " . $wo->getStock()->getCompany()->getTicker(). " $" . $wo->getStrike() . " " . $wo_expiry);
             }
 
             $trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
@@ -1295,7 +1297,7 @@ class StockController extends AbstractController
         $em = $doctrine->getManager();
         $wo = $em->getRepository(WrittenOption::class)->find($id);
         $wo->setExpired(true);
-        $wo->setStockExpiryPrice($wo->getStock()->getCurrentPrice());
+        $wo->setStockExpiryPrice($wo->getStock()->getCompany()->getCurrentPrice());
         $em->flush();
 
         return $this->redirectToRoute('stocks_written_options');
@@ -1310,7 +1312,7 @@ class StockController extends AbstractController
         $wo = $em->getRepository(WrittenOption::class)->find($option);
         $wo_expiry = date_format($wo->getExpiry(), 'Y-m-d');
 
-        $info = ["option" => $option, "name" => $wo->getStock()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
+        $info = ["option" => $option, "name" => $wo->getStock()->getCompany()->getTicker(). " - $" . $wo->getStrike() . " - " . $wo_expiry];
 
         $form = $this->createForm(WrittenOptionBuytocloseType::class, $info);
         $form->handleRequest($request);
@@ -1409,9 +1411,9 @@ class StockController extends AbstractController
             $option_strike = "$". number_format($wo->getStrike(), 2);
             $option_expiry = date_format($wo->getExpiry(), 'Y-m-d');
             $word = ($contracts === 1) ? " Covered Call Option " : " Covered Call Options ";
-            $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
+            $transaction->setName('Bought Back' . ' ' . $contracts . ' ' . $wo->getStock()->getCompany()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ' ' . $word);
             if($sell_shares) {
-                $transaction->setName('CC Bought Back & Sold Shares: ' . ' ' . $contracts . ' ' . $wo->getStock()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ', ' . $shares  . ' Shares');
+                $transaction->setName('CC Bought Back & Sold Shares: ' . ' ' . $contracts . ' ' . $wo->getStock()->getCompany()->getTicker() . ' ' . $option_strike . ' ' . $option_expiry . ', ' . $shares  . ' Shares');
             }
 
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
@@ -1476,7 +1478,7 @@ class StockController extends AbstractController
             $updated = false;
 
              // check to see if has been 2 days or longer since last update
-             $lasttimestamp =  $stock->getLastPriceUpdate()->getTimestamp();
+             $lasttimestamp =  $stock->getCompany()->getLastPriceUpdate()->getTimestamp();
              $timeDiff = abs(time() - $lasttimestamp);
              $numberDaysSec = $timeDiff/86400;  // 86400 seconds in one day
 
@@ -1488,7 +1490,7 @@ class StockController extends AbstractController
              // todays date and time
              $day_today = date('D');
              $hour_today = date('H');
-             $updatedToday = ($stock->getLastPriceUpdate()->format('Y-m-d') === date('Y-m-d'));
+             $updatedToday = ($stock->getCompany()->getLastPriceUpdate()->format('Y-m-d') === date('Y-m-d'));
 
             // check if it's the weekend today
             $weekend_today = ($day_today === "Sat" || $day_today === "Sun" || ($day_today === "Fri" && $hour_today > 16) || ($day_today === "Mon" && $hour_today < 9));
@@ -1511,7 +1513,7 @@ class StockController extends AbstractController
                 $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
-                    $stock->setLastPriceUpdate($date);
+                    $stock->getCompany()->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
                     $updated = true;
@@ -1525,7 +1527,7 @@ class StockController extends AbstractController
                 $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
-                    $stock->setLastPriceUpdate($date);
+                    $stock->getCompany()->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
                     $updated = true;
@@ -1540,7 +1542,7 @@ class StockController extends AbstractController
                     $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new DateTime();
-                        $stock->setLastPriceUpdate($date);
+                        $stock->getCompany()->setLastPriceUpdate($date);
                         $em = $doctrine->getManager();
                         $em->flush();
                         $updated = true;
@@ -1593,7 +1595,7 @@ class StockController extends AbstractController
                 $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                 if($ustatus === "U"){
                     $date = new DateTime();
-                    $stock->setLastPriceUpdate($date);
+                    $stock->getCompany()->setLastPriceUpdate($date);
                     $em = $doctrine->getManager();
                     $em->flush();
                     $updated = true;
@@ -1647,7 +1649,7 @@ class StockController extends AbstractController
             dump("Update:" . $stock->getTicker());
         
 
-            return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
+            return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getCompany()->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
         }
 
         return new JsonResponse(array('success' => false, 'reason' => "Non XMLHttp Request"));

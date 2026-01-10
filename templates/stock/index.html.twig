@@ -31,7 +31,7 @@
         {% set option_amount = 0 %}
         {% set stock_average = 0 %}
         {% set option_diff = 0 %}
-        {% set stock_current = stock.currentPrice %}
+        {% set stock_current = stock.company.currentPrice %}
         {% set stock_breakeven = 0 %}
         {% set stock_pl = 0 %}
         {% set stock_sold = 0 %}
@@ -80,7 +80,7 @@
 
         {% if stock_amount > 0 %}
             {% set stock_average = stock_average / stock_amount %}
-            {% if stock.noFee or stock_buy_fee == false %}
+            {% if stock.company.noFee or stock_buy_fee == false %}
                 {% set fee = 0.01 %}
             {% else %}
                 {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
@@ -90,7 +90,7 @@
 
         {% for sell in stock.shareSells %}
             {% set d_sold = sell.date|date('U') %}
-            {% if stock.noFee %}
+            {% if stock.company.noFee %}
                 {% set total_sold = total_sold + (sell.amount * sell.price) %}
             {% else %}
                 {% set total_sold = total_sold + (sell.amount * sell.price) - 9.95 %}
@@ -139,7 +139,7 @@
         {% endif %}
 
         {% if stock_amount > 0 %}
-            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
                 <div class="inside">
                     <div class="inside_content">
                         {{ stock.name }}<br />
@@ -165,7 +165,7 @@
         {% set option_amount = 0 %}
         {% set stock_average = 0 %}
         {% set option_diff = 0 %}
-        {% set stock_current = stock.currentPrice %}
+        {% set stock_current = stock.company.currentPrice %}
         {% set stock_breakeven = 0 %}
         {% set stock_pl = 0 %}
         {% set stock_sold = 0 %}
@@ -211,7 +211,7 @@
         {% endif %}
 
         {% if option_amount > 0 %}
-            <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
                 <div class="inside">
                     <div class="inside_content">
                         {{ stock.name }}| {{ option_update_ids }}<br />
@@ -358,7 +358,7 @@
                     {% set stock_average = 0 %}
                     {% set stock_money_total = 0 %}
                     {% set stock_earned = stock.earned %}
-                    {% set stock_current = stock.currentPrice %}
+                    {% set stock_current = stock.company.currentPrice %}
                     {% set stock_breakeven = 0 %}
                     {% set stock_pl = 0 %}
                     {% set shares_buy_cost_total = 0 %}
@@ -380,7 +380,7 @@
 
                     {% for buy in stock.shareBuys %}
                         {% set d_bought = buy.date %}
-                        {% if stock.noFee or buy.noFee %}
+                        {% if stock.company.noFee or buy.noFee %}
                             {% set shares_buy_cost_total = shares_buy_cost_total + (buy.amount * buy.price) %}
                         {% else %}
                             {% set breakeven_fee = true %}
@@ -395,7 +395,7 @@
                             {% set stock_average = stock_average + buy_average %}
                             {% set stock_money_total = stock_money_total + buy_average %}
                             {% set lastBuyDate = buy.date|date('d-m-Y') %}
-                            {% if stock.noFee or buy.noFee %}
+                            {% if stock.company.noFee or buy.noFee %}
                                 {% set shares_buy_cost_unsold = shares_buy_cost_unsold + ((buy.amount * buy.price)) %}
                             {% else %}
                                 {% set shares_buy_cost_unsold = shares_buy_cost_unsold + ((buy.amount * buy.price) + 9.95) %}
@@ -410,7 +410,7 @@
 
                     {% if stock_amount > 0 and stock_average != 0 and stock_amount != 0 %}
                         {% set stock_average = stock_average / stock_amount %}
-                        {% if stock.noFee or breakeven_fee == false %}
+                        {% if stock.company.noFee or breakeven_fee == false %}
                             {% set fee = 0 %}
                         {% else %}
                             {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
@@ -422,7 +422,7 @@
 
                     {% for sell in stock.shareSells %}
                         {% set sells = sells + 1 %}
-                        {% if stock.noFee %}
+                        {% if stock.company.noFee %}
                             {% set shares_total_sold = shares_total_sold + (sell.amount * sell.price) %}
                             {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
                         {% else %}
@@ -658,7 +658,7 @@
                 {% set stock_average = 0 %}
                 {% set stock_money_total = 0 %}
                 {% set stock_earned = stock.earned %}
-                {% set stock_current = stock.currentPrice %}
+                {% set stock_current = stock.company.currentPrice %}
                 {% set stock_breakeven = 0 %}
                 {% set stock_pl = 0 %}
                 {% set stock_buy_cost_total = 0 %}
@@ -675,7 +675,7 @@
                
                 {% for buy in stock.shareBuys %}
                     {% set d_bought = buy.date %}
-                    {% if stock.noFee or buy.noFee %}
+                    {% if stock.company.noFee or buy.noFee %}
                         {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) %}
                     {% else %}
                         {% set breakeven_fee = true %}
@@ -698,7 +698,7 @@
                 
                 {% if stock_amount > 0 %}
                     {% set stock_average = stock_average / stock_amount %}
-                    {% if stock.noFee or breakeven_fee == false %}
+                    {% if stock.company.noFee or breakeven_fee == false %}
                         {% set fee = 0 %}
                     {% else %}
                         {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
@@ -710,7 +710,7 @@
 
                 {% for sell in stock.shareSells %}
                     {% set sells = sells + 1 %}
-                    {% if stock.noFee %}
+                    {% if stock.company.noFee %}
                         {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
                     {% else %}
                         {% set stock_earned = stock_earned + (sell.amount * sell.price) - 9.95 %}
@@ -739,7 +739,7 @@
                     <td>{{ stock.name }}</td>
                     <td>{% if d_bought != "" %}{{ d_bought|date("m/d/Y") }}{% endif %}</td>
                     <td>{% if d_sold != "" %}{{ d_sold|date("m/d/Y") }}{% endif %}</td>
-                    <td>{% if stock.country == "USD" %}<img src="/assets/images/flag_us.png" alt="">{% else %}<img src="/assets/images/flag_can.png" alt="">{% endif %}${{ stock_earned|number_format(2) }}</td>
+                    <td>{% if stock.company.country == "USD" %}<img src="/assets/images/flag_us.png" alt="">{% else %}<img src="/assets/images/flag_can.png" alt="">{% endif %}${{ stock_earned|number_format(2) }}</td>
                     <td>${{ stock_dividend|number_format(2) }}</td>
                     <td>{{ stock_amount }}</td>
                     <td>${{ stock_average|number_format(2) }}</td>
@@ -757,26 +757,26 @@
                               <tr>
                                   <td>
                                       <h2>Yesterday</h2>
-                                      {% set percent_change = ((stock_current / stock.priceYesterday) * 100) - 100 %}
-                                        <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYesterday|number_format(2) }}
+                                      {% set percent_change = ((stock_current / stock.company.priceYesterday) * 100) - 100 %}
+                                        <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYesterday|number_format(2) }}
                                   </td>
 
                                   <td>
                                       <h2>Week</h2>
-                                      {% set percent_change = ((stock_current / stock.priceWeek) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.priceWeek|number_format(2) }}
+                                      {% set percent_change = ((stock_current / stock.company.priceWeek) * 100) - 100 %}
+                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.company.priceWeek|number_format(2) }}
                                  </td>
 
                                   <td>
                                       <h2>Month</h2>
-                                      {% set percent_change = ((stock_current / stock.priceMonth) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceMonth|number_format(2) }}
+                                      {% set percent_change = ((stock_current / stock.company.priceMonth) * 100) - 100 %}
+                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceMonth|number_format(2) }}
                                   </td>
 
                                   <td>
                                       <h2>Year</h2>
-                                      {% set percent_change = ((stock_current / stock.priceYear) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYear|number_format(2) }}
+                                      {% set percent_change = ((stock_current / stock.company.priceYear) * 100) - 100 %}
+                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYear|number_format(2) }}
                                   </td>
                               </tr>
                           </table>

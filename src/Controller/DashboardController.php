@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Company;
 use App\Entity\HighInterestSavingsAccount;
 use App\Entity\ShareSell;
+use App\Entity\Stock;
 use App\Entity\Transaction;
 use App\Entity\WeeklyPortfolioTotal;
 use App\Form\ShareSellType;
@@ -31,7 +33,7 @@ class DashboardController extends AbstractController
         $user = $user = $this->getUser();
         $settings = $user->getSettings();
         $transactions_limit = $user->getSettings()->getDashboardTransactions();
-        
+
         // Stocks Wallet..
         $wallet = $doctrine->getRepository(Wallet::class)->find($user->getId());
 
@@ -322,7 +324,8 @@ class DashboardController extends AbstractController
         $total_value = 0;
 
         foreach ($stocks as $stock){
-            $weight_stock_object = ['ticker' => $stock->getTicker(), 'name' => $stock->getName(), 'total' => 0, 'weight' => 0];
+            $company = $stock->getCompany();
+            $weight_stock_object = ['ticker' => $company->getTicker(), 'name' => $company->getName(), 'total' => 0, 'weight' => 0];
             $stock_total_shares = 0;
             $stock_total_value = 0;
 
@@ -336,15 +339,15 @@ class DashboardController extends AbstractController
 
                 foreach ($stock->getCoveredCalls() as $cc) {
                     if (!$cc->isExpired() && !$cc->isExercised()) {
-                        if ($cc->getStrike() > $stock->getCurrentPrice()) {
+                        if ($cc->getStrike() > $company->getCurrentPrice()) {
                             $stock_total_shares -= 100 * $cc->getContracts();
-                            $stock_total_value += $cc->getContracts() * (($stock->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
+                            $stock_total_value += $cc->getContracts() * (($company->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
                         }
                     }
                 }
 
                 if($stock_total_shares > 0) {
-                    $stock_total_value += ($stock->getCountry() === "USD") ? (($stock_total_shares * $stock->getCurrentPrice()) * 1.36) : ($stock_total_shares * $stock->getCurrentPrice());
+                    $stock_total_value += ($company->getCountry() === "USD") ? (($stock_total_shares * $company->getCurrentPrice()) * 1.36) : ($stock_total_shares * $company->getCurrentPrice());
                     $weight_stock_object['total_value'] = $stock_total_value;
                     $weight_stocks[] = $weight_stock_object;
                     $total_value += $stock_total_value;
@@ -372,33 +375,38 @@ class DashboardController extends AbstractController
         $sector_values = [];
         foreach ($sectors as $sector){
             $sector_value = ['name' => $sector->getName(), 'total' => 0, 'percent' => 0];
-            foreach($sector->getStocks() as $stock){
-                $stock_total_shares = 0;
+            $companies = $sector->getCompanies();
 
-                if($stock->getUser() === $user){
-                    if($stock->getSharesOwned() > 0) {
+            foreach ($companies as $company){
+                foreach($company->getStocks() as $stock){
+                    if($stock->getUser() === $user){
+                        $stock_total_shares = 0;
+                        if($stock->getSharesOwned() > 0) {
 
-                        foreach ($stock->getShareBuys() as $buy) {
-                            if ($buy->getSold() < $buy->getAmount()) {
-                                $stock_total_shares += $buy->getAmount() - $buy->getSold();
-                            }
-                        }
-
-                        foreach ($stock->getCoveredCalls() as $cc) {
-                            if (!$cc->isExpired() && !$cc->isExercised()) {
-                                if ($cc->getStrike() > $stock->getCurrentPrice()) {
-                                    $stock_total_shares -= 100 * $cc->getContracts();
-                                    $sector_value['total'] += $cc->getContracts() * (($stock->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
+                            foreach ($stock->getShareBuys() as $buy) {
+                                if ($buy->getSold() < $buy->getAmount()) {
+                                    $stock_total_shares += $buy->getAmount() - $buy->getSold();
                                 }
                             }
-                        }
 
-                        if($stock_total_shares > 0) {
-                            $sector_value['total'] += ($stock->getCountry() === "USD") ? (($stock_total_shares * $stock->getCurrentPrice()) * 1.36) : ($stock_total_shares * $stock->getCurrentPrice());
+                            foreach ($stock->getCoveredCalls() as $cc) {
+                                if (!$cc->isExpired() && !$cc->isExercised()) {
+                                    if ($cc->getStrike() > $company->getCurrentPrice()) {
+                                        $stock_total_shares -= 100 * $cc->getContracts();
+                                        $sector_value['total'] += $cc->getContracts() * (($company->getCountry() === "USD") ? ($cc->getStrike() * 100 * 1.36) : $cc->getStrike() * 100);
+                                    }
+                                }
+                            }
+
+                            if($stock_total_shares > 0) {
+                                $sector_value['total'] += ($company->getCountry() === "USD") ? (($stock_total_shares * $company->getCurrentPrice()) * 1.36) : ($stock_total_shares * $company->getCurrentPrice());
+                            }
                         }
                     }
                 }
             }
+
+
 
             $sector_values[] = $sector_value;
             $total_value += $sector_value['total'];

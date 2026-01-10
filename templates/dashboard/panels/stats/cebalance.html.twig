@@ -38,7 +38,7 @@
     {% endfor %}
 
     {% for cc in stock.coveredCalls %}
-        {% if cc.expired == 0 and cc.exercised == 0 and cc.strike <= stock.currentPrice  %}
+        {% if cc.expired == 0 and cc.exercised == 0 and cc.strike <= stock.company.currentPrice  %}
             {% set stock_amount = stock_amount - (100 * cc.contracts) %}
             {% if stock.country == "CAN" %}
                 {% set cc_over_strike_total_buyback_can = cc_over_strike_total_buyback_can + ((stock.currentPrice * cc.contracts * 100) - (cc.ask * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
@@ -51,16 +51,16 @@
     {% endfor %}
 
     {% if stock_amount > 0 or cc_over_strike_total_buyback_can > 0 or cc_over_strike_total_buyback_usd > 0 %}
-        {% if stock.noFee == false %}
+        {% if stock.company.noFee == false %}
             {% set fee = (buys * 9.95) %}
         {% else %}
             {% set fee = 0 %}
         {% endif %}
 
-        {% set stock_total = (stock_amount * stock.currentPrice) + fee %}
+        {% set stock_total = (stock_amount * stock.company.currentPrice) + fee %}
 
         {# TODO:: Add switch for assign and buyback for covered calls #}
-        {% if stock.country == "CAN" %}
+        {% if stock.company.country == "CAN" %}
             {% set total_value_can = total_value_can + stock_total + cc_over_strike_total_assign_can %}
             {% set total_value_buyback_can = total_value_buyback_can + stock_total + cc_over_strike_total_buyback_can %}
         {% else %}

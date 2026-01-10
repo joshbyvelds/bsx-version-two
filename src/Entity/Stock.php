@@ -30,12 +30,6 @@ class Stock
     #[ORM\Column(type: 'date', nullable: true)]
     private $last_sold;
 
-    #[ORM\Column(type: 'string', length: 3)]
-    private $country;
-
-    #[ORM\Column(type: 'string', length: 12)]
-    private $type;
-
     #[ORM\OneToMany(mappedBy: 'Stock', targetEntity: Dividend::class)]
     private $dividends;
 
@@ -52,12 +46,6 @@ class Stock
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: ShareSell::class, orphanRemoval: true)]
     private $shareSells;
 
-    #[ORM\Column(type: 'boolean')]
-    private $pays_dividend;
-
-    #[ORM\Column(type: 'boolean')]
-    private $delisted;
-
     #[ORM\OneToMany(mappedBy: 'stock', targetEntity: Option::class)]
     private $options;
 
@@ -72,12 +60,6 @@ class Stock
 
     #[ORM\Column(type: 'integer')]
     private $sharesOwned;
-
-    #[ORM\Column(type: 'boolean')]
-    private $no_fee;
-
-    #[ORM\ManyToOne(targetEntity: Sector::class, inversedBy: 'stocks')]
-    private $sector;
 
     #[ORM\ManyToOne(targetEntity: Company::class, inversedBy: 'stocks')]
     #[ORM\JoinColumn(nullable: false)]

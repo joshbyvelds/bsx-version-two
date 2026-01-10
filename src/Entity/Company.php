@@ -61,6 +61,9 @@ class Company
     #[ORM\Column(type: 'string', length: 6)]
     private $type;
 
+    #[ORM\Column(type: 'boolean')]
+    private $delisted;
+
     public function __construct()
     {
         $this->stocks = new ArrayCollection();
@@ -265,6 +268,18 @@ class Company
     public function setType(string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    public function isDelisted(): ?bool
+    {
+        return $this->delisted;
+    }
+
+    public function setDelisted(bool $delisted): self
+    {
+        $this->delisted = $delisted;
 
         return $this;
     }

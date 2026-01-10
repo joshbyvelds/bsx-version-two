@@ -1,175 +1,139 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}BSX - Dashboard{% endblock %}
+{% block title %}BSX - Dividends{% endblock %}
 
 {% block body %}
-    <style>
-        .fee-button{
-            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-            transition-duration: 200ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .fee-button:focus {
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-            --tw-ring-opacity: 1;
-            --tw-ring-color: rgb(79 70 229 / var(--tw-ring-opacity));
-            --tw-ring-offset-width: 2px;
-        }
-
-        .fee-button.checked{
-            --tw-bg-opacity: 1;
-            background-color: rgb(79 70 229 / var(--tw-bg-opacity));
-        }
-
-        .fee-button span{
-            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-            --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-            --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
-            --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-            --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
-            transition-duration: 200ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .fee-button.checked span{
-            --tw-translate-x: 1.25rem;
-            transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-        }
-
-    </style>
     <div class="grid gap-y-10 gap-x-8 sm:grid-cols-3">
         <div class="px-4 sm:p-0">
             <h2 class="m-0 text-base font-semibold leading-7 text-gray-900">Some Form</h2>
             <p class="mt-1 text-sm leading-6 text-gray-600">some explaination</p>
         </div>
-        <form name="{{ form.vars.full_name }}" method="{{ form.vars.method }}" x-data="StockForm()" class="bg-white shadow-sm ring-offset-1 ring-gray-900 sm:rounded-xl sm:col-span-2">
+        <form name="{{ form.vars.full_name }}" method="{{ form.vars.method }}" x-data="DividendForm()" class="bg-white shadow-sm ring-offset-1 ring-gray-900 sm:rounded-xl sm:col-span-2">
             <div class="px-4 py-6 sm:p-8">
                 <div class="grid max-w-[42rem] grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 ">
+                    <div class="col-span-full">
+                        <div>
+                            <label for="{{ form.company.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.company.vars.required == true %}required{% endif %}">{{ form.company.vars.label }}</label>
+                            <div class="relative mt-2">
+                                <button type="button" x-on:click="toggleDropdown();" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+                                  <span class="flex items-center">
+                                    <img x-bind:src="selectedStockIcon"
+                                         alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                  </span>
 
+                                  <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                      <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"/>
+                                    </svg>
+                                  </span>
+                                </button>
+
+                                <!--
+                                  Select popover, show/hide based on select state.
+
+                                  Entering: ""
+                                    From: ""
+                                    To: ""
+                                  Leaving: "transition ease-in duration-100"
+                                    From: "opacity-100"
+                                    To: "opacity-0"
+                                -->
+                                <ul x-show="dropdownOpen" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+                                    <!--
+                                      Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
+
+                                      Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
+                                    -->
+                                    {% for company in companies %}
+                                    <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                                        <div class="flex items-center" x-on:click="selectStock({{ company.id }}, '{{ company.name }}', '{{  company.ticker }}');">
+                                            <img src="/assets/images/company_logos/{{ company.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                            <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                                            <span class="ml-3 block truncate font-normal">({{ company.ticker|upper }}) {{ company.name }}</span>
+                                        </div>
+
+                                        <!--
+                                          Checkmark, only display for selected option.
+
+                                          Highlighted: "text-white", Not Highlighted: "text-indigo-600"
+                                        -->
+                                        <span x-show="checkSelected({{ company.id }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                                          </svg>
+                                        </span>
+                                    </li>
+                                    {% endfor %}
+
+                                    <!-- More items... -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
                     {% for input in form.children %}
-                        {% if input.vars.name != "save" and input.vars.name != "_token" %}
-                            {% if input.vars.name == "country" %}
-                                <div class="col-span-full">
-                                    <label for="{{ form.country.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.country.vars.required == true %}required{% endif %}">{{ form.country.vars.label }}</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-3">
-                                        <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_country == 'CAN' && '!bg-indigo-600 text-white'" x-on:click="switchCountry('CAN')">Canada</span>
-                                        <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_country == 'USD' && '!bg-indigo-600 text-white'" x-on:click="switchCountry('USD')">United States</span>
-                                    </div>
+                        {% if input.vars.name != "company" and input.vars.name != "save" and input.vars.name != "_token" %}
+                            <div class="col-span-full">
+                                <label for="{{ input.vars.id }}"
+                                       class="block text-sm font-medium leading-6 text-gray-900 {% if input.vars.required == true %}required{% endif %}">{{ input.vars.label }}</label>
+                                <div class="mt-2">
+                                    {{ form_widget(input) }}
                                 </div>
-                            {% elseif input.vars.name == "type" %}
-                                <div class="col-span-full">
-                                    <label for="{{ form.type.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.type.vars.required == true %}required{% endif %}">{{ form.type.vars.label }}</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-3">
-                                        <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_type == 'BLUE' && '!bg-blue-600 text-white'" x-on:click="switchType('BLUE')">Blue Chip</span>
-                                        <span class="flex cursor-pointer items-center justify-center rounded-md bg-white p-3 text-sm font-semibold uppercase text-gray-900 ring-1 ring-inset ring-gray-300 flex-1" :class="selected_type == 'RED' && '!bg-red-600 text-white'" x-on:click="switchType('RED')">Red Chip</span>
-                                    </div>
-                                </div>
-                            {% elseif input.vars.name == "pays_dividend" %}
-                                <div class="col-span-full">
-                                    <label for="{{ form.pays_dividend.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.pays_dividend.vars.required == true %}required{% endif %}"></label>
-                                    <div class="mt-2">
-                                        <div class="flex items-center">
-                                            <button type="button" class="fee-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-transparent bg-gray-200" :class="pays_dividend == true && 'checked'" x-on:click="pays_dividend_selected()">
-                                                <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white"></span>
-                                            </button>
-                                            <span class="ml-3 text-sm">
-                                                <span class="font-medium">{{ form.pays_dividend.vars.label }}</span>
-                                            </span>
-                                        </div>
-                                        <div class="hidden">
-                                            <input type="checkbox" id="stock_pays_dividend" name="stock[pays_dividend]" value="pays_dividend" x-model="pays_dividend">
-                                        </div>
-                                    </div>
-                                </div>
-                            {% elseif input.vars.name == "no_fee" %}
-                                <div class="col-span-full">
-                                    <label for="{{ form.no_fee.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if form.no_fee.vars.required == true %}required{% endif %}"></label>
-                                    <div class="mt-2">
-                                        <div class="flex items-center">
-                                            <button type="button" class="fee-button relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-transparent bg-gray-200" :class="no_fee == true && 'checked'" x-on:click="no_fee_selected()">
-                                                <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white"></span>
-                                            </button>
-                                            <span class="ml-3 text-sm">
-                                                <span class="font-medium">{{ form.no_fee.vars.label }}</span>
-                                            </span>
-                                        </div>
-                                        <div class="hidden">
-                                            <input type="checkbox" id="stock_no_fee" name="stock[nofee]" value="no_fee" x-model="no_fee">
-                                        </div>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="col-span-full">
-                                    <label for="{{ input.vars.id }}" class="block text-sm font-medium leading-6 text-gray-900 {% if input.vars.required == true %}required{% endif %}">{{ input.vars.label }}</label>
-                                    <div class="mt-2">
-                                        {{ form_widget(input) }}
-                                    </div>
-                                </div>
-                            {% endif %}
+                            </div>
                         {% endif %}
                     {% endfor %}
-
-
                 </div>
             </div>
+
             <div class="flex items-center justify-end gap-x-6 border-t-[1px] border-gray-900 px-4 py-4 sm:px-8">
-                <button type="submit" id="{{ form.vars.name }}_save" name="{{ form.vars.name }}[save]" class="normal-case cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow">Save</button>
+                <button type="submit" id="{{ form.vars.name }}_save" name="{{ form.vars.name }}[save]"
+                        class="normal-case cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow">
+                    Save
+                </button>
             </div>
 
             {% if error %}
-                <br />
+                <br/>
                 {{ error }}
             {% endif %}
-            {{ form_row(form._token) }}
 
-            <input type="hidden" name="stock[country]" id="stock_country" x-model="selected_country" />
-            <input type="hidden" name="stock[type]" id="stock_type" x-model="selected_type" />
+            {{ form_row(form._token) }}
+            <input type="hidden" name="stock[company]" id="stock_company" x-model="selectedCompany" />
         </form>
 
         {# render tailwind class that form inputs will use.. #}
-        <div class="block hidden w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6"></div>
+        <div class="block hidden w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6 bg-indigo-600"></div>
     </div>
 
     <script>
-        function StockForm() {
+        function DividendForm() {
 
             return {
-                selected_country: "CAN",
-                selected_type: "BLUE",
-                pays_dividend: false,
-                no_fee: false,
+                dropdownOpen: false,
+                selectedStock: null,
+                selected_currency: "can",
+                selectedStockName: "Select Company",
+                selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
-                switchCountry(id){
-                    this.selected_country = id;
+                checkSelected(id){
+                    return this.selectedStock === id;
                 },
 
-                switchType(id){
-                    this.selected_type = id;
+                switchCurrency(id){
+                    this.selected_currency = id;
                 },
 
-                no_fee_selected(){
-                    if(this.no_fee){
-                        this.no_fee = false;
-                    } else {
-                        this.no_fee = true;
-                    }
+                selectStock(id, name, ticker){
+                    this.selectedStock = id;
+                    this.selectedStockName = name;
+                    this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
+                    this.toggleDropdown();
                 },
 
-                pays_dividend_selected(){
-                    if (this.pays_dividend){
-                        this.pays_dividend = false;
-                    } else {
-                        this.pays_dividend = true;
-                    }
-                },
+                toggleDropdown(){
+                    this.dropdownOpen = (!this.dropdownOpen);
+                }
             }
         }
     </script>
