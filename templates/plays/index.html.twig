@@ -120,7 +120,7 @@
             rowData: [
 
                 {% for play in plays %}
-                    {% set current_price = play.stock.currentPrice %}
+                    {% set current_price = play.stock.company.currentPrice %}
 
                     {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
                     {% set bought = bought + (play.contractsAverage * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}

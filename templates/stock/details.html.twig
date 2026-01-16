@@ -21,7 +21,7 @@
     {% set stock_average = 0 %}
     {% set stock_money_total = 0 %}
     {% set stock_earned = stock.earned %}
-    {% set stock_current = stock.currentPrice %}
+    {% set stock_current = stock.company.currentPrice %}
     {% set stock_breakeven = 0 %}
     {% set stock_pl = 0 %}
     {% set stock_buy_cost_total = 0 %}
@@ -38,7 +38,7 @@
 
     {% for buy in stock.shareBuys %}
         {% set d_bought = buy.date %}
-        {% if stock.noFee or buy.noFee %}
+        {% if stock.company.noFee or buy.noFee %}
             {% set stock_buy_cost_total = stock_buy_cost_total + (buy.amount * buy.price) %}
         {% else %}
             {% set breakeven_fee = true %}
@@ -61,7 +61,7 @@
 
     {% if stock_amount > 0 %}
         {% set stock_average = stock_average / stock_amount %}
-        {% if stock.noFee or breakeven_fee == false %}
+        {% if stock.company.noFee or breakeven_fee == false %}
             {% set fee = 0 %}
         {% else %}
             {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
@@ -74,7 +74,7 @@
     {% set total_sold = 0 %}
     {% for sell in stock.shareSells %}
         {% set sells = sells + 1 %}
-        {% if stock.noFee %}
+        {% if stock.company.noFee %}
             {% set total_sold = total_sold + (sell.amount * sell.price) %}
             {% set stock_earned = stock_earned + (sell.amount * sell.price) %}
         {% else %}
@@ -121,9 +121,9 @@
 
     <div>
         <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg'); background-position: center center; background-repeat: no-repeat; background-size:cover;"></div>
+            <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.company.ticker }}.jpg'); background-position: center center; background-repeat: no-repeat; background-size:cover;"></div>
             <div class="sm:col-span-2">
-                <div class="text-6xl"><span class="text-9xl" style="font-size: 190px;">{{ stock.ticker }}</span> <span>${{ stock.currentPrice|number_format(2) }}</span></div>
+                <div class="text-6xl"><span class="text-9xl" style="font-size: 190px;">{{ stock.company.ticker }}</span> <span>${{ stock.company.currentPrice|number_format(2) }}</span></div>
                 <div>
 
                 </div>
@@ -145,14 +145,14 @@
 
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Sector</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock.sector.name }}</dd>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock.company.sector.name }}</dd>
                 </div>
 
                 {# Stock Details #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Stock Type</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0">{% if stock.country == "USD" %}<img src="/assets/images/flag_us.png" alt=""> United States (NYSE){% else %}<img src="/assets/images/flag_can.png" alt="">Canada (TSX){% endif %}</dd>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"><img src="/assets/images/{{ stock.type }}_chip.png">{{ stock.type }} CHIP</dd>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0">{% if stock.company.country == "USD" %}<img src="/assets/images/flag_us.png" alt=""> United States (NYSE){% else %}<img src="/assets/images/flag_can.png" alt="">Canada (TSX){% endif %}</dd>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-1 sm:mt-0"><img src="/assets/images/{{ stock.company.type }}_chip.png">{{ stock.company.type }} CHIP</dd>
                 </div>
 
                 {# Amount Owned #}
@@ -170,20 +170,20 @@
                             <tr>
                                 <td>
                                     <h2>Week</h2>
-                                    {% set percent_change = ((stock_current / stock.priceWeek) * 100) - 100 %}
-                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.priceWeek|number_format(2) }}
+                                    {% set percent_change = ((stock_current / stock.company.priceWeek) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.company.priceWeek|number_format(2) }}
                                 </td>
 
                                 <td>
                                     <h2>Month</h2>
-                                    {% set percent_change = ((stock_current / stock.priceMonth) * 100) - 100 %}
-                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceMonth|number_format(2) }}
+                                    {% set percent_change = ((stock_current / stock.company.priceMonth) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceMonth|number_format(2) }}
                                 </td>
 
                                 <td>
                                     <h2>Year</h2>
-                                    {% set percent_change = ((stock_current / stock.priceYear) * 100) - 100 %}
-                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.priceYear|number_format(2) }}
+                                    {% set percent_change = ((stock_current / stock.company.priceYear) * 100) - 100 %}
+                                    <span class="text-4xl" style="color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYear|number_format(2) }}
                                 </td>
                             </tr>
                         </table>
@@ -240,25 +240,42 @@
                         {% endif %}
 
                         {% set total_debt = stock_buy_cost_total + cc_debt + options_debt %}
-                        {% set total_returned = total_sold + stock_dividend + cc_earned + options_earned %}
-                        {% set share_value = (stock_amount * stock.currentPrice) - 9.95 %}
+                        {% if cc_earned >= 0 %}
+                            {% set total_returned = total_sold + stock_dividend + cc_earned + options_earned %}
+                        {% else %}
+                            {% set total_returned = total_sold + stock_dividend + options_earned %}
+                        {% endif %}
+
+                        {% set share_value = (stock_amount * stock.company.currentPrice) - 9.95 %}
 
                         {% set status_total_return = total_returned %}
                         {% set status_total_return_with_current_share_value = total_returned + share_value %}
 
-                        {% set remaining_till_gold = (total_returned - (total_debt + 9.95))|abs  %}
+                        {% set remaining_till_gold = (total_returned - (total_debt + 9.95))  %}
+                        {% set remaining_till_gold_abs = (total_returned - (total_debt + 9.95))|abs  %}
 
                         {% set percent_increase = (((status_total_return - total_debt) / total_debt) * 100) %}
                         {% set percent_increase_with_current_share_value = (((status_total_return_with_current_share_value - total_debt) / total_debt) * 100) %}
 
+                        {% if stock_amount == 0 %}
+                            {% set status_total_return_with_current_share_value = status_total_return%}
+                        {% endif %}
+
                         <div id="status_debug" style="display:none;">
                             sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br /><br />
                             Total Debt: ${{ total_debt|number_format(2)  }}<br />
-                            Share Value: {{ stock_amount }} * {{ stock.currentPrice }} = ${{ share_value|number_format(2) }}<br />
+                            Share Value: {{ stock_amount }} * {{ stock.company.currentPrice }} = ${{ share_value|number_format(2) }}<br />
                             Total Sold: ${{ total_returned|number_format(2)  }}<br />
-                            Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }} | {{ stock_amount }} Shares / {{ remaining_till_gold|abs|number_format(2) }} = ${{ (remaining_till_gold|abs/stock_amount)|number_format(2) }}<br />
-                            Percent Increase: {{ percent_increase|number_format(2) }}%;<br />
+                            {% if remaining_till_gold < 0 %}
+                                Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }} | {{ stock_amount }} Shares / {{ remaining_till_gold|abs|number_format(2) }} = ${{ (remaining_till_gold|abs/stock_amount)|number_format(2) }}<br />
+                                Percent Increase: {{ percent_increase|number_format(2) }}%;<br />
+                            {% else %}
+                                Debt Free:True ({{ percent_increase|number_format(2) }}% Return)<br />
+                            {% endif %}
+
+                            {% if stock_amount > 0 %}
                             Percent Increase with Current Share Value: {{ percent_increase_with_current_share_value|number_format(2) }}%;<br />
+                            {% endif %}
                         </div>
 
                         {% if total_debt >= status_total_return_with_current_share_value %}
@@ -316,65 +333,6 @@
                         {% set marker_percent = percent_plus + (block_percent * 0.4) %}
 
                         {% set middle = "[" ~ percent_increase|number_format(2) ~ "%]"  %}
-
-                        <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
-                            <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
-                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">0%</span></div><!--
-                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">100%</span></div><!--
-                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">200%</span></div><!--
-                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">200%</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">300%</span></div><!--
-                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">300%</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">400%</span></div><!--
-                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">400%</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">500%</span></div>
-                        </div>
-                    </dd>
-                </div>
-
-                {# Gold Status Range Meter #}
-                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Gold Status Meter</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-
-                        {% set min_price = 0 %}
-                        {% set profit_price = ((remaining_till_gold) * 1) / stock_amount|abs %}
-                        {% set gold_price_1 = ((remaining_till_gold) * 2) / stock_amount|abs %}
-                        {% set gold_price_2 = ((remaining_till_gold) * 4) / stock_amount|abs %}
-                        {% set gold_price_3 = ((remaining_till_gold) * 8) / stock_amount|abs %}
-                        {% set gold_price_4 = ((remaining_till_gold) * 16) / stock_amount|abs %}
-                        {% set gold_price_5 = ((remaining_till_gold) * 32) / stock_amount|abs %}
-
-                        {% set marker_percent = ((stock.currentPrice / gold_price_5) * 100) %}
-
-                        {% if stock.currentPrice < profit_price %}
-                            {% set range_stage = 1 %}
-                            {% set block_percent = (stock.currentPrice / profit_price) %}
-                            {% set percent_plus = 0 %}
-                        {% elseif stock.currentPrice < gold_price_1 %}
-                            {% set range_stage = 2 %}
-                            {% set block_percent = ((stock.currentPrice - profit_price) / (gold_price_1 - profit_price)) %}
-                            {% set percent_plus = 12 %}
-                        {% elseif stock.currentPrice < gold_price_2 %}
-                            {% set range_stage = 3 %}
-                            {% set block_percent = ((stock.currentPrice - gold_price_1) / (gold_price_2 - gold_price_1)) %}
-                            {% set percent_plus = 24 %}
-                        {% elseif stock.currentPrice < gold_price_3 %}
-                            {% set range_stage = 4 %}
-                            {% set block_percent = ((stock.currentPrice - gold_price_2) / (gold_price_3 - gold_price_2)) %}
-                            {% set percent_plus = 36 %}
-                        {% elseif stock.currentPrice < gold_price_4 %}
-                            {% set range_stage = 5 %}
-                            {% set block_percent = ((stock.currentPrice - gold_price_3) / (gold_price_4 - gold_price_3)) %}
-                            {% set percent_plus = 48 %}
-                        {% elseif stock.currentPrice < gold_price_5 %}
-                            {% set range_stage = 6 %}
-                            {% set block_percent = ((stock.currentPrice - gold_price_4) / (gold_price_5 - gold_price_4)) %}
-                            {% set percent_plus = 60 %}
-                        {% else %}
-                            {% set range_stage = 6 %}
-                            {% set block_percent = 1 %}
-                            {% set percent_plus = 60 %}
-                        {% endif %}
-
-                        {% set marker_percent = percent_plus + (block_percent * 40) %}
 
                         <style>
                             .marker {
@@ -435,7 +393,69 @@
                             }
                         </style>
 
-                        {% set middle = "[$" ~ stock.currentPrice|round(2,"floor")|number_format(2) ~ "]"  %}
+                        <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
+                            <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
+                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">0%</span></div><!--
+                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">100%</span></div><!--
+                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">200%</span></div><!--
+                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">200%</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">300%</span></div><!--
+                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">300%</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">400%</span></div><!--
+                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">400%</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">500%</span></div>
+                        </div>
+                    </dd>
+                </div>
+
+                {# Gold Status Range Meter #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Gold Status Meter</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        {% if stock_amount == 0  %}
+                            No Shares
+                        {% else %}
+
+                        {% set min_price = 0 %}
+                        {% set profit_price = ((remaining_till_gold_abs) * 1) / stock_amount|abs %}
+                        {% set gold_price_1 = ((remaining_till_gold_abs) * 2) / stock_amount|abs %}
+                        {% set gold_price_2 = ((remaining_till_gold_abs) * 4) / stock_amount|abs %}
+                        {% set gold_price_3 = ((remaining_till_gold_abs) * 8) / stock_amount|abs %}
+                        {% set gold_price_4 = ((remaining_till_gold_abs) * 16) / stock_amount|abs %}
+                        {% set gold_price_5 = ((remaining_till_gold_abs) * 32) / stock_amount|abs %}
+
+                        {% set marker_percent = ((stock.company.currentPrice / gold_price_5) * 100) %}
+
+                        {% if stock.company.currentPrice < profit_price %}
+                            {% set range_stage = 1 %}
+                            {% set block_percent = (stock.company.currentPrice / profit_price) %}
+                            {% set percent_plus = 0 %}
+                        {% elseif stock.company.currentPrice < gold_price_1 %}
+                            {% set range_stage = 2 %}
+                            {% set block_percent = ((stock.company.currentPrice - profit_price) / (gold_price_1 - profit_price)) %}
+                            {% set percent_plus = 12 %}
+                        {% elseif stock.company.currentPrice < gold_price_2 %}
+                            {% set range_stage = 3 %}
+                            {% set block_percent = ((stock.company.currentPrice - gold_price_1) / (gold_price_2 - gold_price_1)) %}
+                            {% set percent_plus = 24 %}
+                        {% elseif stock.company.currentPrice < gold_price_3 %}
+                            {% set range_stage = 4 %}
+                            {% set block_percent = ((stock.company.currentPrice - gold_price_2) / (gold_price_3 - gold_price_2)) %}
+                            {% set percent_plus = 36 %}
+                        {% elseif stock.company.currentPrice < gold_price_4 %}
+                            {% set range_stage = 5 %}
+                            {% set block_percent = ((stock.company.currentPrice - gold_price_3) / (gold_price_4 - gold_price_3)) %}
+                            {% set percent_plus = 48 %}
+                        {% elseif stock.company.currentPrice < gold_price_5 %}
+                            {% set range_stage = 6 %}
+                            {% set block_percent = ((stock.company.currentPrice - gold_price_4) / (gold_price_5 - gold_price_4)) %}
+                            {% set percent_plus = 60 %}
+                        {% else %}
+                            {% set range_stage = 6 %}
+                            {% set block_percent = 1 %}
+                            {% set percent_plus = 60 %}
+                        {% endif %}
+
+                        {% set marker_percent = percent_plus + (block_percent * 40) %}
+
+                        {% set middle = "[$" ~ stock.company.currentPrice|round(2,"floor")|number_format(2) ~ "]"  %}
 
                         <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
                             <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
@@ -473,6 +493,7 @@
                                 }
                             }
                         </script>
+                        {% endif %}
                     </dd>
                 </div>
 
@@ -559,9 +580,9 @@
                                 {% set cc_ab_per = cc_se_per %}
                                 {% set cc_away_from_target = 100 + cc_ab_per %}
 
-                                {% set cc_be_diff2 = (cc.stockBuyPrice - stock.currentPrice) * -1 %}
-                                {% set cc_se_diff2 = (stock.currentPrice - cc.strike) %}
-                                {% set cc_se_per2 = ((stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                {% set cc_be_diff2 = (cc.stockBuyPrice - stock.company.currentPrice) * -1 %}
+                                {% set cc_se_diff2 = (stock.company.currentPrice - cc.strike) %}
+                                {% set cc_se_per2 = ((stock.company.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
                                 {% set cc_ab_per2 = cc_se_per2 %}
                                 {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
 
@@ -599,15 +620,15 @@
                                     </td>
                                     <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc.stockExpiryPrice }}</td>
                                 {% else %}
-                                    {% set cc_be_diff2 = (cc.stockBuyPrice - stock.currentPrice) * -1 %}
-                                    {% set cc_se_diff2 = (stock.currentPrice - cc.strike) %}
-                                    {% set cc_se_per2 = ((stock.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                    {% set cc_be_diff2 = (cc.stockBuyPrice - stock.company.currentPrice) * -1 %}
+                                    {% set cc_se_diff2 = (stock.company.currentPrice - cc.strike) %}
+                                    {% set cc_se_per2 = ((stock.company.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
                                     {% set cc_ab_per2 = cc_se_per2 %}
                                     {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
                                     <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
                                         <span>{{ cc_away_from_target2|number_format(1) }}% | </span>
                                     </td>
-                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ stock.currentPrice|number_format(2) }}</td>
+                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ stock.company.currentPrice|number_format(2) }}</td>
                                 {% endif %}
                             </tr>
 
@@ -652,7 +673,7 @@
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Dividend</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        {% if stock.paysDividend %}
+                        {% if stock.company.paysDividend %}
                             <table>
                                 <tr>
                                     <th>Total Amount</th>
@@ -679,7 +700,7 @@
                                 <th>Amount Earned</th>
                             </tr>
                             {% for play in stock.plays %}
-                                {% set current_price = play.stock.currentPrice %}
+                                {% set current_price = play.stock.company.currentPrice %}
 
                                 {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
                                 {% set bought = bought + (play.contractsAverage * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}

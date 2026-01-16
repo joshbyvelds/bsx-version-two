@@ -97,7 +97,13 @@ class DividendController extends AbstractController
             return $this->redirectToRoute('dividends_add');
         }
 
-        $myDiviStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id AND p.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $sql = "SELECT p.* FROM stock p INNER JOIN company c ON p.company_id = c.id WHERE p.user_id = :user_id AND c.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY p.id ASC";
+
+        $myDiviStocks = $em->getConnection()->executeQuery($sql, [
+            'user_id' => $user->getId(),
+            'pays'    => 1
+        ])->fetchAllAssociative();
+
 
         return $this->render('form/dividend.html.twig', [
             'form' => $form->createView(),

@@ -754,31 +754,31 @@
                       <td colspan="14" style="text-align: center;">
                           <span class="down" style="display:none;">&dArr; SHOW PRICE CHANGE &dArr;</span><span class="up">&uArr; HIDE PRICE CHANGE &uArr;</span>
                           <table style="width:100%;">
-                              <tr>
-                                  <td>
-                                      <h2>Yesterday</h2>
-                                      {% set percent_change = ((stock_current / stock.company.priceYesterday) * 100) - 100 %}
-                                        <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYesterday|number_format(2) }}
-                                  </td>
+{#                              <tr>#}
+{#                                  <td>#}
+{#                                      <h2>Yesterday</h2>#}
+{#                                      {% set percent_change = ((stock_current / stock.company.priceYesterday) * 100) - 100 %}#}
+{#                                        <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYesterday|number_format(2) }}#}
+{#                                  </td>#}
 
-                                  <td>
-                                      <h2>Week</h2>
-                                      {% set percent_change = ((stock_current / stock.company.priceWeek) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.company.priceWeek|number_format(2) }}
-                                 </td>
+{#                                  <td>#}
+{#                                      <h2>Week</h2>#}
+{#                                      {% set percent_change = ((stock_current / stock.company.priceWeek) * 100) - 100 %}#}
+{#                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span></span><br />Stock Price: ${{ stock.company.priceWeek|number_format(2) }}#}
+{#                                 </td>#}
 
-                                  <td>
-                                      <h2>Month</h2>
-                                      {% set percent_change = ((stock_current / stock.company.priceMonth) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceMonth|number_format(2) }}
-                                  </td>
+{#                                  <td>#}
+{#                                      <h2>Month</h2>#}
+{#                                      {% set percent_change = ((stock_current / stock.company.priceMonth) * 100) - 100 %}#}
+{#                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceMonth|number_format(2) }}#}
+{#                                  </td>#}
 
-                                  <td>
-                                      <h2>Year</h2>
-                                      {% set percent_change = ((stock_current / stock.company.priceYear) * 100) - 100 %}
-                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYear|number_format(2) }}
-                                  </td>
-                              </tr>
+{#                                  <td>#}
+{#                                      <h2>Year</h2>#}
+{#                                      {% set percent_change = ((stock_current / stock.company.priceYear) * 100) - 100 %}#}
+{#                                      <span style="font-size:60px; color:{% if percent_change > 0 %}green{% elseif percent_change < 0 %}red{% else %}black{% endif %};">{{ percent_change|number_format(2) }}%</span><br />Stock Price: ${{ stock.company.priceYear|number_format(2) }}#}
+{#                                  </td>#}
+{#                              </tr>#}
                           </table>
                       </td>
                   </tr>

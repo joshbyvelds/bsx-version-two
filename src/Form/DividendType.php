@@ -33,9 +33,15 @@ class DividendType extends AbstractType
                 'query_builder' => function (EntityRepository $er) {
                     $user_id = $this->user_id;
                     return $er->createQueryBuilder('s')
-                    ->where('s.user = :user')
-                    ->andWhere('s.pays_dividend = 1')
-                    ->setParameter('user', $user_id);
+                        // 1. Join the company relationship and give it an alias 'c'
+                        ->innerJoin('s.company', 'c')
+                        ->where('s.user = :user')
+                        // 2. Reference the field via the company alias
+                        ->andWhere('c.pays_dividend = :pay_dividend')
+                        ->setParameters([
+                            'user'         => $user_id,
+                            'pay_dividend' => 1,
+                        ]);
                 },
             ])
 

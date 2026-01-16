@@ -341,7 +341,16 @@ class WalletController extends AbstractController
             $type = $form->get("type")->getData();
             $amount = $form->get("amount")->getData();
 
-            $wallet->transfer($currency, $type, $amount);
+            $profit = $form->get("profit")->getData();
+            $profit_percent = $settings->getTenPercentDepositPercentage();
+            $profit_amount = 0;
+
+            if ($profit) {
+                $profit_amount = round($amount * $profit_percent, 2);
+            }
+
+            $wallet->transfer($currency, $type, $amount - $profit_amount);
+            $wallet->percentDeposit(strtoupper($currency), $profit_amount);
 
             $em->persist($wallet);
             $em->flush();
