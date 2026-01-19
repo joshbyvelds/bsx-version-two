@@ -113,6 +113,15 @@
     <h2 class="text-center text-6xl">${{ overall_total_buyback|number_format(2) }}</h2>
 </div>
 
+{% if user.id == 2 %}
+{% set loc_debt = 33423.51 %}
+{% set loc_padding = 5000.00 %}
+{% set loc_percent = ((overall_total_buyback/(loc_debt + loc_padding)) * 100)|number_format(2) %}
+{% set divide_percent = ((loc_debt/(loc_debt + loc_padding)) * 100)|number_format(2) %}
+
+<div class="panel large_panel total_value relative" style="height:75px; margin: 30px 0;"><div style="border:solid 2px black; background: white; border-radius: 40px; padding:5px; position: relative;"><div style="position: absolute; background:lime; border-radius:40px; height:100%; top:0; left:0; width:{{ loc_percent }}%"></div><div style="position: absolute; top: 0; left:{{ divide_percent }}%; width:2px; background:black; height:100%; z-index: 10;"></div> <div style="position: relative; z-index:10; text-align: center;">Percent Toward Debt Goal: {{ loc_percent }}%</div></div></div>
+{% endif %}
+
 <script>
     $(() => {
         let total_type_assign = false;

@@ -110,7 +110,8 @@ class DashboardController extends AbstractController
             'totalValues' => $lastWeeklyPortfolioTotals,
             'covered_calls' => $cc,
             'debts' => $debt,
-            'hisas' => $hisas
+            'hisas' => $hisas,
+            'user' => $user,
         ]);
     }
 
