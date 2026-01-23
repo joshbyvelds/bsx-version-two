@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Option;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -90,6 +91,26 @@ class OptionType extends AbstractType
                     'class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6',
                     'placeholder' => '$0.00',
                 ]
+            ])
+            ->add('part_of_play', CheckboxType::class, [
+                'required' => false,
+                'mapped' => false
+            ])
+            ->add('play', EntityType::class, [
+                'attr' => [
+                    'class' => 'block w-full rounded-md bg-white py-1.5 pl-3 pr-10 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body',
+                ],
+                'required' => false,
+                'mapped' => false,
+                'label' => 'Play',
+                'class' => 'App\Entity\Play',
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                        ->where('s.User = :user')
+                        ->setParameter('user', $user_id);
+                },
             ])
             ->add('save', SubmitType::class, [
                 'attr' => [
