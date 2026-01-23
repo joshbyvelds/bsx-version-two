@@ -123,7 +123,7 @@
                     {% set current_price = play.stock.company.currentPrice %}
 
                     {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
-                    {% set bought = bought + (play.contractsAverage * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
+                    {% set bought = bought + ((play.contractsAverage * 100) * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
 
                     {% set sold = play.totalSold + play.writtenOptionTotal %}
                     {% set total_percent = (((sold) - bought) / bought) * 100 %}
@@ -131,7 +131,7 @@
                     {% set earned = sold - bought %}
 
                 {
-                    'company': '{{ play.stock.ticker }}',
+                    'company': '{{ play.stock.company.ticker }}',
                     'name': '{{ play.name }}',
                     'finished': '{{ play.finished }}',
                     'start_date': '{{ play.startDate|date("m/d/Y") }}',
@@ -144,6 +144,9 @@
                     'contracts_remaining':{{ play.contractsRemaining }},
                     'contracts_total':{{ play.contractsTotal }},
                     'options_earned':{{ play.optionsEarned }},
+                    'contracts_total_buys': {{ play.contractsTotalBuys }},
+                    'contracts_total2': {{ play.contractsTotal }},
+                    'contracts_average2': {{ (play.contractsAverage * 100) }},
                     'bought': {{ bought }},
                     'sold': {{ sold }},
                     'written_option_total': {{ play.writtenOptionTotal }},
