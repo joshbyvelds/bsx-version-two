@@ -216,7 +216,7 @@ class Play
 
     public function getContractsAverage(): ?float
     {
-        return $this->share_average;
+        return $this->contracts_average;
     }
 
     public function setContractsAverage(float $contracts_average): self
