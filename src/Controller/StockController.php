@@ -631,7 +631,7 @@ class StockController extends AbstractController
             $option->setUser($user);
             $option->setCurrent(0.0);
             $option->setBuyDate($date);
-            $option->setSellDate();
+            $option->setSellDate($date);
             $option->setSellPrice(0.0);
             $option->setTotalContracts($form->get("contracts")->getData());
             $option->setTotalContractsSold(0);
@@ -681,11 +681,14 @@ class StockController extends AbstractController
         }
 
         $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
 
         return $this->render('form/option_add.html.twig', [
             'error' => $error,
             'form' => $form->createView(),
             'stocks' =>$myStocks,
+            'plays' =>$myPlays,
             'settings' => $settings,
         ]);
     }
