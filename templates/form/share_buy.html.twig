@@ -19,7 +19,7 @@
                                   <span class="flex items-center">
                                     <img x-bind:src="selectedStockIcon"
                                          alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                    <span class="ml-3 block truncate" x-html="getStockName()"></span>
                                   </span>
 
                                     <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
@@ -47,10 +47,10 @@
                                     -->
                                     {% for stock in stocks %}
                                         <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                            <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{  stock.ticker }}');">
+                                            <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{ stock.ticker }}');">
                                                 <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                                                 <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                                <span class="ml-3 block truncate font-normal">{{ stock.name }}</span>
+                                                <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
                                             </div>
 
                                             <!--
@@ -284,12 +284,16 @@
                 <br />
                 {{ error }}
             {% endif %}
+
+            <div class="hidden">
+                <input type="hidden" name="share_buy[Stock]" id="share_buy_Stock" x-model="selectedStock" />
+                <input type="hidden" name="share_buy[payment_currency]" id="share_buy_payment_currency" x-model="selected_currency" />
+                <input type="checkbox" id="share_buy_nofee" name="share_buy[nofee]" value="no_fee" x-model="no_fee">
+                <input type="hidden" name="share_buy[part_of_play]" id="share_buy_part_of_play" x-model="part_of_play_converted()" />
+                <input type="hidden" name="share_buy[play]" id="share_buy_play" x-model="selectedPlay" />
+            </div>
             {{ form_row(form._token) }}
-            <input type="hidden" name="share_buy[Stock]" id="share_buy_Stock" x-model="selectedStock" />
-            <input type="hidden" name="share_buy[payment_currency]" id="share_buy_payment_currency" x-model="selected_currency" />
-            <input type="checkbox" id="share_buy_nofee" name="share_buy[nofee]" value="no_fee" x-model="no_fee">
-            <input type="hidden" name="share_buy[part_of_play]" id="share_buy_part_of_play" x-model="part_of_play_converted()" />
-            <input type="hidden" name="share_buy[play]" id="share_buy_play" x-model="selectedPlay" />
+
         </form>
 
         {# render tailwind class that form inputs will use.. #}
@@ -315,6 +319,7 @@
                 selectedStock: null,
                 selected_currency: "can",
                 selectedStockName: "Select Stock",
+                selectedStockTicker: "###",
                 selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
                 selectedPlay: null,
@@ -343,8 +348,13 @@
                 selectStock(id, name, ticker){
                     this.selectedStock = id;
                     this.selectedStockName = name;
+                    this.selectedStockTicker = ticker;
                     this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
                     this.toggleDropdown();
+                },
+
+                getStockName() {
+                    return "(" + this.selectedStockTicker + ") " + this.selectedStockName;
                 },
 
                 toggleDropdown(){

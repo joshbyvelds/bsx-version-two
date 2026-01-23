@@ -456,7 +456,7 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock s WHERE s.user_id = :user_id ORDER BY s.ticker ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
         $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
 
 
