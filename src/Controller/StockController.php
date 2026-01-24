@@ -44,6 +44,7 @@ class StockController extends AbstractController
     private $can_updated = false;
     private $update_function = false;
     private $test_string = "";
+    private $updated_options = [];
 
     private function updateStockInfo($user, $doctrine, Stock $stock, $disable_can, $day_today, $hour_today)
     {
@@ -254,6 +255,7 @@ class StockController extends AbstractController
                         $option_data = $option_data[$s];
                         $current = $option_data['b'];
                         $option->setCurrent($current);
+                        $this->updated_options[] = $option;
                     }
                 }
             }
@@ -1495,18 +1497,16 @@ class StockController extends AbstractController
              $hour_today = date('H');
              $updatedToday = ($stock->getCompany()->getLastPriceUpdate()->format('Y-m-d') === date('Y-m-d'));
 
-            // check if it's the weekend today
+            // check if its the weekend today
             $weekend_today = ($day_today === "Sat" || $day_today === "Sun" || ($day_today === "Fri" && $hour_today > 16) || ($day_today === "Mon" && $hour_today < 9));
 
             // check if we last updated during the weekend..
             $updated_on_weekend = ($update_day === "Sat" || $update_day === "Sun" || ($update_day === "Fri" && $update_hour > 16) || ($update_day === "Mon" && $update_hour < 9));
-            dump($update_day);
 
             $marketOpen = (!$weekend_today && $hour_today >= 10 && $hour_today < 16);
 
             $ustatus = "Start Check..";
             $this->test_string = "1";
-            dump("Test 1");
 
             // check if force update is enabled in settings..
             if($forceUpdate)
@@ -1650,9 +1650,36 @@ class StockController extends AbstractController
             }
 
             dump("Update:" . $stock->getTicker());
-        
 
-            return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getCompany()->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price));
+
+            $bubble_data = [
+                'stock_id' => $stock->getId(),
+                'price' => $stock->getCompany()->getCurrentPrice(),
+                'profitable' => $stock->isProfitable(),
+                'percent' => $stock->getPercentIncreaseWithPositionValue(),
+                'diff' => $stock->getRemainingTillProfitableIfCurrentPositionsAreSold(),
+                'shares_owned' => $stock->getSharesOwned(),
+                'position_value' => $stock->getPositionValue(),
+            ];
+
+            if(count($this->updated_options) > 0) {
+                foreach($this->updated_options as $option){
+                    $bubble_data["updated_options"][] = [
+                        "id" => $option->getId(),
+                        "current" => $option->getCurrent(),
+                        "average" => $option->getAverage(),
+                        "buys" => $option->getBuys(),
+                        "sells" => $option->getSells(),
+                        "contracts" => $option->getContracts(),
+                        "total_contracts" => $option->getTotalContracts(),
+                        "total_contracts_sold" => $option->getTotalContractsSold(),
+                        "sell_price" => $option->getSellPrice(),
+                    ];
+                }
+
+            }
+
+            return new JsonResponse(array('success' => true, 'Day' => $update_day, 'ticker' => $stock->getCompany()->getTicker(), 'TEST' => $this->test_string, 'update_function' => $this->update_function, 'can_updated' => $this->can_updated, 'UStatus' => $ustatus, 'status_code' => $status_code, 'status_message' =>  $status_message,  'days' => $numberDaysSec, 'price' => $this->update_price, 'bubble_data' => $bubble_data));
         }
 
         return new JsonResponse(array('success' => false, 'reason' => "Non XMLHttp Request"));

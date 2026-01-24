@@ -139,13 +139,13 @@
         {% endif %}
 
         {% if stock_amount > 0 %}
-            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-share-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
                 <div class="inside">
                     <div class="inside_content">
                         {{ stock.name }}<br />
-                        <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
-                        <small>${{ diff|number_format(2) }}</small><br />
-                        <small>{{ stock_earned|number_format(2) }}</small>
+                        <strong class="percent">{{ max(stock.getPercentIncreaseWithPositionValue, -100)|number_format(2) }}%</strong>
+                        <small class="diff">${{ stock.getRemainingTillProfitableIfCurrentPositionsAreSold|number_format(2) }}</small><br />
+                        <small class="unrealised">P/L: ${{ stock.getPositionValue|number_format(2) }}</small><br />
                         {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
                     </div>
                 </div>    
@@ -158,70 +158,41 @@
     <h3>Options</h3>
 
     <div class="bubbles" id="bubbles">
-    {% set option_update_ids = "" %}
     {% for stock in stocks %}
-        {% set stock_dividend = 0 %}
-        {% set stock_amount = 0 %}
-        {% set option_amount = 0 %}
-        {% set stock_average = 0 %}
-        {% set option_diff = 0 %}
-        {% set stock_current = stock.company.currentPrice %}
-        {% set stock_breakeven = 0 %}
-        {% set stock_pl = 0 %}
-        {% set stock_sold = 0 %}
-        {% set buys = 0 %}
-        {% set fees = 0 %}
-        {% set d_buy = 0 %}
-        {% set d_sold = 0 %}
-        {% set total = 0 %}
-        {% set option_cost = 0 %}
-        {% set option_total_worth = 0 %}
-        {% set option_buy_fee = 0 %}
-        {% set option_sell_fee = 0 %}
-
         {% for option in stock.options %}
             {% if option.expired == false and option.contracts >= 1 %}
-                {% set option_amount = option_amount + 1 %}
-                {% set option_buy_fee = (option.buys * 9.95) + (option.contracts * 1.25) %}
-                {% set option_sell_fee = 9.95 + (option.contracts * 1.25) %}
+                {% set option_buy_fee = (option.buys * 9.95) + (option.totalContracts * 1.25) %}
+                {% set option_sell_fees = (option.sells * 9.95) + (option.totalContractsSold * 1.25) %}
+                {% set option_sell_fee = (9.95 + (option.contracts * 1.25)) %}
                 {% set option_current = (option.current * 100 * option.contracts) - option_sell_fee %}
-                {% set option_average = (option.average * 100 * option.contracts) + option_buy_fee %}
-                {% set option_cost = option_cost + option_average %}
-                {% set option_total_worth = max(option_total_worth + option_current, 0) %}
-                {% set option_update_ids = option_update_ids ~ option.id ~ ", " %}
+                {% set option_average = (option.average * 100 * option.totalContracts) + option_buy_fee %}
+                {% set sold_total = (option.sellPrice * option.totalContractsSold) + option_sell_fees %}
+                {% set option_total_worth = max(option_current + sold_total, 0) %}
+                {% set option_cost = option_average %}
+                {% set percent = ((option_total_worth - option_cost) / option_cost) * 100 %}
+                {% set diff = option_total_worth - option_cost %}
+
+                {% if diff > 0 %}
+                    {% set stock_class = "win" %}
+                {% elseif diff|abs < (option_buy_fee + option_sell_fee) %}
+                    {% set stock_class = "fee_loss" %}
+                {% else %}
+                    {% set stock_class = "loss" %}
+                {% endif %}
+
+                <div class="stock_bubble {% if update_disabled == false %}waiting{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-option-id="{{ option.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+                    <div class="inside">
+                        <div class="inside_content">
+                            {{ option.name }}<br />
+                            <strong class="diff_percent">{{ max(percent, -100)|number_format(2) }}%</strong>
+                            <small class="diff_number">${{ diff|number_format(2) }}</small><br />
+                            {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
+                        </div>
+                    </div>
+                </div>
+
             {% endif %}
         {% endfor %}
-
-        {% if stock_amount == 0 and option_amount == 0 %}
-            {% set percent = 0 %}
-            {% set diff = 0 %}
-        {% else %}
-            {% if option_amount != 0 %}
-                {% set percent = ((option_total_worth / option_cost) * 100) - 100 %}
-                {% set diff = option_total_worth - option_cost %}
-            {% endif %}
-        {% endif %}
-
-        {% if diff > 0 %}
-            {% set stock_class = "win" %}
-        {% elseif diff - ((option_buy_fee + option_sell_fee)) < (option_buy_fee + option_sell_fee) %}
-            {% set stock_class = "loss" %}
-        {% else %}
-            {% set stock_class = "fee_loss" %}
-        {% endif %}
-
-        {% if option_amount > 0 %}
-            <div class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
-                <div class="inside">
-                    <div class="inside_content">
-                        {{ stock.name }}| {{ option_update_ids }}<br />
-                        <strong>{{ max(percent, -100)|number_format(2) }}%</strong>
-                        <small>${{ diff|number_format(2) }}</small><br />
-                        {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
-                    </div>
-                </div>    
-            </div>
-        {% endif %}
     {% endfor %}
     </div>
 
@@ -878,9 +849,66 @@
 
                 if(json.success){
                     console.log(json.data);
+
                     // update bubble info..
+                    var jbd = json.bubble_data;
+                    var per = jbd.percent;
+                    var diff = jbd.diff;
+
+                    if(jbd.profitable) {
+                        stock_class = "gold";
+                    } else if (diff > 0) {
+                        stock_class = "win";
+                    } else if ((diff * -1) < (jbd.share_buys * 9.95)) {
+                        stock_class = "fee_loss";
+                    } else {
+                        stock_class = "loss";
+                    }
+
+                    var percent_diff = per.toFixed(2) + "%";
+                    var minus = (diff < 0) ? "-" : "";
+                    var number_diff = "$" + minus + Math.abs(diff).toFixed(2);
+                    var unrealised = "$" + jbd.position_value.toFixed(2);
+
+                    $('[data-share-id="'+ jbd.stock_id +'"] .percent').html(percent_diff);
+                    $('[data-share-id="'+ jbd.stock_id +'"] .diff').html(number_diff);
+                    $('[data-share-id="'+ jbd.stock_id +'"] .unrealised').html("P/L: " + unrealised);
+                    $('[data-share-id="'+ jbd.stock_id +'"]').removeClass("win").removeClass("loss").removeClass("fee_loss").addClass(stock_class);
 
                     // update table info..
+
+                    // Update option bubbles..
+                    if(json.bubble_data.updated_options){
+                        json.bubble_data.updated_options.forEach(function(option) {
+                            var option_buy_fee = (option.buys * 9.95) + (option.total_contracts * 1.25);
+                            var option_sell_fees = (option.sells * 9.95) + (option.total_contracts_sold * 1.25);
+                            var option_sell_fee = (9.95 + (option.contracts * 1.25));
+                            var option_current = (option.current * 100 * option.contracts) - option_sell_fee;
+                            var option_average = (option.average * 100 * option.total_contracts) + option_buy_fee;
+                            var sold_total = (option.sell_price * option.total_contracts_sold) + option_sell_fees;
+                            var option_total_worth = Math.max(option_current + sold_total, 0);
+                            var option_cost = option_average;
+                            var percent = ((option_total_worth - option_cost) / option_cost) * 100;
+                            var diff = option_total_worth - option_cost;
+                            var stock_class = "";
+
+                            if (diff > 0) {
+                                stock_class = "win";
+                            } else if ((diff * -1) < (option_buy_fee + option_sell_fee)) {
+                                stock_class = "fee_loss";
+                            } else {
+                                stock_class = "loss";
+                            }
+
+                            var percent_diff = percent.toFixed(2) + "%";
+                            var minus = (diff < 0) ? "-" : "";
+                            var number_diff = "$" + minus + Math.abs(diff).toFixed(2);
+
+                            $('[data-option-id="'+ option.id +'"] .diff_percent').html(percent_diff);
+                            $('[data-option-id="'+ option.id +'"] .diff_number').html(number_diff);
+                            $('[data-option-id="'+ option.id +'"]').removeClass("win").removeClass("loss").removeClass("fee_loss").addClass(stock_class)
+                        });
+                    }
 
                     // move on to next stock on the list and repeat..
                     if(stockUpdateCounter < stock_ids_array.length){
