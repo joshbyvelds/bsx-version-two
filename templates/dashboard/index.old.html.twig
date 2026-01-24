@@ -1,9 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" /><div class="results"></div></div>{% endblock %}
+{% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" id="stocksearch" /><div class="results"></div></div>{% endblock %}
 
 {% block body %}
-    <div class="wide_column">
+    <div class="wide_column relative">
+
+        <ul id="searchresults" style="display:none;" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+            <!--
+              Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
+
+              Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
+            -->
+            {% for stock in stocks %}
+                <li data-name="{{ stock.name }}" data-ticker="{{ stock.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                    <a class="flex items-center" href="/stocks/details/{{ stock.id }}">
+                        <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+
+            <!-- More items... -->
+        </ul>
+
         {% if settings.dashboardTotalValuePanel %}{% include "dashboard/panels/total_value.html.twig" with {'stocks':stocks} %}{% endif %}
         {% if settings.dashboardPortfolioPanel %}
             {# TODO: check if at least one portfolio has been created for this user, if not add the create a portfolio panel #}
@@ -46,5 +66,46 @@
         {% include "dashboard/panels/stats.html.twig" %}
         {% include "dashboard/panels/transactions.html.twig" with {'transactions': transactions} %}
     </div>
+
+    <script>
+        var search_open = false;
+        $(document).ready(function() {
+           $("#stocksearch").on('click', function() {
+               if(!search_open) {
+                   search_open = true;
+                   $("#searchresults li").show();
+                   $("#searchresults").show();
+               } else {
+                   search_open = false;
+                   $("#searchresults").hide();
+               }
+           });
+
+           $("#stocksearch").on('keyup', function(){
+               search_open = true;
+               var search_value = $(this).val().toLowerCase();
+
+               if (search_value.trim() === "") {
+                   $("#searchresults").hide();
+               } else {
+                   $("#searchresults li").each(function(){
+                       var $li = $(this);
+                       var name = $li.attr("data-name").toLowerCase();
+                       var ticker = $li.attr("data-ticker").toLowerCase();
+                       var sector = $li.attr("data-sector").toLowerCase();
+                       $li.hide();
+
+                       if(name.includes(search_value.trim()) || ticker.includes(search_value.trim()) || sector.includes(search_value.trim())) {
+                           $li.show();
+                       }
+                   });
+
+                   $("#searchresults").show();
+               }
+
+
+           })
+        });
+    </script>
 {% endblock %}
 
