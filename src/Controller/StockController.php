@@ -352,8 +352,11 @@ class StockController extends AbstractController
         if($user !== $stock->getUser())
             return $this->redirectToRoute('dashboard');
 
+        $stocks = $user->getStocks();
+
         return $this->render('stock/details.html.twig', [
             'stock' => $stock,
+            'stocks' => $stocks,
             'settings' => $settings,
         ]);
     }

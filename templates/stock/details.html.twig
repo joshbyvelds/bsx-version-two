@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" /><div class="results"></div></div>{% endblock %}
+{% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" id="stocksearch" /><div class="results"></div></div>{% endblock %}
 
 {% block body %}
     {% set have_alive_options = false %}
@@ -113,6 +113,7 @@
 
     {% set options_total = 0 %}
     {% set options_cost = 0 %}
+    {% set options_total_sell_value = 0 %}
     {% set options_rollover = 0 %}
     {% for option in stock.options %}
         {% if option.expiry|date_modify("16:30")|date('U', "America/New_York") > "now"|date('U', "America/New_York") %}
@@ -120,16 +121,34 @@
         {% endif %}
         {% set options_rollover = 0 %}
         {% for rollover in option.optionRollovers %}
-            {{ rollover.oldPrice }}
-            {% set options_rollover = options_rollover + ((((rollover.oldPrice - rollover.newPrice) * rollover.contracts) * 100) - 9.95 - (1.25 * rollover.contracts)) %}
-            ROLLOVER: {{ options_rollover }}<br />
-            {% set options_cost = options_cost + (9.95 + (1.25 * rollover.contracts)) %}
+            {% set options_rollover = options_rollover + ((((rollover.oldPrice - rollover.newPrice) * rollover.contracts) * 100)) %}
+            {% set options_cost = options_cost + (9.95 + (2.50 * rollover.contracts)) %}
         {% endfor %}
-        {% set option_fees = (9.95 * (option.buys + option.sells)) + (1.25 * option.totalContracts) + 1.25 * option.totalContractsSold %}
-        {% set options_total = options_total - option_fees + ((option.totalContractsSold * (option.sellPrice * 100)) - (option.totalContracts * (option.average * 100))) + options_rollover %}
-
-        {% set options_cost = options_cost + (option.totalContracts * (option.average * 100)) %}
+        {% set options_cost = options_cost + (option.totalContracts * (option.average * 100)) + (9.95 * option.buys) + (1.25 * option.totalContracts) %}
+        {% set options_total_sell_value = options_total_sell_value + (option.totalContractsSold * (option.sellPrice * 100)) - (option.sells * 9.95) - (1.25 * option.totalContractsSold) + options_rollover %}
+        {% set options_total = options_total_sell_value - options_cost %}
     {% endfor %}
+
+    <div class="wide_column relative">
+        <ul id="searchresults" style="display:none;" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+            <!--
+              Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
+
+              Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
+            -->
+            {% for stock in stocks %}
+                <li data-name="{{ stock.name }}" data-ticker="{{ stock.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                    <a class="flex items-center" href="/stocks/details/{{ stock.id }}">
+                        <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                        <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+
+            <!-- More items... -->
+        </ul>
+    </div>
 
     <div>
         <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -235,8 +254,8 @@
                     <dt class="text-sm font-medium leading-6 text-gray-900">Earned</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         {% set cc_debt = 0 %}
-                        {% set options_debt = 0 %}
                         {% set cc_earned = 0 %}
+                        {% set options_debt = 0 %}
                         {% set options_earned = 0 %}
 
                         {% if cc_total < 0 %}
@@ -245,17 +264,11 @@
                             {% set cc_earned = cc_total %}
                         {% endif %}
 
-                        {% if options_total < 0 %}
-                            {% set options_debt = options_total * -1 %}
-                        {% elseif options_total > 0  %}
-                            {% set options_earned = options_total %}
-                        {% endif %}
-
-                        {% set total_debt = stock_buy_cost_total + cc_debt + options_debt %}
+                        {% set total_debt = stock_buy_cost_total + cc_debt + options_cost %}
                         {% if cc_earned >= 0 %}
-                            {% set total_returned = total_sold + dividend_total + cc_earned + options_earned %}
+                            {% set total_returned = total_sold + dividend_total + cc_earned + options_total_sell_value %}
                         {% else %}
-                            {% set total_returned = total_sold + dividend_total + options_earned %}
+                            {% set total_returned = total_sold + dividend_total + options_total_sell_value %}
                         {% endif %}
 
                         {% set share_value = (shares_owned * stock.company.currentPrice) - 9.95 %}
@@ -266,6 +279,7 @@
                         {% set remaining_till_gold = (total_returned - total_debt) %}
                         {% set remaining_till_gold_abs = remaining_till_gold|abs  %}
 
+                        {% if total_debt == 0 %}{% set total_debt = 0.01 %}{% endif %}
                         {% set percent_increase = (((status_total_return - total_debt) / total_debt) * 100) %}
                         {% set percent_increase_with_current_share_value = (((status_total_return_with_current_share_value - total_debt) / total_debt) * 100) %}
 
@@ -334,7 +348,10 @@
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Break Even Prices</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <div class="flex flex-col">
+                        {% if shares_owned <= 0 and have_alive_options == false %}
+                            No current positions to breakeven with. <small>(No shares or active options).</small>
+                        {% else %}
+                            <div class="flex flex-col">
                             <div class="-m-1.5 overflow-x-auto">
                                 <div class="p-1.5 min-w-full inline-block align-middle">
                                     <div class="border rounded-lg shadow overflow-hidden dark:border-neutral-700 dark:shadow-gray-900">
@@ -358,6 +375,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </dd>
                 </div>
 
@@ -398,6 +416,9 @@
                                 {% set percent_plus = 60 %}
                                 {% set block_percent = percent_increase - 400 %}
                             {% else %}
+                                {% set range_stage = 6 %}
+                                {% set percent_plus = 59 %}
+                                {% set block_percent = 100 %}
                                 <div class="bg-yellow-400 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 5 (+500%)</span>
                             {% endif %}
                         {% endif %}
@@ -920,6 +941,7 @@
                                 <th>Expiry Date</th>
                                 <th>Contracts</th>
                                 <th>Average</th>
+                                <th>Rollover</th>
                                 <th>Sell Date</th>
                                 <th>Sell Price</th>
                             </tr>
@@ -928,8 +950,15 @@
                                 <tr style="text-align: center">
                                     <td>{{ option.buyDate|date("m/d/Y") }}</td>
                                     <td>{{ option.expiry|date("m/d/Y") }}</td>
-                                    <td>{{ option.contracts }}</td>
-                                    <td>{{ option.average }}</td>
+                                    <td>{{ option.totalContractsSold }}/{{ option.totalContracts }}</td>
+                                    <td>{{ option.average|number_format(2) }}</td>
+                                    <td>
+                                        {% set ro = 0 %}
+                                        {% for rollover in option.optionRollovers %}
+                                            {% set ro = ro + ((((rollover.oldPrice - rollover.newPrice) * rollover.contracts) * 100)) - (9.95 + (2.50 * rollover.contracts)) %}
+                                        {% endfor %}
+                                        ${{ ro|number_format(2) }}
+                                    </td>
                                     {% if option.expired and option.totalContractsSold == 0 %}
                                         <td colspan="2">Expired</td>
                                     {% elseif option.totalContractsSold == 0 %}
@@ -983,4 +1012,45 @@
             </dl>
         </div>
     </div>
+
+    <script>
+        var search_open = false;
+        $(document).ready(function() {
+            $("#stocksearch").on('click', function() {
+                if(!search_open) {
+                    search_open = true;
+                    $("#searchresults li").show();
+                    $("#searchresults").show();
+                } else {
+                    search_open = false;
+                    $("#searchresults").hide();
+                }
+            });
+
+            $("#stocksearch").on('keyup', function(){
+                search_open = true;
+                var search_value = $(this).val().toLowerCase();
+
+                if (search_value.trim() === "") {
+                    $("#searchresults").hide();
+                } else {
+                    $("#searchresults li").each(function(){
+                        var $li = $(this);
+                        var name = $li.attr("data-name").toLowerCase();
+                        var ticker = $li.attr("data-ticker").toLowerCase();
+                        var sector = $li.attr("data-sector").toLowerCase();
+                        $li.hide();
+
+                        if(name.includes(search_value.trim()) || ticker.includes(search_value.trim()) || sector.includes(search_value.trim())) {
+                            $li.show();
+                        }
+                    });
+
+                    $("#searchresults").show();
+                }
+
+
+            })
+        });
+    </script>
 {% endblock %}
