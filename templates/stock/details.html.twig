@@ -323,10 +323,12 @@
                 {# Breakeven Price #}
                 {% set breakeven_all = 0.00 %}
                 {% if new_total < 0 %}
+                    {% set sell_fee = 9.95 %}
+                    {% if stock.company.noFee %}{% set sell_fee = 0 %}{% endif %}
                     {% if shares_owned > 0 %}
-                        {% set breakeven_all = ((new_total|abs) + 9.95) / shares_owned %}
+                        {% set breakeven_all = ((new_total|abs) + sell_fee) / shares_owned %}
                     {% else %}
-                        {% set breakeven_all = ((new_total|abs) + 9.95) %}
+                        {% set breakeven_all = ((new_total|abs) + sell_fee) %}
                     {% endif %}
                 {% endif %}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
