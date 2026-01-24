@@ -3,21 +3,20 @@
 {% block title %}BSX - Dashboard <div class="search_wrapper" style="display:inline;"><input type="text" placeholder="search stocks" /><div class="results"></div></div>{% endblock %}
 
 {% block body %}
-
-    {% set stock_amount = 0 %}
+    {% set have_alive_options = false %}
+    {% set shares_owned = 0 %}
     {% set stock_average = 0 %}
 
     {% for buy in stock.shareBuys %}
         {% if buy.sold < buy.amount %}
             {% set remaining = buy.amount - buy.sold %}
-            {% set stock_amount = stock_amount + remaining %}
+            {% set shares_owned = shares_owned + remaining %}
             {% set buy_average = remaining * buy.price %}
             {% set stock_average = stock_average + buy_average %}
         {% endif %}
     {% endfor %}
-
-    {% set stock_dividend = 0 %}
-    {% set stock_amount = 0 %}
+    
+    {% set shares_owned = 0 %}
     {% set stock_average = 0 %}
     {% set stock_money_total = 0 %}
     {% set stock_earned = stock.earned %}
@@ -30,6 +29,10 @@
     {% set d_bought = "" %}
     {% set d_sold = "" %}
     {% set buy_average = 0 %}
+    {% set dividend_total_payments = 0 %}
+    {% set dividend_total = 0 %}
+    {% set dividend_average = 0 %}
+    {% set dividend_latest = 0 %}
 
     {% set today = "now"|date('d-m-Y') %}
     {% set lastBuyDate = today %}
@@ -47,7 +50,7 @@
         {% if buy.sold < buy.amount %}
             {% set remaining = buy.amount - buy.sold %}
             {% set buys = buys + 1 %}
-            {% set stock_amount = stock_amount + remaining %}
+            {% set shares_owned = shares_owned + remaining %}
             {% set buy_average = remaining * buy.price %}
             {% set stock_average = stock_average + buy_average %}
             {% set stock_money_total = stock_money_total + buy_average %}
@@ -56,19 +59,19 @@
 
     {% endfor %}
 
-    {# {{ stock_buy_cost_total }} | {{ stock_amount }} | {{ buy_average }} | {{ stock_average }} #}
+    {# {{ stock_buy_cost_total }} | {{ shares_owned }} | {{ buy_average }} | {{ stock_average }} #}
 
 
-    {% if stock_amount > 0 %}
-        {% set stock_average = stock_average / stock_amount %}
+    {% if shares_owned > 0 %}
+        {% set stock_average = stock_average / shares_owned %}
         {% if stock.company.noFee or breakeven_fee == false %}
             {% set fee = 0 %}
         {% else %}
-            {% set fee = ((buys * 9.95) + 9.95) / stock_amount %}
+            {% set fee = ((buys * 9.95) + 9.95) / shares_owned %}
         {% endif %}
         {% set stock_breakeven = fee + stock_average %}
         {% set diff = stock_current - stock_breakeven %}
-        {% set stock_pl = diff * stock_amount %}
+        {% set stock_pl = diff * shares_owned %}
     {% endif %}
 
     {% set total_sold = 0 %}
@@ -84,18 +87,24 @@
         {% set d_sold = sell.date %}
     {% endfor %}
 
-    {% for divi in stock.dividends %}
-        {% set stock_dividend = stock_dividend + divi.amount %}
-    {% endfor %}
 
-    {% set stock_earned = stock_earned + stock_dividend - stock_buy_cost_total %}
+    {% for dividend_payment in stock.dividends %}
+        {% set dividend_total_payments = dividend_total_payments + 1 %}
+        {% set dividend_total = dividend_total + dividend_payment.amount %}
+        {% set dividend_latest = dividend_payment.amount %}
+        {% set dividend_average = dividend_total / dividend_total_payments %}
+    {% endfor %}
+    
+    
+
+    {% set stock_earned = stock_earned + dividend_total - stock_buy_cost_total %}
     {% set cc_total = 0 %}
     {% set breakeven_cc = 0 %}
     {% for cc in stock.coveredCalls %}
         {% set cc_total = cc_total + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) - cc.buyoutPrice %}
         {% set stock_earned = stock_earned + (((cc.price * cc.contracts) * 100) - 9.95 - (1.25 * cc.contracts)) %}
-        {% if stock_amount > 0 %}
-            {% set breakeven_cc = stock_breakeven - (cc_total / stock_amount) %}
+        {% if shares_owned > 0 %}
+            {% set breakeven_cc = stock_breakeven - (cc_total / shares_owned) %}
         {% endif %}
     {% endfor %}
 
@@ -106,6 +115,9 @@
     {% set options_cost = 0 %}
     {% set options_rollover = 0 %}
     {% for option in stock.options %}
+        {% if option.expiry|date_modify("16:30")|date('U', "America/New_York") > "now"|date('U', "America/New_York") %}
+            {% set have_alive_options = true %}
+        {% endif %}
         {% set options_rollover = 0 %}
         {% for rollover in option.optionRollovers %}
             {{ rollover.oldPrice }}
@@ -157,15 +169,15 @@
 
                 {# Amount Owned #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Amount Owned</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock_amount }}</dd>
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Shares Owned</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ shares_owned }}</dd>
                 </div>
 
                 {# Performance #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Performance</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        {% if stock_amount > 0 %}
+                        {% if shares_owned > 0 %}
                         <table style="width:100%;">
                             <tr>
                                 <td>
@@ -218,9 +230,9 @@
                     </dd>
                 </div>
 
-                {# Status #}
+                {# Earned #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Position Status</dt>
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Earned</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         {% set cc_debt = 0 %}
                         {% set options_debt = 0 %}
@@ -241,80 +253,56 @@
 
                         {% set total_debt = stock_buy_cost_total + cc_debt + options_debt %}
                         {% if cc_earned >= 0 %}
-                            {% set total_returned = total_sold + stock_dividend + cc_earned + options_earned %}
+                            {% set total_returned = total_sold + dividend_total + cc_earned + options_earned %}
                         {% else %}
-                            {% set total_returned = total_sold + stock_dividend + options_earned %}
+                            {% set total_returned = total_sold + dividend_total + options_earned %}
                         {% endif %}
 
-                        {% set share_value = (stock_amount * stock.company.currentPrice) - 9.95 %}
+                        {% set share_value = (shares_owned * stock.company.currentPrice) - 9.95 %}
 
                         {% set status_total_return = total_returned %}
                         {% set status_total_return_with_current_share_value = total_returned + share_value %}
 
-                        {% set remaining_till_gold = (total_returned - (total_debt + 9.95))  %}
-                        {% set remaining_till_gold_abs = (total_returned - (total_debt + 9.95))|abs  %}
+                        {% set remaining_till_gold = (total_returned - total_debt) %}
+                        {% set remaining_till_gold_abs = remaining_till_gold|abs  %}
 
                         {% set percent_increase = (((status_total_return - total_debt) / total_debt) * 100) %}
                         {% set percent_increase_with_current_share_value = (((status_total_return_with_current_share_value - total_debt) / total_debt) * 100) %}
 
-                        {% if stock_amount == 0 %}
-                            {% set status_total_return_with_current_share_value = status_total_return%}
-                        {% endif %}
-
                         <div id="status_debug" style="display:none;">
-                            sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br /><br />
+                            Bought: ${{ stock_buy_cost_total|number_format(2) }}<br />
+                            Sold: ${{ total_sold|number_format(2) }}<br />
+                            Dividends: ${{ dividend_total|number_format(2) }}<br />
+                            Covered Call: ${{ cc_total|number_format(2) }}<br />
+                            Naked Options: ${{ options_total|number_format(2) }}<br />
+                            -----------------<br />
                             Total Debt: ${{ total_debt|number_format(2)  }}<br />
-                            Share Value: {{ stock_amount }} * {{ stock.company.currentPrice }} = ${{ share_value|number_format(2) }}<br />
+                            Share Value: {{ shares_owned }} * {{ stock.company.currentPrice }} = ${{ share_value|number_format(2) }}<br />
                             Total Sold: ${{ total_returned|number_format(2)  }}<br />
+
                             {% if remaining_till_gold < 0 %}
-                                Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }} | {{ stock_amount }} Shares / {{ remaining_till_gold|abs|number_format(2) }} = ${{ (remaining_till_gold|abs/stock_amount)|number_format(2) }}<br />
+                                {% if shares_owned > 0 %}
+                                    Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }} | {{ shares_owned }} Shares / {{ remaining_till_gold|abs|number_format(2) }} = ${{ (remaining_till_gold|abs/shares_owned)|number_format(2) }}<br />
+                                {% else %}
+                                    Remaining Till Debt Free: ${{ remaining_till_gold|number_format(2) }}
+                                {% endif %}
                                 Percent Increase: {{ percent_increase|number_format(2) }}%;<br />
                             {% else %}
                                 Debt Free:True ({{ percent_increase|number_format(2) }}% Return)<br />
                             {% endif %}
 
-                            {% if stock_amount > 0 %}
-                            Percent Increase with Current Share Value: {{ percent_increase_with_current_share_value|number_format(2) }}%;<br />
+                            {% if shares_owned > 0 %}
+                                Percent Increase with Current Share Value: {{ percent_increase_with_current_share_value|number_format(2) }}%;<br />
                             {% endif %}
+                            <br />
+                            <small>Earned Calculation: sold (${{ total_sold|number_format(2) }}) - bought (${{ stock_buy_cost_total|number_format(2)  }}) + dividend (${{ dividend_total|number_format(2)  }}) + covered_call (${{ cc_total|number_format(2)  }}) + options $({{ options_total|number_format(2)  }})</small><br />
                         </div>
-
-                        {% if total_debt >= status_total_return_with_current_share_value %}
-                            <div class="bg-rose-700" style="display:inline-block; width:20px; height:20px;"></div> UNDERWATER
-                            {% set range_stage = 1 %}
-                            {% set percent_plus = 0 %}
-                            {% set block_percent = (100 + percent_increase) %}
-                        {% else %}
-                            {% set percent_increase = ((((status_total_return_with_current_share_value) - total_debt) / total_debt) * 100) %}
-                            {% if percent_increase < 100 %}
-                                <div class="bg-green-700" style="display:inline-block; width:20px; height:20px;"></div> PROFITABLE
-                                {% set range_stage = 2 %}
-                                {% set percent_plus = 12 %}
-                                {% set block_percent = percent_increase %}
-                            {% elseif percent_increase < 200 %}
-                                <div class="bg-yellow-800" style="display:inline-block; width:20px; height:20px;"></div> GOLD LEVEL 1 (+100%)
-                                {% set range_stage = 3 %}
-                                {% set percent_plus = 24 %}
-                                {% set block_percent = percent_increase - 100 %}
-                            {% elseif percent_increase < 300 %}
-                                <div class="bg-yellow-700" style="display:inline-block; width:20px; height:20px;"></div> GOLD LEVEL 2 (+200%)
-                                {% set range_stage = 4 %}
-                                {% set percent_plus = 36 %}
-                                {% set block_percent = percent_increase - 200 %}
-                            {% elseif percent_increase < 400 %}
-                                <div class="bg-yellow-600" style="display:inline-block; width:20px; height:20px;"></div> GOLD LEVEL 3 (+300%)
-                                {% set range_stage = 5 %}
-                                {% set percent_plus = 48 %}
-                                {% set block_percent = percent_increase - 300 %}
-                            {% elseif percent_increase < 500 %}
-                                <div class="bg-yellow-500" style="display:inline-block; width:20px; height:20px;"></div> GOLD LEVEL 4 (+400%)
-                                {% set range_stage = 6 %}
-                                {% set percent_plus = 60 %}
-                                {% set block_percent = percent_increase - 400 %}
-                            {% else %}
-                                <div class="bg-yellow-400" style="display:inline-block; width:20px; height:20px;"></div> GOLD LEVEL 5 (+500%)
-                            {% endif %}
-                        {% endif %}
-                        <button id="status_debug_btn" class="my-5 bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" onclick="show_status_legend();">Show Status Debug</button>
+                        <div class="relative flex items-center justify-center h-[60px] w-full">
+                            <button id="status_debug_btn" onclick="show_status_legend();" class="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-500 text-white text-xs rounded">Show Earned Calculation</button>
+                            {% set new_total = (total_sold - stock_buy_cost_total + dividend_total + cc_total + options_total) %}
+                            <span class="text-6xl font-medium text-slate-500">${{ new_total|number_format(2) }}</span>
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl {% if percent_increase < 0 %}text-red-600{% elseif percent_increase|number_format(2) == 0.00 %}text-black{% else %}text-green-600{% endif %}">{{ percent_increase|number_format(2) }}%</span>
+                        </div>
                         <script>
                             let status_debug_hidden = true;
                             function show_status_legend(){
@@ -329,10 +317,95 @@
                                 }
                             }
                         </script>
+                    </dd>
+                </div>
+
+                {# Breakeven Price #}
+                {% set breakeven_all = 0.00 %}
+                {% if new_total < 0 %}
+                    {% if shares_owned > 0 %}
+                        {% set breakeven_all = ((new_total|abs) + 9.95) / shares_owned %}
+                    {% else %}
+                        {% set breakeven_all = ((new_total|abs) + 9.95) %}
+                    {% endif %}
+                {% endif %}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Break Even Prices</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <div class="flex flex-col">
+                            <div class="-m-1.5 overflow-x-auto">
+                                <div class="p-1.5 min-w-full inline-block align-middle">
+                                    <div class="border rounded-lg shadow overflow-hidden dark:border-neutral-700 dark:shadow-gray-900">
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                            <thead>
+                                            <tr class="divide-x divide-gray-200 dark:divide-neutral-700">
+                                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Shares Only</th>
+                                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">with Covered Calls</th>
+                                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">with Everything<br /><small>(Covered Calls, Naked Options, Dividends)</small></th>
+                                            </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ stock_breakeven|number_format(2) }}</span></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ breakeven_cc|number_format(2) }}</span></td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ breakeven_all|number_format(2) }}</span></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </dd>
+                </div>
+
+                {# Company Status #}
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Company Status</dt>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                        <div class="label mb-3">
+                        {% if total_debt >= status_total_return %}
+                            <div class="bg-rose-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">UNDERWATER</span>
+                            {% set range_stage = 1 %}
+                            {% set percent_plus = 0 %}
+                            {% set block_percent = (100 + percent_increase) %}
+                        {% else %}
+                            {% if percent_increase < 100 %}
+                                <div class="bg-green-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">PROFITABLE</span>
+                                {% set range_stage = 2 %}
+                                {% set percent_plus = 12 %}
+                                {% set block_percent = percent_increase %}
+                            {% elseif percent_increase < 200 %}
+                                <div class="bg-yellow-800 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 1 (+100%)</span>
+                                {% set range_stage = 3 %}
+                                {% set percent_plus = 24 %}
+                                {% set block_percent = percent_increase - 100 %}
+                            {% elseif percent_increase < 300 %}
+                                <div class="bg-yellow-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 2 (+200%)</span>
+                                {% set range_stage = 4 %}
+                                {% set percent_plus = 36 %}
+                                {% set block_percent = percent_increase - 200 %}
+                            {% elseif percent_increase < 400 %}
+                                <div class="bg-yellow-600 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 3 (+300%)</span>
+                                {% set range_stage = 5 %}
+                                {% set percent_plus = 48 %}
+                                {% set block_percent = percent_increase - 300 %}
+                            {% elseif percent_increase < 500 %}
+                                <div class="bg-yellow-500 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 4 (+400%)</span>
+                                {% set range_stage = 6 %}
+                                {% set percent_plus = 60 %}
+                                {% set block_percent = percent_increase - 400 %}
+                            {% else %}
+                                <div class="bg-yellow-400 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 5 (+500%)</span>
+                            {% endif %}
+                        {% endif %}
+                        </div>
 
                         {% set marker_percent = percent_plus + (block_percent * 0.4) %}
 
                         {% set middle = "[" ~ percent_increase|number_format(2) ~ "%]"  %}
+
+                        {% set marker_nudge = 11 %}
 
                         <style>
                             .marker {
@@ -394,7 +467,7 @@
                         </style>
 
                         <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
-                            <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
+                            <div class="marker" style="left:calc({{ marker_percent|number_format(2) }}% - {{ marker_nudge }}px)"></div>
                             <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">0%</span></div><!--
                             --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">100%</span></div><!--
                             --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">200%</span></div><!--
@@ -405,136 +478,176 @@
                     </dd>
                 </div>
 
-                {# Gold Status Range Meter #}
+                {# Position Status #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Gold Status Meter</dt>
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Position Status</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        {% if stock_amount == 0  %}
-                            No Shares
-                        {% else %}
-
-                        {% set min_price = 0 %}
-                        {% set profit_price = ((remaining_till_gold_abs) * 1) / stock_amount|abs %}
-                        {% set gold_price_1 = ((remaining_till_gold_abs) * 2) / stock_amount|abs %}
-                        {% set gold_price_2 = ((remaining_till_gold_abs) * 4) / stock_amount|abs %}
-                        {% set gold_price_3 = ((remaining_till_gold_abs) * 8) / stock_amount|abs %}
-                        {% set gold_price_4 = ((remaining_till_gold_abs) * 16) / stock_amount|abs %}
-                        {% set gold_price_5 = ((remaining_till_gold_abs) * 32) / stock_amount|abs %}
-
-                        {% set marker_percent = ((stock.company.currentPrice / gold_price_5) * 100) %}
-
-                        {% if stock.company.currentPrice < profit_price %}
+                        {% if shares_owned > 0 or have_alive_options %}
+                        <div class="label mb-3">
+                        {% if total_debt >= status_total_return_with_current_share_value %}
+                            <div class="bg-rose-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">UNDERWATER</span>
                             {% set range_stage = 1 %}
-                            {% set block_percent = (stock.company.currentPrice / profit_price) %}
                             {% set percent_plus = 0 %}
-                        {% elseif stock.company.currentPrice < gold_price_1 %}
-                            {% set range_stage = 2 %}
-                            {% set block_percent = ((stock.company.currentPrice - profit_price) / (gold_price_1 - profit_price)) %}
-                            {% set percent_plus = 12 %}
-                        {% elseif stock.company.currentPrice < gold_price_2 %}
-                            {% set range_stage = 3 %}
-                            {% set block_percent = ((stock.company.currentPrice - gold_price_1) / (gold_price_2 - gold_price_1)) %}
-                            {% set percent_plus = 24 %}
-                        {% elseif stock.company.currentPrice < gold_price_3 %}
-                            {% set range_stage = 4 %}
-                            {% set block_percent = ((stock.company.currentPrice - gold_price_2) / (gold_price_3 - gold_price_2)) %}
-                            {% set percent_plus = 36 %}
-                        {% elseif stock.company.currentPrice < gold_price_4 %}
-                            {% set range_stage = 5 %}
-                            {% set block_percent = ((stock.company.currentPrice - gold_price_3) / (gold_price_4 - gold_price_3)) %}
-                            {% set percent_plus = 48 %}
-                        {% elseif stock.company.currentPrice < gold_price_5 %}
-                            {% set range_stage = 6 %}
-                            {% set block_percent = ((stock.company.currentPrice - gold_price_4) / (gold_price_5 - gold_price_4)) %}
-                            {% set percent_plus = 60 %}
+                            {% set block_percent = (100 + percent_increase_with_current_share_value) %}
                         {% else %}
-                            {% set range_stage = 6 %}
-                            {% set block_percent = 1 %}
-                            {% set percent_plus = 60 %}
+                            {% if percent_increase_with_current_share_value < 100 %}
+                                <div class="bg-green-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">PROFITABLE</span>
+                                {% set range_stage = 2 %}
+                                {% set percent_plus = 12 %}
+                                {% set block_percent = percent_increase_with_current_share_value %}
+                            {% elseif percent_increase_with_current_share_value < 200 %}
+                                <div class="bg-yellow-800 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 1 (+100%)</span>
+                                {% set range_stage = 3 %}
+                                {% set percent_plus = 24 %}
+                                {% set block_percent = percent_increase_with_current_share_value - 100 %}
+                            {% elseif percent_increase_with_current_share_value < 300 %}
+                                <div class="bg-yellow-700 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 2 (+200%)</span>
+                                {% set range_stage = 4 %}
+                                {% set percent_plus = 36 %}
+                                {% set block_percent = percent_increase_with_current_share_value - 200 %}
+                            {% elseif percent_increase_with_current_share_value < 400 %}
+                                <div class="bg-yellow-600 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 3 (+300%)</span>
+                                {% set range_stage = 5 %}
+                                {% set percent_plus = 48 %}
+                                {% set block_percent = percent_increase_with_current_share_value - 300 %}
+                            {% elseif percent_increase_with_current_share_value < 500 %}
+                                <div class="bg-yellow-500 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 4 (+400%)</span>
+                                {% set range_stage = 6 %}
+                                {% set percent_plus = 60 %}
+                                {% set block_percent = percent_increase_with_current_share_value - 400 %}
+                            {% else %}
+                                <div class="bg-yellow-400 inline-block w-5 h-5 rounded-3xl border border-solid border-black"></div><span class="inline-block ml-2 align-top relative bottom-0.5">GOLD LEVEL 5 (+500%)</span>
+                            {% endif %}
                         {% endif %}
+                        </div>
+                        {% set marker_percent = percent_plus + (block_percent * 0.4) %}
 
-                        {% set marker_percent = percent_plus + (block_percent * 40) %}
-
-                        {% set middle = "[$" ~ stock.company.currentPrice|round(2,"floor")|number_format(2) ~ "]"  %}
+                        {% set middle = "[" ~ percent_increase_with_current_share_value|number_format(2) ~ "%]"  %}
 
                         <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
-                            <div class="marker" style="left:{{ marker_percent|number_format(2) }}%"></div>
-                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">$0.00</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">${{ profit_price|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">${{ profit_price|number_format(2) }}</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_1|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">${{ gold_price_1|number_format(2) }}</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_2|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">${{ gold_price_2|number_format(2) }}</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_3|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">${{ gold_price_3|number_format(2) }}</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_4|number_format(2) }}</span></div><!--
-                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">${{ gold_price_4|number_format(2) }}</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_5|number_format(2) }}</span></div>
+                            <div class="marker" style="left:calc({{ marker_percent|number_format(2) }}% - {{ marker_nudge }}px)"></div>
+                            <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">-100%</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">0%</span></div><!--
+                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">0%</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">100%</span></div><!--
+                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">100%</span><span class="middle"> Gold Lvl 1: {{ middle }} </span>{% endif %}<span class="right">200%</span></div><!--
+                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">200%</span><span class="middle"> Gold Lvl 2: {{ middle }} </span>{% endif %}<span class="right">300%</span></div><!--
+                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">300%</span><span class="middle"> Gold Lvl 3: {{ middle }} </span>{% endif %}<span class="right">400%</span></div><!--
+                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">400%</span><span class="middle"> Gold Lvl 4: {{ middle }} </span>{% endif %}<span class="right">500%</span></div>
                         </div>
-
-                        <button id="legend_btn" class="my-5 bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" onclick="showLegend();">Show Legend</button>
-
-                        <div class="legend py-5" id="price_range_legend" style="display:none;">
-                            Profit Price = ${{ profit_price|number_format(2) }}<br />
-                            Gold 1 Price = ${{ gold_price_1|number_format(2) }} - Sell {{ (stock_amount / 2)|round(0,'ceil')  }} Shares to enable Gold Status<br />
-                            Gold 2 Price = ${{ gold_price_2|number_format(2) }} - Sell {{ (stock_amount / 4)|round(0,'ceil')  }} Shares to enable Gold Status<br />
-                            Gold 3 Price = ${{ gold_price_3|number_format(2) }} - Sell {{ (stock_amount / 8)|round(0,'ceil')  }} Shares to enable Gold Status<br />
-                            Gold 4 Price = ${{ gold_price_4|number_format(2) }} - Sell {{ (stock_amount / 16)|round(0,'ceil')  }} Shares to enable Gold Status<br />
-                            Gold 5 Price = ${{ gold_price_5|number_format(2) }} - Sell {{ (stock_amount / 32)|round(0,'ceil')  }} Shares to enable Gold Status<br />
-                        </div>
-
-
-                        <script>
-                            let legend_hidden = true;
-                            function showLegend(){
-                                if (!legend_hidden){
-                                    document.getElementById("legend_btn").innerHTML = "Show Legend";
-                                    document.getElementById('price_range_legend').style.display = 'none';
-                                    legend_hidden = true;
-                                } else {
-                                    document.getElementById("legend_btn").innerHTML = "Hide Legend";
-                                    document.getElementById('price_range_legend').style.display = 'block';
-                                    legend_hidden = false;
-                                }
-                            }
-                        </script>
+                        {% else %}
+                            You have no share or option positions in this company
                         {% endif %}
                     </dd>
                 </div>
 
-                {# Earned #}
+                {# Profitablity Status Range Meter #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Earned</dt>
+                    <dt class="text-sm font-medium leading-6 text-gray-900">Profitablity Status Meter
+                        <p class="font-normal text-xs max-w-56 text-gray-700 mt-2">Quick meter to show how many shares you need to sell at the level price to make the company profitable.</p>
+                    </dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        sold:{{ total_sold }} - bought:{{ stock_buy_cost_total }} + divi:{{ stock_dividend }} + covered_call:{{ cc_total }} + options:{{ options_total }}<br />
-                        <br />
-                        {% set new_total = (total_sold - stock_buy_cost_total + stock_dividend + cc_total + options_total) %}
-{#                        <span class="text-3xl">${{ stock_earned|number_format(2) }}</span>#}
-                        <span class="text-3xl">${{ new_total|number_format(2) }}</span>
-                    </dd>
-                </div>
+                        {% if percent_increase > 0 %}
+                            {% if percent_increase < 100 %}
+                                Already Profitable (<span class="text-green-600">Level 0</span>)
+                            {% elseif percent_increase < 200 %}
+                                Already Gold Status (<span class="text-yellow-700">Level 1</span>)
+                            {% elseif percent_increase < 300 %}
+                                Already Gold Status (<span class="text-yellow-600">Level 2</span>)
+                            {% elseif percent_increase < 400 %}
+                                Already Gold Status (<span class="text-yellow-500">Level 3</span>)
+                            {% elseif percent_increase < 500 %}
+                                Already Gold Status (<span class="text-yellow-400">Level 4</span>)
+                            {% else %}
+                                Already Gold Status (<span class="text-yellow-300">Level 5</span>)
+                            {% endif %}
 
-                {# Breakeven Price #}
-                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-                    <dt class="text-sm font-medium leading-6 text-gray-900">Break Even Prices</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                        <div class="flex flex-col">
-                            <div class="-m-1.5 overflow-x-auto">
-                                <div class="p-1.5 min-w-full inline-block align-middle">
-                                    <div class="border rounded-lg shadow overflow-hidden dark:border-neutral-700 dark:shadow-gray-900">
-                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                                            <thead>
-                                            <tr class="divide-x divide-gray-200 dark:divide-neutral-700">
-                                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Shares Only</th>
-                                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">with Covered Calls</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ stock_breakeven|number_format(2) }}</span></td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ breakeven_cc|number_format(2) }}</span></td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                        {% elseif shares_owned == 0 %}
+                            You have no share positions to sell to increase profitablilty
+                        {% else %}
+                            {% set min_price = 0 %}
+                            {% set profit_price = ((remaining_till_gold_abs) * 1) / shares_owned|abs %}
+                            {% set gold_price_1 = ((remaining_till_gold_abs) * 2) / shares_owned|abs %}
+                            {% set gold_price_2 = ((remaining_till_gold_abs) * 4) / shares_owned|abs %}
+                            {% set gold_price_3 = ((remaining_till_gold_abs) * 8) / shares_owned|abs %}
+                            {% set gold_price_4 = ((remaining_till_gold_abs) * 16) / shares_owned|abs %}
+                            {% set gold_price_5 = ((remaining_till_gold_abs) * 32) / shares_owned|abs %}
+
+                            {% set marker_percent = ((stock.company.currentPrice / gold_price_5) * 100) %}
+
+                            {% if stock.company.currentPrice < profit_price %}
+                                {% set range_stage = 1 %}
+                                {% set block_percent = (stock.company.currentPrice / profit_price) %}
+                                {% set percent_plus = 0 %}
+                            {% elseif stock.company.currentPrice < gold_price_1 %}
+                                {% set range_stage = 2 %}
+                                {% set block_percent = ((stock.company.currentPrice - profit_price) / (gold_price_1 - profit_price)) %}
+                                {% set percent_plus = 12 %}
+                            {% elseif stock.company.currentPrice < gold_price_2 %}
+                                {% set range_stage = 3 %}
+                                {% set block_percent = ((stock.company.currentPrice - gold_price_1) / (gold_price_2 - gold_price_1)) %}
+                                {% set percent_plus = 24 %}
+                            {% elseif stock.company.currentPrice < gold_price_3 %}
+                                {% set range_stage = 4 %}
+                                {% set block_percent = ((stock.company.currentPrice - gold_price_2) / (gold_price_3 - gold_price_2)) %}
+                                {% set percent_plus = 36 %}
+                            {% elseif stock.company.currentPrice < gold_price_4 %}
+                                {% set range_stage = 5 %}
+                                {% set block_percent = ((stock.company.currentPrice - gold_price_3) / (gold_price_4 - gold_price_3)) %}
+                                {% set percent_plus = 48 %}
+                            {% elseif stock.company.currentPrice < gold_price_5 %}
+                                {% set range_stage = 6 %}
+                                {% set block_percent = ((stock.company.currentPrice - gold_price_4) / (gold_price_5 - gold_price_4)) %}
+                                {% set percent_plus = 60 %}
+                            {% else %}
+                                {% set range_stage = 6 %}
+                                {% set block_percent = 1 %}
+                                {% set percent_plus = 60 %}
+                            {% endif %}
+
+                            {% set marker_percent = percent_plus + (block_percent * 40) %}
+
+                            {% set middle = "[$" ~ stock.company.currentPrice|round(2,"floor")|number_format(2) ~ "]"  %}
+                            <div class="relative" style="background:white; border:solid 1px black; border-radius:50px; height:30px;">
+                                <div class="marker" style="left:calc({{ marker_percent|number_format(2) }}% - {{ marker_nudge }}px)"></div>
+                                <div class="stage bg-rose-700" style="{% if range_stage == 1 %}width:40%;{% else %}width:12%;{% endif %} left:0; border-radius: 50px 0 0 50px;">{% if range_stage == 1 %}<span class="left">$0.00</span><span class="middle"> Underwater: {{ middle }} </span>{% endif %}<span class="right">${{ profit_price|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-green-600" style="{% if range_stage == 2 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 2 %}<span class="left">${{ profit_price|number_format(2) }}</span><span class="middle"> Profitable: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_1|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-700" style="{% if range_stage == 3 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 3 %}<span class="left">${{ gold_price_1|number_format(2) }}</span><span class="middle"> Profit Price lvl 1: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_2|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-600" style="{% if range_stage == 4 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 4 %}<span class="left">${{ gold_price_2|number_format(2) }}</span><span class="middle"> Profit Price lvl 2: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_3|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-500" style="{% if range_stage == 5 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 5 %}<span class="left">${{ gold_price_3|number_format(2) }}</span><span class="middle"> Profit Price lvl 3: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_4|number_format(2) }}</span></div><!--
+                            --><div class="stage bg-yellow-400" style="{% if range_stage == 6 %}width:40%;{% else %}width:12%;{% endif %}">{% if range_stage == 6 %}<span class="left">${{ gold_price_4|number_format(2) }}</span><span class="middle"> Profit Price Lvl 4: {{ middle }} </span>{% endif %}<span class="right">${{ gold_price_5|number_format(2) }}</span></div>
                             </div>
-                        </div>
+
+                            <button id="legend_btn" class="my-5 bg-blue-500 text-white py-2 px-4 rounded font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" onclick="showLegend();">Show Legend</button>
+
+                            <div class="legend py-5" id="price_range_legend" style="display:none;">
+                                {% if stock.company.currentPrice > profit_price %}
+                                    {% set shares_to_sell = ((remaining_till_gold|abs + 9.95) / stock.company.currentPrice) %}
+                                    Profit Price = ${{ profit_price|number_format(2) }} - Sell {{ shares_to_sell|round(0, 'ceil') }} shares at ${{ stock.company.currentPrice|number_format(2) }} to become profitable<br />
+                                {% else %}
+                                    Profit Price = ${{ profit_price|number_format(2) }} - Sell all {{ shares_owned }} shares at {{ profit_price|number_format(2) }} to become profitable<br />
+                                {% endif %}
+                                Profit Price Level 1 (Sell 1/2) = ${{ gold_price_1|number_format(2) }} - Sell {{ (shares_owned / 2)|round(0,'ceil')  }} Shares to become profitable<br />
+                                Profit Price Level 2 (Sell 1/4) = ${{ gold_price_2|number_format(2) }} - Sell {{ (shares_owned / 4)|round(0,'ceil')  }} Shares to become profitable<br />
+                                Profit Price Level 3 (Sell 1/8) = ${{ gold_price_3|number_format(2) }} - Sell {{ (shares_owned / 8)|round(0,'ceil')  }} Shares to become profitable<br />
+                                Profit Price Level 4 (Sell 1/16) = ${{ gold_price_4|number_format(2) }} - Sell {{ (shares_owned / 16)|round(0,'ceil')  }} Shares to become profitable<br />
+                                Profit Price Level 5 (Sell 1/32) = ${{ gold_price_5|number_format(2) }} - Sell {{ (shares_owned / 32)|round(0,'ceil')  }} Shares to become profitable<br />
+                            </div>
+
+
+                            <script>
+                                let legend_hidden = true;
+                                function showLegend(){
+                                    if (!legend_hidden){
+                                        document.getElementById("legend_btn").innerHTML = "Show Legend";
+                                        document.getElementById('price_range_legend').style.display = 'none';
+                                        legend_hidden = true;
+                                    } else {
+                                        document.getElementById("legend_btn").innerHTML = "Hide Legend";
+                                        document.getElementById('price_range_legend').style.display = 'block';
+                                        legend_hidden = false;
+                                    }
+                                }
+                            </script>
+                        {% endif %}
                     </dd>
                 </div>
 
@@ -560,6 +673,20 @@
                             </tr>
                             {% for cc in stock.coveredCalls %}
                             <tr>
+                                {% if cc.buyout %}
+                                    {% set cc_status = "Buyout" %}
+                                {% elseif cc.expired %}
+                                    {% set cc_status = "Expired" %}
+                                {% elseif cc.exercised %}
+                                    {% set cc_status = "Exercised" %}
+                                {% else %}
+                                    {% if cc.partiallyBoughtout %}
+                                        {% set cc_status = "Ongoing/PBO" %}
+                                    {% else %}
+                                        {% set cc_status = "Ongoing" %}
+                                    {% endif %}
+                                {% endif %}
+
                                 {% set cc_earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
 
                                 {% if cc.buyout or cc.partiallyBoughtout %}
@@ -574,9 +701,15 @@
                                     {% set cc_diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
                                 {% endif %}
 
-                                {% set cc_be_diff = (cc.stockBuyPrice - cc.stockExpiryPrice) * -1 %}
-                                {% set cc_se_diff = (cc.stockExpiryPrice - cc.strike) %}
-                                {% set cc_se_per = ((cc.stockExpiryPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                                {% if cc_status == "Ongoing" or cc_status == "Ongoing/PBO" %}
+                                    {% set cc_expiry_price = stock.company.currentPrice|number_format(2) %}
+                                {% else %}
+                                    {% set cc_expiry_price = cc.stockExpiryPrice %}
+                                {% endif %}
+
+                                {% set cc_be_diff = (cc.stockBuyPrice - cc_expiry_price) * -1 %}
+                                {% set cc_se_diff = (cc_expiry_price - cc.strike) %}
+                                {% set cc_se_per = ((cc_expiry_price - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
                                 {% set cc_ab_per = cc_se_per %}
                                 {% set cc_away_from_target = 100 + cc_ab_per %}
 
@@ -592,24 +725,14 @@
                                 <td>{{ cc.strike|number_format(2) }}</td>
                                 <td>{{ cc.expiry|date("m/d/Y") }}</td>
                                 <td>
-                                    {% if cc.buyout %}
-                                        <small>Buyout</small>
-                                    {% elseif cc.expired %}
-                                        <small>Expired</small>
-                                    {% elseif cc.exercised %}
-                                        <small>Exercised</small>
-                                    {% else %}
-                                        {% if cc.partiallyBoughtout %}
-                                            <small>Ongoing/PBO</small>
-                                        {% else %}
-                                            <small>Ongoing</small>
-                                        {% endif %}
-                                    {% endif %}
+                                    <small>{{ cc_status }}</small>
+
                                 </td>
                                 <td>${{ cc_earned|number_format(2) }}</td>
                                 <td class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">
                                     <span class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">{% if cc_be_diff > 0 %}+{% endif %}{{ cc_be_diff|number_format(2) }}</span>
                                 </td>
+
                                 <td class="{% if cc_se_diff < 0 %}green{% else %}red{% endif %}">
                                     <span>{% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }}</span>
                                 </td>
@@ -628,7 +751,7 @@
                                     <td class="{% if cc_se_per < 0 %}green{% else %}red{% endif %}">
                                         <span>{{ cc_away_from_target2|number_format(1) }}% | </span>
                                     </td>
-                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ stock.company.currentPrice|number_format(2) }}</td>
+                                    <td>{{ eps|number_format(3) }} | {{ cc.stockBuyPrice }} | {{ cc_expiry_price|number_format(2) }}</td>
                                 {% endif %}
                             </tr>
 
@@ -669,21 +792,38 @@
                     </dd>
                 </div>
 
-                {# Dividend #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Dividend</dt>
                     <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                         {% if stock.company.paysDividend %}
-                            <table>
-                                <tr>
-                                    <th>Total Amount</th>
-                                    <th># of Payments</th>
-                                    <th></th>
-                                </tr>
-                            </table>
-                            ${{ stock_dividend|number_format(2) }}
+                            <div class="flex flex-col">
+                                <div class="-m-1.5 overflow-x-auto">
+                                    <div class="p-1.5 min-w-full inline-block align-middle">
+                                        <div class="border rounded-lg shadow overflow-hidden dark:border-neutral-700 dark:shadow-gray-900">
+                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                                <thead>
+                                                <tr class="divide-x divide-gray-200 dark:divide-neutral-700">
+                                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Total Amount</th>
+                                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Payments</th>
+                                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Average</th>
+                                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Latest</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                                                <tr>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ dividend_total|number_format(2) }}</span></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">{{ dividend_total_payments }}</span></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ dividend_average|number_format(2) }}</span></td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center font-medium text-gray-800 dark:text-neutral-200"><span class="text-3xl">${{ dividend_latest|number_format(2) }}</span></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         {% else %}
-                            No Dividend
+                            Company does not pay a dividend
                         {% endif %}
                     </dd>
                 </div>
@@ -710,10 +850,10 @@
 
                                 {% set earned = sold - bought %}
 
-                                <tr>
+                                <tr style="text-align: center;">
                                 <td>{{ play.name }}</td>
                                 <td>{{ play.startDate|date("m/d/Y") }}</td>
-                                <td>{{ play.endDate|date("m/d/Y") }}</td>
+                                <td>{% if play.isFinished %}{{ play.endDate|date("m/d/Y") }}{% else %}present{% endif %}</td>
                                 <td>${{ earned|number_format(2) }}</td>
                             </tr>
                             {% endfor %}
@@ -731,16 +871,15 @@
                                 <th>SELLS</th>
                             </tr>
                             <tr>
-                                <td>
-                                    <table class="buy_table" style="width: 100%; vertical-align: top;">
+                                <td style="vertical-align: top; width: 50%;">
+                                    <table class="buy_table" style="width: 100%;">
                                         <tr>
                                             <th>DATE</th>
                                             <th>AMOUNT</th>
                                             <th>PRICE</th>
                                         </tr>
-
                                         {% for buy in stock.shareBuys %}
-                                            <tr>
+                                            <tr style="text-align: center">
                                                 <td>{{ buy.date|date("m/d/Y") }}</td>
                                                 <td>{{ buy.amount }}</td>
                                                 <td>{{ buy.price }}</td>
@@ -748,15 +887,15 @@
                                         {% endfor %}
                                     </table>
                                 </td>
-                                <td>
-                                    <table class="sell_table" style="width: 100%; vertical-align: top;">
+                                <td style="vertical-align: top; width: 50%;">
+                                    <table class="sell_table" style="width: 100%;">
                                         <tr>
                                             <th>DATE</th>
                                             <th>AMOUNT</th>
                                             <th>PRICE</th>
                                         </tr>
                                         {% for sell in stock.shareSells %}
-                                            <tr>
+                                            <tr style="text-align: center">
                                                 <td>{{ sell.date|date("m/d/Y") }}</td>
                                                 <td>{{ sell.amount }}</td>
                                                 <td>{{ sell.price }}</td>
@@ -784,7 +923,7 @@
                             </tr>
 
                             {% for option in stock.options %}
-                                <tr>
+                                <tr style="text-align: center">
                                     <td>{{ option.buyDate|date("m/d/Y") }}</td>
                                     <td>{{ option.expiry|date("m/d/Y") }}</td>
                                     <td>{{ option.contracts }}</td>
