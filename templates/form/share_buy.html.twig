@@ -251,7 +251,7 @@
                                     -->
                                     {% for play in plays %}
                                         <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                            <div class="flex items-center" x-on:click="selectPlay({{ play.id }}, '{{ play.name }}');">
+                                            <div class="flex items-center" x-on:click="selectPlay({{ play.id }}, '{{ play.name|escape('js') }}');">
                                                 <span class="ml-3 block truncate font-normal">{{ play.name }}</span>
                                             </div>
 
@@ -322,6 +322,7 @@
                 selectedStockTicker: "###",
                 selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
+                part_of_play:false,
                 selectedPlay: null,
                 selectedPlayName: "Select Stock",
                 dropdownPlayOpen: false,

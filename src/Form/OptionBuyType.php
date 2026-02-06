@@ -67,10 +67,15 @@ class OptionBuyType extends AbstractType
                 'label' => 'Total Cost',
                 'attr' => ['class' => 'block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6', 'placeholder' => '0']
             ])
-            ->add('part_of_play',CheckboxType::class,[
+
+            ->add('part_of_play', ChoiceType::class, [
                 'label' => 'Part of Play?',
                 'required' => false,
                 'mapped' => false,
+                'choices' => [
+                    'Yes' => '1',
+                    'No' => '0',
+                ],
             ])
 
             ->add('play', EntityType::class, [

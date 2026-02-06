@@ -19,7 +19,7 @@
                                   <span class="flex items-center">
                                     <img x-bind:src="selectedStockIcon"
                                          alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                    <span class="ml-3 block truncate" x-html="getStockName()"></span>
                                   </span>
 
                                     <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
@@ -45,12 +45,12 @@
 
                                       Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
                                     -->
-                                    {% for stock in stocks %}
+                                    {% for choice in form.Stock.vars.choices %}
                                         <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                            <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{  stock.ticker }}');">
-                                                <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                            <div class="flex items-center" x-on:click="selectStock({{ choice.attr['data-id'] }}, '{{ choice.attr['data-stock-name'] }}', '{{ choice.attr['data-ticker'] }}');">
+                                                <img src="/assets/images/company_logos/{{ choice.attr['data-ticker'] }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                                                 <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                                <span class="ml-3 block truncate font-normal">{{ stock.name }}</span>
+                                                <span class="ml-3 block truncate font-normal">{{ choice.label }}</span>
                                             </div>
 
                                             <!--
@@ -58,7 +58,7 @@
 
                                               Highlighted: "text-white", Not Highlighted: "text-indigo-600"
                                             -->
-                                            <span x-show="checkSelected({{ stock.id }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                            <span x-show="checkSelected({{ choice.attr['data-id'] }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
                                           <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
                                           </svg>
@@ -241,7 +241,7 @@
                                 -->
                                 {% for play in plays %}
                                     <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                        <div class="flex items-center" x-on:click="selectPlay({{ play.id }}, '{{ play.name }}');">
+                                        <div class="flex items-center" x-on:click="selectPlay({{ play.id }}, '{{ play.name|escape('js') }}');">
                                             <span class="ml-3 block truncate font-normal">{{ play.name }}</span>
                                         </div>
 
@@ -276,7 +276,7 @@
 
             <div class="hidden">
                 <input type="hidden" name="share_sell[Stock]" id="share_sell_Stock" x-model="selectedStock" />
-                <input type="checkbox" id="share_sell_nofee" name="share_sell[nofee]" value="no_fee" x-model="no_fee">
+                <input type="checkbox" name="share_sell[nofee]" id="share_sell_nofee"  value="no_fee" x-model="no_fee">
                 <input type="hidden" name="share_sell[payment_currency]" id="share_sell_payment_currency" x-model="selected_currency" />
                 <input type="hidden" name="share_sell[part_of_play]" id="share_sell_part_of_play" x-model="part_of_play_converted()" />
                 <input type="hidden" name="share_sell[play]" id="share_sell_play" x-model="selectedPlay" />
@@ -286,6 +286,10 @@
         {# render tailwind class that form inputs will use.. #}
 
         <div class="block hidden w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-inset ring-1 ring-gray-300 text-sm leading-6"></div>
+    </div>
+
+    <div>
+        DUMP: {{ dump }}
     </div>
 
     <script>
@@ -307,8 +311,10 @@
                 no_fee:false,
                 selected_currency: "can",
                 selectedStockName: "Select Stock",
+                selectedStockTicker: "###",
                 selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
+                part_of_play:false,
                 selectedPlay: null,
                 selectedPlayName: "Select Stock",
                 dropdownPlayOpen: false,
@@ -343,8 +349,8 @@
                     this.dropdownOpen = (!this.dropdownOpen);
                 },
 
-                toggleDropdown(){
-                    this.dropdownOpen = (!this.dropdownOpen);
+                getStockName() {
+                    return "(" + this.selectedStockTicker + ") " + this.selectedStockName;
                 },
 
                 checkPlaySelected(id){

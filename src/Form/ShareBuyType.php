@@ -71,6 +71,15 @@ class ShareBuyType extends AbstractType
                 'required' => false,
                 'mapped' => false,
             ])
+            ->add('part_of_play', ChoiceType::class, [
+                'label' => 'Part of Play?',
+                'required' => false,
+                'mapped' => false,
+                'choices' => [
+                    'Yes' => '1',
+                    'No' => '0',
+                ],
+            ])
 
             ->add('play', EntityType::class, [
                 'attr' => [

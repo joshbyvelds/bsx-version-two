@@ -31,17 +31,29 @@ class ShareSellType extends AbstractType
 
         $builder
             ->add('Stock', EntityType::class, [
-                'label' => 'Company',
+                'label' => 'Company Stock',
                 'class' => 'App\Entity\Stock',
-                'choice_label' => 'name',
+                'choice_attr' => function($stock) {
+                    return [
+                        'data-ticker' => $stock->getCompany()->getTicker(),
+                        'data-stock-name' => $stock->getCompany()->getName(),
+                        'data-id' => $stock->getId(),
+                    ];
+                },
+                'choice_label' => function ($stock) {
+                    // Accessing the nested company entity properties
+                    return sprintf('(%s) %s', $stock->getCompany()->getTicker(), $stock->getCompany()->getName());
+                },
                 'query_builder' => function (EntityRepository $er) {
-                    $user_id = $this->user_id;
-                    dump($user_id);
                     return $er->createQueryBuilder('s')
-                    ->where('s.user = :user')
-                    ->setParameter('user', $user_id);
+                        ->leftJoin('s.company', 'c')
+                        ->addSelect('c')
+                        ->where('s.user = :user')
+                        ->setParameter('user', $this->user_id)
+                        ->orderBy('c.name', 'ASC');
                 },
             ])
+
             ->add('price', NumberType::class, [
                 'label' => 'Sell Price',
                 'attr' => [
@@ -85,10 +97,15 @@ class ShareSellType extends AbstractType
                 'label' => 'No Fee',
                 'required' => false,
             ])
-            ->add('part_of_play',CheckboxType::class,[
+
+            ->add('part_of_play', ChoiceType::class, [
                 'label' => 'Part of Play?',
                 'required' => false,
                 'mapped' => false,
+                'choices' => [
+                    'Yes' => '1',
+                    'No' => '0',
+                ],
             ])
 
             ->add('play', EntityType::class, [

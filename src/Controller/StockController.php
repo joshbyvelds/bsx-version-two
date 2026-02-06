@@ -448,7 +448,8 @@ class StockController extends AbstractController
             
             $transaction->setAmount($cost);
 
-            if ($form->get("part_of_play")->getData() === "1") {
+            if ($form->get("part_of_play")->getViewData() === "1") {
+                var_dump("Test 1");
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
@@ -458,7 +459,7 @@ class StockController extends AbstractController
             $em->persist($share_buy);
             $em->flush();
 
-            return $this->redirectToRoute('dashboard');
+           return $this->redirectToRoute('dashboard');
         }
 
         $sql = "
@@ -597,7 +598,7 @@ class StockController extends AbstractController
 
             $transaction->setAmount($cost);
 
-            if ($form->get("part_of_play")->getData() === "1") {
+            if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->sellShares($data->getAmount(), $cost);
@@ -684,7 +685,7 @@ class StockController extends AbstractController
             $option->getStock()->subtractEarned($cost);
             $option->getStock()->setBeingPlayedOption(true);
 
-            if ($form->get("part_of_play")->getData() === true) {
+            if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->addToContractBuys($form->get("contracts")->getData(), $form->get("average")->getData(), $cost);
@@ -771,7 +772,7 @@ class StockController extends AbstractController
             $option->getStock()->subtractEarned($cost);
             $option->getStock()->setBeingPlayedOption(true);
 
-            if ($form->get("part_of_play")->getData() === true) {
+            if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->sellContracts($form->get("contracts")->getData(), $cost);
@@ -992,7 +993,7 @@ class StockController extends AbstractController
 
             $wo->getStock()->addEarned($total);
 
-            if ($form->get("part_of_play")->getData() === true) {
+            if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->addToWrittenOptionTotal($total);
