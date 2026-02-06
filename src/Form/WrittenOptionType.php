@@ -31,13 +31,16 @@ class WrittenOptionType extends AbstractType
             ->add('Stock', EntityType::class, [
                 'label' => 'Company Stock',
                 'class' => 'App\Entity\Stock',
-                'choice_label' => 'name',
+                // Traverse the relationship: Stock -> Company -> Name
+                'choice_label' => 'company.name',
                 'query_builder' => function (EntityRepository $er) {
-                    $user_id = $this->user_id;
                     return $er->createQueryBuilder('s')
-                    ->where('s.user = :user')
-                    ->andWhere('s.sharesOwned >= 100')
-                    ->setParameter('user', $user_id);
+                        // Join the company table to prevent extra queries for each label
+                        ->leftJoin('s.company', 'c')
+                        ->addSelect('c')
+                        ->where('s.user = :user')
+                        ->setParameter('user', $this->user_id)
+                        ->orderBy('c.name', 'ASC');
                 },
             ])
             ->add('contract_type',ChoiceType::class,[

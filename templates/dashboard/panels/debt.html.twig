@@ -7,7 +7,7 @@
         </tr>
         {% for debt in debts %}
             <tr>
-                <td>{{ debt.stock.ticker }}</td>
+                <td>{{ debt.stock.company.ticker }}</td>
                 <td>{{ debt.cdn }}</td>
             </tr>
         {% endfor %}

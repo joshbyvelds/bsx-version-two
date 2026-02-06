@@ -4,7 +4,13 @@
         <ul>
             <li><a href="/"><span class="material-icons">space_dashboard</span>Dashboard</a></li>
             <li><a href="/portfolio-history"><span class="material-icons">work_history</span>Portfolio History</a></li>
-            <li><a href="/plays"><span class="material-icons">note_alt</span>Plays</a></li>
+            <li>
+                <a href="#" class="submenu-title" data-submenu="plays"><span class="material-icons">note_alt</span>Plays</a>
+                <ul class="submenu" data-submenu="plays">
+                    <li><a href="/plays">All Plays</a></li>
+                    <li><a href="/plays/add">Add Play</a></li>
+                </ul>
+            </li>
             {% if settings.futuresEnabled %}<li><a href="/futures"><span class="material-icons">payments</span>Futures</a></li>{% endif %}
             <li>
                 <a href="#" class="submenu-title" data-submenu="stocks"><span class="material-icons">card_membership</span>Stocks</a>

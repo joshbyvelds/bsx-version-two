@@ -152,7 +152,7 @@
                                                         </svg>
                                                         Buy to Close
                                                     </a>
-                                                    <button command="show-modal" commandfor="dialog-exercise" data-link="/stocks/writtenoption/exercise/{{ wo.id }}" onclick='openExerciseModel({{ wo.contracts }},"{{ wo.stock.ticker }} - {{ wo.expiry|date('M d, Y') }} - ${{ wo.strike|number_format(2) }}", "/stocks/writtenoption/exercise/{{ wo.id }}")' class="relative ml-[-1px] inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 button-shadow ring-inset ring-gray-300 hover:bg-gradient-to-r from-red-500 to-orange-500 hover:text-white">
+                                                    <button command="show-modal" commandfor="dialog-exercise" data-link="/stocks/writtenoption/exercise/{{ wo.id }}" onclick='openExerciseModel({{ wo.contracts }},"{{ wo.stock.company.ticker }} - {{ wo.expiry|date('M d, Y') }} - ${{ wo.strike|number_format(2) }}", "/stocks/writtenoption/exercise/{{ wo.id }}")' class="relative ml-[-1px] inline-flex items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 button-shadow ring-inset ring-gray-300 hover:bg-gradient-to-r from-red-500 to-orange-500 hover:text-white">
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5 mr-1.5">
                                                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
                                                         </svg>
@@ -372,7 +372,7 @@
                                             <tr>
                                                 <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
                                                     <div class="w-28 h-28 p-3 shadow rounded-full" style="background-color:#{{ wo.stock.bgColor }};">
-                                                        <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/{{ wo.stock.ticker }}.jpg" alt="{{ wo.stock.ticker }} Logo" class="block align-middle max-w-full w-27 h-27 rounded-full" /></a>
+                                                        <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/{{ wo.stock.company.ticker }}.jpg" alt="{{ wo.stock.company.ticker }} Logo" class="block align-middle max-w-full w-27 h-27 rounded-full" /></a>
                                                     </div>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">

@@ -15,12 +15,6 @@ class Stock
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private $name;
-
-    #[ORM\Column(type: 'string', length: 10)]
-    private $ticker;
-
     #[ORM\Column(type: 'float')]
     private $earned;
 
@@ -213,7 +207,7 @@ class Stock
     }
 
     function getPositionValue():float {
-        return $this->getShareValue() + $this->getActiveOptionsValue();
+        return ($this->getShareValue() + $this->getActiveOptionsValue() - 9.95);
     }
 
     function getTotalValue(): float {
@@ -248,7 +242,13 @@ class Stock
 
 
     public function getPercentIncrease(): float{
-        return ((($this->getTotalReturned() - $this->getTotalDebt()) / $this->getTotalDebt()) * 100);
+        $debt = $this->getTotalDebt();
+
+        if ($debt == 0) {
+            $debt = 0.01;
+        }
+
+        return ((($this->getTotalReturned() - $debt) / $debt) * 100);
     }
 
     public function getPercentIncreaseWithShareValue(): float{
@@ -258,7 +258,13 @@ class Stock
 
     public function getPercentIncreaseWithPositionValue(): float{
         $totalValue = $this->getTotalReturned() + $this->getShareValue() + $this->getActiveOptionsValue();
-        return ((($totalValue - $this->getTotalDebt()) / $this->getTotalDebt()) * 100);
+        $debt = $this->getTotalDebt();
+
+        if ($this->getTotalDebt() == 0) {
+            $debt = 0.01;
+        }
+
+        return ((($totalValue - $debt) / $debt) * 100);
     }
 
     public function isProfitable(): bool {
@@ -274,30 +280,6 @@ class Stock
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getTicker(): ?string
-    {
-        return $this->ticker;
-    }
-
-    public function setTicker(string $ticker): self
-    {
-        $this->ticker = $ticker;
-
-        return $this;
     }
 
     public function getEarned(): ?float
@@ -758,5 +740,15 @@ class Stock
         $this->company = $company;
 
         return $this;
+    }
+
+    public function getCompanyName(): ?string
+    {
+        return $this->company ? $this->company->getName() : null;
+    }
+
+    public function getCompanyTicker(): ?string
+    {
+        return $this->company ? $this->company->getTicker() : null;
     }
 }

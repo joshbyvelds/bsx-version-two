@@ -448,11 +448,11 @@ class StockController extends AbstractController
             
             $transaction->setAmount($cost);
 
-//            if ($form->get("part_of_play")->getData() === true) {
-//                $play_id = $form->get("play")->getData();
-//                $play = $em->getRepository(Play::class)->find($play_id);
-//                $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
-//            }
+            if ($form->get("part_of_play")->getData() === "1") {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->addToShareBuys($share_buy->getAmount(), $share_buy->getPrice());
+            }
 
             $em->persist($transaction);
             $em->persist($share_buy);
@@ -461,7 +461,18 @@ class StockController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock s WHERE s.user_id = :user_id ORDER BY s.ticker ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $sql = "
+    SELECT s.*, c.name as company_name, c.ticker as company_ticker 
+    FROM stock s 
+    INNER JOIN company c ON s.company_id = c.id 
+    WHERE s.user_id = :user_id 
+    ORDER BY c.ticker ASC
+";
+
+        $myStocks = $em->getConnection()->executeQuery($sql, [
+            'user_id' => $user->getId()
+        ])->fetchAllAssociative();
+
         $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
 
 
@@ -586,7 +597,7 @@ class StockController extends AbstractController
 
             $transaction->setAmount($cost);
 
-            if ($form->get("part_of_play")->getData() === true) {
+            if ($form->get("part_of_play")->getData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
                 $play->sellShares($data->getAmount(), $cost);
@@ -994,7 +1005,12 @@ class StockController extends AbstractController
             return $this->redirectToRoute('stocks_written_options');
         }
 
-        $myStocks = $em->getConnection()->executeQuery(" SELECT * FROM stock p WHERE p.user_id = :user_id AND p.shares_owned > 99 ORDER BY p.id ASC", ['user_id' => $user->getId(), 'pays' => 1])->fetchAllAssociative();
+        $sql = "SELECT s.*, c.name as company_name, c.ticker as company_ticker FROM stock s INNER JOIN company c ON s.company_id = c.id WHERE s.user_id = :user_id ORDER BY c.ticker ASC";
+
+        $myStocks = $em->getConnection()->executeQuery($sql, [
+            'user_id' => $user->getId()
+        ])->fetchAllAssociative();
+
         $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
 
         return $this->render('form/write_option.html.twig', [
@@ -1091,7 +1107,7 @@ class StockController extends AbstractController
             $transaction->setType(1);
             $transaction->setDate($date);
             $transaction->setUser($user);
-            $transaction->setName($stock->getTicker() . ' - '. $contracts .'* $' . number_format($wo->getStrike(),2) . ' Covered Call Exercised');
+            $transaction->setName($stock->getCompany()->getTicker() . ' - '. $contracts .'* $' . number_format($wo->getStrike(),2) . ' Covered Call Exercised');
     
             $cost = ($wo->getStrike() * (100 * $contracts)) - (($custom_fee > 0) ? $custom_fee : 43.05);
             $currency = $wo->getPaymentCurrency();
@@ -1652,7 +1668,7 @@ class StockController extends AbstractController
                 dump("Test 7");
             }
 
-            dump("Update:" . $stock->getTicker());
+            dump("Update:" . $stock->getCompany()->getTicker());
 
 
             $bubble_data = [

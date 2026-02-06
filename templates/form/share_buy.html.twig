@@ -47,10 +47,10 @@
                                     -->
                                     {% for stock in stocks %}
                                         <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                            <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{ stock.ticker }}');">
-                                                <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                            <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.company_name }}', '{{ stock.company_ticker }}');">
+                                                <img src="/assets/images/company_logos/{{ stock.company_ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                                                 <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                                <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
+                                                <span class="ml-3 block truncate font-normal">({{ stock.company_ticker }}) {{ stock.company_name }}</span>
                                             </div>
 
                                             <!--

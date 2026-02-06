@@ -126,7 +126,11 @@
                     {% set bought = bought + ((play.contractsAverage * 100) * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
 
                     {% set sold = play.totalSold + play.writtenOptionTotal %}
-                    {% set total_percent = (((sold) - bought) / bought) * 100 %}
+                    {% if bought == 0 %}
+                        {% set total_percent = 0 %}
+                    {% else %}
+                        {% set total_percent = (((sold) - bought) / bought) * 100 %}
+                    {% endif %}
 
                     {% set earned = sold - bought %}
 
@@ -172,7 +176,7 @@
                     filter: false,
                     onCellClicked: (event) => {
                         let id = event.data.id;
-                        window.open("/stocks/details/" + id);
+                        window.open("/stocks/details/" + parseInt(id));
                     },
                 },
                 { field: "name", headerName: "NAME", width: 50},

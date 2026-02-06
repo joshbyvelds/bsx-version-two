@@ -137,11 +137,11 @@
               Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
             -->
             {% for stock in stocks %}
-                <li data-name="{{ stock.name }}" data-ticker="{{ stock.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                <li data-name="{{ stock.company.name }}" data-ticker="{{ stock.company.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
                     <a class="flex items-center" href="/stocks/details/{{ stock.id }}">
-                        <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        <img src="/assets/images/company_logos/{{ stock.company.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                         <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
+                        <span class="ml-3 block truncate font-normal">({{ stock.company.ticker }}) {{ stock.company.name }}</span>
                     </a>
                 </li>
             {% endfor %}
@@ -171,7 +171,7 @@
                 {# Company Details #}
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
                     <dt class="text-sm font-medium leading-6 text-gray-900">Company Name</dt>
-                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock.name }}</dd>
+                    <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ stock.company.name }}</dd>
                 </div>
 
                 <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
@@ -593,8 +593,6 @@
                             {% set gold_price_3 = ((remaining_till_gold_abs) * 8) / shares_owned|abs %}
                             {% set gold_price_4 = ((remaining_till_gold_abs) * 16) / shares_owned|abs %}
                             {% set gold_price_5 = ((remaining_till_gold_abs) * 32) / shares_owned|abs %}
-
-                            {% set marker_percent = ((stock.company.currentPrice / gold_price_5) * 100) %}
 
                             {% if stock.company.currentPrice < profit_price %}
                                 {% set range_stage = 1 %}

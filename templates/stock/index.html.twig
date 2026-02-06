@@ -139,13 +139,13 @@
         {% endif %}
 
         {% if stock_amount > 0 %}
-            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-share-id="{{ stock.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+            <a href="/stocks/details/{{ stock.id }}" class="stock_bubble {% if stock_amount == 0 and option_amount == 0 %}no_shares{% else %}{% if update_disabled == false %}waiting{% endif %}{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-share-id="{{ stock.id }}" data-name="{{ stock.company.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" data-buy="{{ d_buy }}" data-sell="{{ d_sold }}" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.company.ticker }}.jpg');">
                 <div class="inside">
                     <div class="inside_content">
-                        {{ stock.name }}<br />
+                        {{ stock.company.name }}<br />
                         <strong class="percent">{{ max(stock.getPercentIncreaseWithPositionValue, -100)|number_format(2) }}%</strong>
                         <small class="diff">${{ stock.getRemainingTillProfitableIfCurrentPositionsAreSold|number_format(2) }}</small><br />
-                        <small class="unrealised">P/L: ${{ stock.getPositionValue|number_format(2) }}</small><br />
+                        <small class="unrealised" style="font-size:10px;">Position: ${{ stock.getPositionValue|number_format(2) }}</small><br />
                         {# <small>{{ stock_current|number_format(2) }} | {{ stock_average|number_format(2) }} | {{ stock_breakeven|number_format(2) }} | {{ (stock_current - stock_breakeven)|number_format(2) }}</small> #}
                     </div>
                 </div>    
@@ -180,7 +180,7 @@
                     {% set stock_class = "loss" %}
                 {% endif %}
 
-                <div class="stock_bubble {% if update_disabled == false %}waiting{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-option-id="{{ option.id }}" data-name="{{ stock.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.ticker }}.jpg');">
+                <div class="stock_bubble {% if update_disabled == false %}waiting{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-option-id="{{ option.id }}" data-name="{{ stock.company.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/{{ stock.company.ticker }}.jpg');">
                     <div class="inside">
                         <div class="inside_content">
                             {{ option.name }}<br />
@@ -511,7 +511,7 @@
                         {% set total_percent = ((((total_sold + unrealized_total) - total_expense) / total_expense) * 100) %}
                     {% endif %}
 
-                { pinned: null, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
+                { pinned: null, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.company.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
                 {% endfor %}
             ],
 
@@ -705,9 +705,9 @@
                 {% set daySinceLastBuy = buyDateDifference.days %}
 
                 <tr class="on" id="stock-detail-{{ stock.id }}">
-                    <td><img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt=""></td>
-                    <td>{{ stock.ticker }}</td>
-                    <td>{{ stock.name }}</td>
+                    <td><img src="/assets/images/company_logos/{{ stock.company.ticker }}.jpg" alt=""></td>
+                    <td>{{ stock.company.ticker }}</td>
+                    <td>{{ stock.company.name }}</td>
                     <td>{% if d_bought != "" %}{{ d_bought|date("m/d/Y") }}{% endif %}</td>
                     <td>{% if d_sold != "" %}{{ d_sold|date("m/d/Y") }}{% endif %}</td>
                     <td>{% if stock.company.country == "USD" %}<img src="/assets/images/flag_us.png" alt="">{% else %}<img src="/assets/images/flag_can.png" alt="">{% endif %}${{ stock_earned|number_format(2) }}</td>
@@ -872,7 +872,7 @@
 
                     $('[data-share-id="'+ jbd.stock_id +'"] .percent').html(percent_diff);
                     $('[data-share-id="'+ jbd.stock_id +'"] .diff').html(number_diff);
-                    $('[data-share-id="'+ jbd.stock_id +'"] .unrealised').html("P/L: " + unrealised);
+                    $('[data-share-id="'+ jbd.stock_id +'"] .unrealised').html("Position Value: " + unrealised);
                     $('[data-share-id="'+ jbd.stock_id +'"]').removeClass("win").removeClass("loss").removeClass("fee_loss").addClass(stock_class);
 
                     // update table info..

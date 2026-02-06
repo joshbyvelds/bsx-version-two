@@ -207,9 +207,9 @@ class Play
         return $this->share_average;
     }
 
-    public function setShareAverage(float $contracts_average): self
+    public function setShareAverage(float $share_average): self
     {
-        $this->contracts_average = $contracts_average;
+        $this->share_average = $share_average;
 
         return $this;
     }
@@ -391,6 +391,7 @@ class Play
     public function addToShareBuys(int $amount, float $average)
     {
         $this->share_average = (($this->share_average * $this->shares_total) + ($amount * $average)) / ($this->shares_total + $amount);
+        $this->shares_total_buys += 1;
         $this->shares_remaining += $amount;
         $this->shares_total += $amount;
         $this->shares_earned -= (($amount * $average) - 9.95);

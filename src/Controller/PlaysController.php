@@ -42,45 +42,35 @@ class PlaysController extends AbstractController
         $form = $this->createForm(PlayType::class, $play);
         $form->handleRequest($request);
 
+        $play->setUser($user);
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             $em = $doctrine->getManager();
             $data = $form->getData();
-            
-            // Make sure user has selected at least one shareBuy or Option
-            if(count($data->getShares()) === 0 && count($data->getOptions()) === 0){
-                dump("Nothing Selected");
-            }
 
-            $stock = $data->getStock();
+            $play->setShareAverage(0);
+            $play->setSharesTotalBuys(0);
+            $play->setSharesTotalSells(0);
+            $play->setSharesRemaining(0);
+            $play->setSharesTotal(0);
+            $play->setSharesEarned(0);
 
-            /*
-             Since I'm not sure how to filter the collection dropdown in the form builder, 
-             we are going to use vaildation here to make sure the share buys and options
-             match the selected stock (and user). 
-            */
+            $play->setContractsTotalBuys(0);
+            $play->setContractsTotalSells(0);
+            $play->setContractsAverage(0);
+            $play->setContractsRemaining(0);
+            $play->setContractsTotal(0);
+            $play->setOptionsEarned(0);
 
-            // Loop though each selected share buy
-            foreach($data->getShares() as $sb){
-                if($sb->getStock() != $stock){
-                    $error = 'One of the selected share buys does not match the selected stock.';
-                }
-            }
-            
-            // Loop though each selected option
-            foreach($data->getOptions() as $o){;
-                if($o->getStock() != $stock){
-                    $error = 'One of the selected options does not match the selected stock.';
-                }
-            }
+            $play->setTotalSold(0);
+            $play->setWrittenOptionTotal(0);
 
-            if($error === ""){
-                $play->setFinished(false);
-                $play->setEarned(0);
-                $play->setUser($user);
-                $em->persist($play);
-                $em->flush();
-                return $this->redirectToRoute('dashboard');
-            }
+            $em->persist($play);
+            $em->flush();
+
+            return $this->redirectToRoute('dashboard');
+
         }
 
         return $this->render('form/plays_add.html.twig', [
@@ -158,6 +148,8 @@ class PlaysController extends AbstractController
         $response->headers->set('Content-Type', 'application/json');
         return $response;
     }
+
+
 
     #[Route('/plays/update', name: 'app_plays_update')]
     public function update(ManagerRegistry $doctrine, Request $request): Response

@@ -12,11 +12,11 @@
               Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
             -->
             {% for stock in stocks %}
-                <li data-name="{{ stock.name }}" data-ticker="{{ stock.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                <li data-name="{{ stock.company.name }}" data-ticker="{{ stock.company.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
                     <a class="flex items-center" href="/stocks/details/{{ stock.id }}">
-                        <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        <img src="/assets/images/company_logos/{{ stock.company.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                         <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                        <span class="ml-3 block truncate font-normal">({{ stock.ticker }}) {{ stock.name }}</span>
+                        <span class="ml-3 block truncate font-normal">({{ stock.company.ticker }}) {{ stock.company.name }}</span>
                     </a>
                 </li>
             {% endfor %}
