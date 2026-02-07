@@ -3,6 +3,35 @@
 {% block title %}Hello PlaysController!{% endblock %}
 
 {% block body %}
+    {% for play in plays %}
+        <div>
+{#            ---------------------------------- <br />#}
+{#            {{ play.name }}<br />#}
+
+        {% set current_price = play.stock.company.currentPrice %}
+
+        {% set boughts = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
+        {% set boughtc = ((play.contractsAverage * 100) * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
+
+{#        Bought Shares: {{ boughts }}<br />#}
+{#        Bought Contracts: {{ boughtc }}<br />#}
+
+        {% set bought = boughts + boughtc %}
+
+        {% set sold = play.totalSold + play.writtenOptionTotal + play.optionsEarned %}
+
+{#        Sold: {{ sold }}<br />#}
+
+        {% if bought == 0 %}
+            {% set total_percent = 0 %}
+        {% else %}
+            {% set total_percent = (((sold) - bought) / bought) * 100 %}
+        {% endif %}
+
+        {% set earned = sold - bought %}
+    {% endfor %}
+{#        </div>#}
+
     <div id="playsGrid" style="height: 500px">
 
     </div>
@@ -125,7 +154,7 @@
                     {% set bought = (play.shareAverage * play.sharesTotal) + (9.95 * play.sharesTotalBuys) %}
                     {% set bought = bought + ((play.contractsAverage * 100) * play.contractsTotal) + (9.95 * play.contractsTotalBuys) + (1.25 * play.contractsTotal) %}
 
-                    {% set sold = play.totalSold + play.writtenOptionTotal %}
+                    {% set sold = play.totalSold + play.writtenOptionTotal + play.optionsEarned %}
                     {% if bought == 0 %}
                         {% set total_percent = 0 %}
                     {% else %}
