@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\WrittenOption;
+use App\Repository\StockRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -18,30 +19,40 @@ use Symfony\Component\Security\Core\Security;
 
 class WrittenOptionType extends AbstractType
 {
-    public function __construct(Security $security)
+
+    private $stockRepository;
+
+    public function __construct(Security $security, StockRepository $stockRepository)
     {
         $this->security = $security;
         $this->user = $this->security->getUser();
-        $this->user_id = $this->user->getId(); 
+        $this->user_id = $this->user->getId();
+        $this->stockRepository = $stockRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+
+        // In your FormType or Controller
+        $allStocks = $this->stockRepository->findBy(['user' => $this->user_id]);
+
+        $eligibleStocks = array_filter($allStocks, function($stock) {
+            return $stock->getSharesOwned() >= 100;
+        });
+
         $builder
             ->add('Stock', EntityType::class, [
                 'label' => 'Company Stock',
                 'class' => 'App\Entity\Stock',
-                // Traverse the relationship: Stock -> Company -> Name
-                'choice_label' => 'company.name',
-                'query_builder' => function (EntityRepository $er) {
-                    return $er->createQueryBuilder('s')
-                        // Join the company table to prevent extra queries for each label
-                        ->leftJoin('s.company', 'c')
-                        ->addSelect('c')
-                        ->where('s.user = :user')
-                        ->setParameter('user', $this->user_id)
-                        ->orderBy('c.name', 'ASC');
+                'choice_attr' => function($stock) {
+                    return [
+                        'data-ticker' => $stock->getCompany()->getTicker(),
+                        'data-stock-name' => $stock->getCompany()->getName(),
+                        'data-id' => $stock->getId(),
+                    ];
                 },
+                'choice_label' => 'company.name',
+                'choices' => $eligibleStocks,
             ])
             ->add('contract_type',ChoiceType::class,[
                 'label' => 'Contract Type',
