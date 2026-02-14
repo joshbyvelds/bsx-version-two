@@ -984,10 +984,13 @@ class StockController extends AbstractController
             $trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
-            if(($trade_profit * $profit_percent) > 0.01) {
-                if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
-                    $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
-                    $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+            // If option payment is locked, don't add to profit wallet (Add it when payment is unlocked)
+            if ($form->get("payment_locked")->getData() !== true) {
+                if (($trade_profit * $profit_percent) > 0.01) {
+                    if ($settings->isUseTenPercentWallet() && $settings->isTenPercentAutoDeposit()) {
+                        $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
+                        $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
+                    }
                 }
             }
 

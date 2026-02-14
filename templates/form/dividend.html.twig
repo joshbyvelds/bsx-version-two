@@ -45,10 +45,10 @@
                                   <span class="flex items-center">
                                     <img x-bind:src="selectedStockIcon"
                                          alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                    <span class="ml-3 block truncate" x-html="getStockName()"></span>
                                   </span>
 
-                                  <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                                     <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                       <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"/>
                                     </svg>
@@ -71,25 +71,25 @@
 
                                       Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
                                     -->
-                                    {% for stock in stocks %}
-                                    <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
-                                        <div class="flex items-center" x-on:click="selectStock({{ stock.id }}, '{{ stock.name }}', '{{  stock.ticker }}');">
-                                            <img src="/assets/images/company_logos/{{ stock.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                                            <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                            <span class="ml-3 block truncate font-normal">({{ stock.ticker|upper }}) {{ stock.name }}</span>
-                                        </div>
+                                    {% for choice in form.Stock.vars.choices %}
+                                        <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                                            <div class="flex items-center" x-on:click="selectStock({{ choice.attr['data-id'] }}, '{{ choice.attr['data-stock-name'] }}', '{{ choice.attr['data-ticker'] }}');">
+                                                <img src="/assets/images/company_logos/{{ choice.attr['data-ticker'] }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                                <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                                                <span class="ml-3 block truncate font-normal">({{ choice.attr['data-ticker'] }}) {{ choice.label }}</span>
+                                            </div>
 
-                                        <!--
-                                          Checkmark, only display for selected option.
+                                            <!--
+                                              Checkmark, only display for selected option.
 
-                                          Highlighted: "text-white", Not Highlighted: "text-indigo-600"
-                                        -->
-                                        <span x-show="checkSelected({{ stock.id }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                              Highlighted: "text-white", Not Highlighted: "text-indigo-600"
+                                            -->
+                                            <span x-show="checkSelected({{ choice.attr['data-id'] }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
                                           <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
                                           </svg>
                                         </span>
-                                    </li>
+                                        </li>
                                     {% endfor %}
 
                                     <!-- More items... -->
@@ -151,10 +151,15 @@
                 selectedStock: null,
                 selected_currency: "can",
                 selectedStockName: "Select Stock",
+                selectedStockTicker: "###",
                 selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
                 checkSelected(id){
                     return this.selectedStock === id;
+                },
+
+                getStockName() {
+                    return "(" + this.selectedStockTicker + ") " + this.selectedStockName;
                 },
 
                 switchCurrency(id){
@@ -164,6 +169,7 @@
                 selectStock(id, name, ticker){
                     this.selectedStock = id;
                     this.selectedStockName = name;
+                    this.selectedStockTicker = ticker;
                     this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
                     this.toggleDropdown();
                 },

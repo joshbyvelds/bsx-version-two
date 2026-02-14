@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Dividend;
+use App\Repository\StockRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -16,33 +17,39 @@ use Symfony\Component\Security\Core\Security;
 
 class DividendType extends AbstractType
 {
-    public function __construct(Security $security)
+    private $stockRepository;
+
+    public function __construct(Security $security, StockRepository $stockRepository)
     {
         $this->security = $security;
         $this->user = $this->security->getUser();
-        $this->user_id = $this->user->getId(); 
+        $this->user_id = $this->user->getId();
+        $this->stockRepository = $stockRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+
+        // In your FormType or Controller
+        $allStocks = $this->stockRepository->findBy(['user' => $this->user_id]);
+
+        $eligibleStocks = array_filter($allStocks, function($stock) {
+            return ($stock->getSharesOwned() >= 1 && $stock->getCompany()->isPaysDividend());
+        });
+
         $builder
             ->add('Stock', EntityType::class, [
                 'label' => 'Stock',
                 'class' => 'App\Entity\Stock',
-                'choice_label' => 'name',
-                'query_builder' => function (EntityRepository $er) {
-                    $user_id = $this->user_id;
-                    return $er->createQueryBuilder('s')
-                        // 1. Join the company relationship and give it an alias 'c'
-                        ->innerJoin('s.company', 'c')
-                        ->where('s.user = :user')
-                        // 2. Reference the field via the company alias
-                        ->andWhere('c.pays_dividend = :pay_dividend')
-                        ->setParameters([
-                            'user'         => $user_id,
-                            'pay_dividend' => 1,
-                        ]);
+                'choice_attr' => function($stock) {
+                    return [
+                        'data-ticker' => $stock->getCompany()->getTicker(),
+                        'data-stock-name' => $stock->getCompany()->getName(),
+                        'data-id' => $stock->getId(),
+                    ];
                 },
+                'choice_label' => 'company.name',
+                'choices' => $eligibleStocks,
             ])
 
             ->add('payment_date', DateType::class, [

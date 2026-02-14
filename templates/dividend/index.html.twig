@@ -71,15 +71,15 @@
             {% set average_payment_amount = total_amount / total_payments %}
 
             {% set stock_info = {
-                'ticker': stock.ticker,
-                'name': stock.name,
+                'ticker': stock.company.ticker,
+                'name': stock.company.name,
                 'payments':num_of_payments,
                 'last_payment':last_payment,
                 'last_amount':last_amount,
                 'average_payment_amount':average_payment_amount,
                 'total_amount':total_amount
             } %}
-            {% set stock_div_info = stock_div_info|merge({(stock.ticker):stock_info}) %}
+            {% set stock_div_info = stock_div_info|merge({(stock.company.ticker):stock_info}) %}
         {% endif %}
     {% endfor %}
 
@@ -227,21 +227,21 @@
                 {% set stock_total = 0 %}
                 {% for payment in dividend_payments %}
 
-                {% if stock_totals[payment.stock.ticker] is defined %}
-                    {% set stock_total = stock_totals[payment.stock.ticker] + payment.amount %}
-                    {% set stock_totals = stock_totals|merge({(payment.stock.ticker):stock_total}) %}
+                {% if stock_totals[payment.stock.company.ticker] is defined %}
+                    {% set stock_total = stock_totals[payment.stock.company.ticker] + payment.amount %}
+                    {% set stock_totals = stock_totals|merge({(payment.stock.company.ticker):stock_total}) %}
                 {% else %}
-                    {% set stock_totals = stock_totals|merge({(payment.stock.ticker):payment.amount}) %}
+                    {% set stock_totals = stock_totals|merge({(payment.stock.company.ticker):payment.amount}) %}
                 {% endif %}
 
                 {% set total = total + payment.amount %}
                 {
                     id: {{ payment.id }},
-                    ticker: "{{ payment.stock.ticker }}",
-                    company: "{{ payment.stock.name }}",
+                    ticker: "{{ payment.stock.company.ticker }}",
+                    company: "{{ payment.stock.company.name }}",
                     payment_date: "{{ payment.paymentDate|date("m/d/Y") }}",
                     amount: {{ payment.amount|number_format(2) }},
-                    stock_total: {{ stock_totals[payment.stock.ticker]|number_format(2) }},
+                    stock_total: {{ stock_totals[payment.stock.company.ticker]|number_format(2) }},
                     total: {{ total|number_format(2) }}
                 },
                 {% endfor %}

@@ -50,7 +50,7 @@
                                             <div class="flex items-center" x-on:click="selectStock({{ choice.attr['data-id'] }}, '{{ choice.attr['data-stock-name'] }}', '{{ choice.attr['data-ticker'] }}');">
                                                 <img src="/assets/images/company_logos/{{ choice.attr['data-ticker'] }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
                                                 <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-                                                <span class="ml-3 block truncate font-normal">{{ choice.label }}</span>
+                                                <span class="ml-3 block truncate font-normal">({{ choice.attr['data-ticker'] }}) {{ choice.label }}</span>
                                             </div>
 
                                             <!--
@@ -396,7 +396,8 @@
 
                 selectStock(id, name, ticker){
                     this.selectedStock = id;
-                    this.selectedStockName = "(" + ticker + ")" + " " + name;
+                    this.selectedStockTicker = ticker;
+                    this.selectedStockName = name;
                     this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
                     this.toggleDropdown();
                 },
