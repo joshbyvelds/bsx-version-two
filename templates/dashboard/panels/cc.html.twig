@@ -47,6 +47,9 @@
                                                     <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Price:</span> {{ wo.price|number_format(2) }}</div>
                                                     <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Strike:</span> ${{ wo.strike|number_format(2) }}</div>
                                                     <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">Max Buyback Price:</span> ${{ min_buyback|number_format(2) }}</div>
+                                                    {% if wo.isPartiallyBoughtout %}
+                                                        <div class="mt-1 text-gray-500"><span class="font-semibold text-gray-900">PBO:</span>{{ wo.partialBuyoutContracts }} * {{ (wo.price - ((9.95 + (1.25 * wo.totalContracts)) / (100 * wo.totalContracts))  - wo.partialBuyoutAverage)|round(2) }} = ${{ (wo.partialBuyoutContracts * ((wo.price - ((9.95 + (1.25 * wo.totalContracts)) / (100 * wo.totalContracts)) - wo.partialBuyoutAverage) * 100) - 9.95 - (wo.partialBuyoutContracts * 1.25))|round(2) }}</div>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                             <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">${{ earned|number_format(2) }}</td>

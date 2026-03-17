@@ -74,6 +74,21 @@ class WrittenOption
     #[ORM\Column(type: 'boolean')]
     private $partiallyBoughtout;
 
+    #[ORM\Column(type: 'integer')]
+    private $partial_buyout_times;
+
+    #[ORM\Column(type: 'float')]
+    private $partial_buyout_average;
+
+    #[ORM\Column(type: 'integer')]
+    private $partial_buyout_contracts;
+
+    #[ORM\Column(type: 'float')]
+    private $partial_buyout_stock_average;
+
+    #[ORM\Column(type: 'integer')]
+    private $totalContracts;
+
     public function __construct()
     {
         $this->writtenOptionRollovers = new ArrayCollection();
@@ -326,6 +341,66 @@ class WrittenOption
     public function setPartiallyBoughtout(bool $partiallyBoughtout): self
     {
         $this->partiallyBoughtout = $partiallyBoughtout;
+
+        return $this;
+    }
+
+    public function getPartialBuyoutTimes(): ?int
+    {
+        return $this->partial_buyout_times;
+    }
+
+    public function setPartialBuyoutTimes(int $partial_buyout_times): self
+    {
+        $this->partial_buyout_times = $partial_buyout_times;
+
+        return $this;
+    }
+
+    public function getPartialBuyoutAverage(): ?float
+    {
+        return $this->partial_buyout_average;
+    }
+
+    public function setPartialBuyoutAverage(float $partial_buyout_average): self
+    {
+        $this->partial_buyout_average = $partial_buyout_average;
+
+        return $this;
+    }
+
+    public function getPartialBuyoutContracts(): ?int
+    {
+        return $this->partial_buyout_contracts;
+    }
+
+    public function setPartialBuyoutContracts(int $partial_buyout_contracts): self
+    {
+        $this->partial_buyout_contracts = $partial_buyout_contracts;
+
+        return $this;
+    }
+
+    public function getPartialBuyoutStockAverage(): ?float
+    {
+        return $this->partial_buyout_stock_average;
+    }
+
+    public function setPartialBuyoutStockAverage(float $partial_buyout_stock_average): self
+    {
+        $this->partial_buyout_stock_average = $partial_buyout_stock_average;
+
+        return $this;
+    }
+
+    public function getTotalContracts(): ?int
+    {
+        return $this->totalContracts;
+    }
+
+    public function setTotalContracts(int $totalContracts): self
+    {
+        $this->totalContracts = $totalContracts;
 
         return $this;
     }

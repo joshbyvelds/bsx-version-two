@@ -922,9 +922,14 @@ class StockController extends AbstractController
             $wo->setStock($stock);
 
             $wo->setUser($user);
+            $wo->setTotalContracts($form->get("contracts")->getData());
             $wo->setExercised(false);
             $wo->setPartiallyExercised(false);
             $wo->setPartiallyBoughtout(false);
+            $wo->setPartialBuyoutAverage(0);
+            $wo->setPartialBuyoutContracts(0);
+            $wo->setPartialBuyoutStockAverage(0);
+            $wo->setPartialBuyoutTimes(0);
             $wo->setExpired(false);
             $wo->setStockExpiryPrice(0.00);
             $wo->setBuyout(0);
