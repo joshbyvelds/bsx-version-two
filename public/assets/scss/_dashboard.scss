@@ -201,6 +201,7 @@
     background: $cash-background-color;
     border-radius: 10px;
     vertical-align: top;
+    container-type: inline-size;
 
     .title{
         padding: 0;
@@ -208,9 +209,12 @@
     }
 
     .amount{
+        display: inline-block;
         height: 100px;
         line-height: 80px;
-        font-size: 38px;
+        /* 100cqw (full width) minus 40px (left + right padding) */
+        font-size: clamp(1px, calc(20cqw - 10px), 38px);
+        white-space: nowrap;
     }
 
     a{

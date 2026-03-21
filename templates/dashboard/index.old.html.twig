@@ -106,6 +106,24 @@
 
            })
         });
+
+        const resizeText = (el) => {
+            let fontSize = 38; // Your max size
+            el.style.fontSize = fontSize + 'px';
+            var el_parent = el.parentNode;
+
+            // While the text is wider than the container (minus your 40px padding)
+            while (el.scrollWidth > (el_parent.offsetWidth - 40) && fontSize > 12) {
+                fontSize--;
+                el.style.fontSize = fontSize + 'px';
+            }
+        };
+
+        // Run this whenever the balance updates
+        const amountDiv = document.querySelector('.amount');
+        resizeText(amountDiv);
     </script>
+
+
 {% endblock %}
 

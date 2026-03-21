@@ -37,6 +37,8 @@ class DashboardController extends AbstractController
         // Stocks Wallet..
         $wallet = $doctrine->getRepository(Wallet::class)->find($user->getId());
 
+        dump($wallet);
+
         // Futures Panel..
         if($user->getFuturesBuckets()->isEmpty()){
             $buckets = "NO BUCKETS";
@@ -415,7 +417,7 @@ class DashboardController extends AbstractController
 
         $new_sector_values = [];
         foreach($sector_values as $sector_value){
-            $new_sector_values[] = ['name' => $sector_value['name'], 'total' => $sector_value['total'], 'percent' => ($sector_value['total']/$total_value)];
+            $new_sector_values[] = ['name' => $sector_value['name'], 'total' => $sector_value['total'], 'percent' => ($total_value === 0) ? 0 : ($sector_value['total']/$total_value)];
         }
 
         dump($new_sector_values);

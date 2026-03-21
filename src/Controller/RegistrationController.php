@@ -87,11 +87,23 @@ class RegistrationController extends AbstractController
             $settings->setUseTenPercentWallet(false);
             $settings->setTenPercentAutoDeposit(false);
             $settings->setTenPercentDepositPercentage(0.00);
+            $settings->setDashboardSectorWeightPanel(false);
+            $settings->setDashboardPlaysPanel(false);
+            $settings->setDashboardCcPanel(false);
+            $settings->setDashboardPortfolioPanel(false);
+            $settings->setDashboardTotalValuePanel(false);
+            $settings->setDashboardNakedOptionsPanel(false);
+            $settings->setTotalValueCcTypeAssign('CAD');
+            $settings->setUseHISA(false);
 
             // Create a Wallet
             $wallet->setUser($user);
             $wallet->setCAN(0.00);
             $wallet->setUSD(0.00);
+            $wallet->setLockedCdn(0.00);
+            $wallet->setLockedUsd(0.00);
+            $wallet->setTenPercentCdn(0.00);
+            $wallet->setTenPercentUsd(0.00);
 
             $entityManager->persist($user);
             $entityManager->persist($wallet);
