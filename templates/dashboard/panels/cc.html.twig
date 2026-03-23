@@ -36,7 +36,12 @@
                                         <tr>
                                             <td class="whitespace-nowrap py-5 pl-3 text-sm sm:pl-0">
                                                 <div class="w-20 h-20 p-3 shadow rounded-full" style="background-color:#{{ wo.stock.company.bgColor }};">
-                                                    <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/{{ wo.stock.company.ticker }}.jpg" alt="{{ wo.stock.company.ticker }} Logo" class="block align-middle max-w-full w-14 h-14 rounded-full" /></a>
+                                                    {% if wo.stock.company.useSVG %}
+                                                        <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/svg/{{ wo.stock.company.ticker }}.svg" alt="{{ wo.stock.company.ticker }} Logo" class="block align-middle max-w-full w-14 h-14 rounded-full" /></a>
+                                                    {% else %}
+                                                        <a href="/stocks/details/{{ wo.stock.id }}"><img src="/assets/images/company_logos/{{ wo.stock.company.ticker }}.jpg" alt="{{ wo.stock.company.ticker }} Logo" class="block align-middle max-w-full w-14 h-14 rounded-full" /></a>
+                                                    {% endif %}
+
                                                 </div>
                                             </td>
                                             <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Tracker 65</title>
+    <style>
+        :root {
+            --primary-color: #4caf50;
+            --bg-color: #f0f2f5;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            /*width: 80%;*/
+            /*max-width: 500px;*/
+            z-index: 1;
+        }
+
+        #number {
+            font-size: 40rem;
+            font-weight: 800;
+            margin: 0;
+            color: #222;
+            transition: all 0.3s ease;
+        }
+
+        /* The Goal Reached Animation */
+        .reached {
+            color: var(--primary-color) !important;
+            transform: scale(1.1);
+            text-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background-color: #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #reset-btn {
+            margin-top: 40px;
+            padding: 10px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #reset-btn.visible {
+            opacity: 1;
+        }
+
+        #reset-btn:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="number">0</div>
+    <div class="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+</div>
+
+<button id="reset-btn">Reset Counter</button>
+
+<script>
+    let count = 0;
+    const target = 65;
+    const numberDisplay = document.getElementById('number');
+    const progressBar = document.getElementById('progress-bar');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Main click event
+    document.addEventListener('click', (e) => {
+        // Don't trigger if the user clicked the reset button itself
+        if (e.target.id === 'reset-btn') return;
+
+        count++;
+        updateDisplay();
+    });
+
+    // Reset button event
+    resetBtn.addEventListener('click', () => {
+        count = 0;
+        updateDisplay();
+    });
+
+    function updateDisplay() {
+        // Update Number
+        numberDisplay.textContent = count;
+
+        // Calculate Progress
+        let percentage = Math.min((count / target) * 100, 100);
+        progressBar.style.width = percentage + '%';
+
+        // Show/Hide Reset Button
+        if (count > 0) {
+            resetBtn.classList.add('visible');
+        } else {
+            resetBtn.classList.remove('visible');
+        }
+
+        // Trigger "Goal Reached" effects
+        if (count >= target) {
+            numberDisplay.classList.add('reached');
+            progressBar.style.backgroundColor = '#2196F3'; // Change bar color at finish
+        } else {
+            numberDisplay.classList.remove('reached');
+            progressBar.style.backgroundColor = '#4caf50';
+        }
+    }
+</script>
+</body>
+</html>

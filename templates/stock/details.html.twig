@@ -139,7 +139,11 @@
             {% for stock in stocks %}
                 <li data-name="{{ stock.company.name }}" data-ticker="{{ stock.company.ticker }}" data-sector="{{ stock.company.sector.name }}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
                     <a class="flex items-center" href="/stocks/details/{{ stock.id }}">
-                        <img src="/assets/images/company_logos/{{ stock.company.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        {% if stock.company.useSVG %}
+                            <img src="/assets/images/company_logos/svg/{{ stock.company.ticker }}.svg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        {% else %}
+                            <img src="/assets/images/company_logos/{{ stock.company.ticker }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                        {% endif %}
                         <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
                         <span class="ml-3 block truncate font-normal">({{ stock.company.ticker }}) {{ stock.company.name }}</span>
                     </a>
@@ -152,7 +156,15 @@
 
     <div>
         <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.company.ticker }}.jpg'); background-position: center center; background-repeat: no-repeat; background-size:cover;"></div>
+            {% if stock.company.useSVG %}
+            {% else %}
+            {% endif %}
+
+            {% if stock.company.useSVG %}
+                <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/SVG/{{ stock.company.ticker }}.svg'); background-position: center center; background-repeat: no-repeat; background-size:{{ stock.company.svgSize }}%;"></div>
+            {% else %}
+                <div class="border-8 border-black rounded-full w-80 h-80" style="background-color:#{{ stock.company.bgColor }}; background-image:url('/assets/images/company_logos/{{ stock.company.ticker }}.jpg'); background-position: center center; background-repeat: no-repeat; background-size:cover;"></div>
+            {% endif %}
             <div class="sm:col-span-2">
                 <div class="text-6xl"><span class="text-9xl" style="font-size: 190px;">{{ stock.company.ticker }}</span> <span>${{ stock.company.currentPrice|number_format(2) }}</span></div>
                 <div>

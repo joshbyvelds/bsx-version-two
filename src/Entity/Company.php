@@ -64,6 +64,12 @@ class Company
     #[ORM\Column(type: 'boolean')]
     private $delisted;
 
+    #[ORM\Column(type: 'boolean')]
+    private $use_svg;
+
+    #[ORM\Column(type: 'float')]
+    private $svg_size;
+
     public function __construct()
     {
         $this->stocks = new ArrayCollection();
@@ -280,6 +286,30 @@ class Company
     public function setDelisted(bool $delisted): self
     {
         $this->delisted = $delisted;
+
+        return $this;
+    }
+
+    public function isUseSvg(): ?bool
+    {
+        return $this->use_svg;
+    }
+
+    public function setUseSvg(bool $use_svg): self
+    {
+        $this->use_svg = $use_svg;
+
+        return $this;
+    }
+
+    public function getSvgSize(): ?float
+    {
+        return $this->svg_size;
+    }
+
+    public function setSvgSize(float $svg_size): self
+    {
+        $this->svg_size = $svg_size;
 
         return $this;
     }
