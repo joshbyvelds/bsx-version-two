@@ -17,9 +17,9 @@
                             <div class="relative mt-2">
                                 <button type="button" x-on:click="toggleDropdown();" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
                                   <span class="flex items-center">
-                                    <img x-bind:src="selectedStockIcon"
+                                    <img x-bind:src="selectedCompanyIcon"
                                          alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
-                                    <span class="ml-3 block truncate" x-html="selectedStockName"></span>
+                                    <span class="ml-3 block truncate" x-html="selectedCompanyName"></span>
                                   </span>
 
                                   <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
@@ -111,13 +111,13 @@
 
             return {
                 dropdownOpen: false,
-                selectedStock: null,
+                selectedCompany: null,
                 selected_currency: "can",
-                selectedStockName: "Select Company",
-                selectedStockIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                selectedCompanyName: "Select Company",
+                selectedCompanyIcon:"https://plus.unsplash.com/premium_photo-1678048604398-f42dda6997bd?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 
                 checkSelected(id){
-                    return this.selectedStock === id;
+                    return this.selectedCompany === id;
                 },
 
                 switchCurrency(id){
@@ -125,9 +125,9 @@
                 },
 
                 selectStock(id, name, ticker){
-                    this.selectedStock = id;
-                    this.selectedStockName = name;
-                    this.selectedStockIcon = "/assets/images/company_logos/" + ticker + ".jpg";
+                    this.selectedCompany = id;
+                    this.selectedCompanyName = name;
+                    this.selectedCompanyIcon = "/assets/images/company_logos/" + ticker + ".jpg";
                     this.toggleDropdown();
                 },
 

@@ -643,7 +643,7 @@ class Stock
 
     public function setBeingPlayedShares(bool $beingPlayedShares): self
     {
-        $this->$beingPlayedShares = $beingPlayedShares;
+        $this->beingPlayedShares = $beingPlayedShares;
 
         return $this;
     }

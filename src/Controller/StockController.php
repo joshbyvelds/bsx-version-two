@@ -375,6 +375,7 @@ class StockController extends AbstractController
         $companies = $doctrine->getRepository(Company::class)->findAll();
 
         if ($form->isSubmitted() && $form->isValid()) {
+            //dd($stock); // If it's NULL here, proceed to step 3
             $data = $form->getData();
             $stock->setUser($this->getUser());
             $stock->setEarned(0);
