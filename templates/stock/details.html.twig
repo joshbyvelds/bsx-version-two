@@ -704,6 +704,7 @@
                                 <th>🎯% |</th>
                                 <th>Stats <small>(EPS|SBP|SEP)</small></th>
                             </tr>
+                            {% set total_cc_earned = 0 %}
                             {% for cc in stock.coveredCalls %}
                             <tr>
                                 {% if cc.buyout %}
@@ -762,6 +763,8 @@
 
                                 </td>
                                 <td>${{ cc_earned|number_format(2) }}</td>
+                                {% set total_cc_earned = total_cc_earned + cc_earned %}
+
                                 <td class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">
                                     <span class="{% if cc_be_diff > 0 %}green{% else %}red{% endif %}">{% if cc_be_diff > 0 %}+{% endif %}{{ cc_be_diff|number_format(2) }}</span>
                                 </td>
@@ -820,6 +823,10 @@
                             </tr>
                             {% endif%}
                         {% endfor %}
+                            <tr style="border-top: 2px solid black;">
+                                <td colspan="5" style="text-align: left; padding-left:10px;">Total</td>
+                                <td colspan="5" style="text-align: left; padding-left:10px;">${{ total_cc_earned|number_format(2) }}</td>
+                            </tr>
                         </table>
                         {% endif %}
                     </dd>
