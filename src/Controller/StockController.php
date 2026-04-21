@@ -1308,6 +1308,12 @@ class StockController extends AbstractController
                 }
             }
 
+            if ($form->get("part_of_play")->getViewData() === "1") {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->addToWrittenOptionTotal($trade_profit);
+            }
+
             $em->persist($ro);
             $em->persist($transaction);
             $em->flush();
@@ -1315,11 +1321,14 @@ class StockController extends AbstractController
             return $this->redirectToRoute('stocks_written_options');
         }
 
+        $myPlays = $em->getConnection()->executeQuery(" SELECT * FROM play p WHERE p.user_id = :user_id AND p.finished = 0 ORDER BY p.id ASC", ['user_id' => $user->getId()])->fetchAllAssociative();
+
         return $this->render('form/rollover_written_option.html.twig', [
             'old_option' => $wo,
             'error' => "",
             'form' => $form->createView(),
             'settings' => $settings,
+            'plays' => $myPlays,
         ]);
 
     }
