@@ -32,7 +32,7 @@
     {% endfor %}
     {#        </div>#}
 
-    <div id="playsGrid" style="height: 500px">
+    <div id="playsGrid" style="height: 920px">
 
     </div>
 
@@ -209,10 +209,10 @@
                         window.open("/stocks/details/" + parseInt(id));
                     },
                 },
-                { field: 'user', headerName: 'User', maxWidth: 70 },
+                { field: 'user', headerName: 'User', maxWidth: 110 },
                 { field: "name", headerName: "NAME", width: 50},
-                { field: "start_date", headerName: "START",width: 50 },
-                { field: "end_date", headerName: "END",width: 50 },
+                // { field: "start_date", headerName: "START",width: 50 },
+                // { field: "end_date", headerName: "END",width: 50 },
                 { field: "bought", headerName: "BOUGHT", width: 50, cellRenderer: MoneyRenderer },
                 { field: "sold", headerName: "SOLD", width: 50, cellRenderer: MoneyRenderer },
                 { field: "total_earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },

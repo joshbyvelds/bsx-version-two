@@ -5,6 +5,16 @@
 {% block body %}
 
     <style>
+        /* Centers the text and the flex container inside the header */
+        .ag-header-cell-label {
+            justify-content: center !important;
+        }
+
+        /* Optional: If you want the text itself to align center if it wraps */
+        .ag-header-cell-text {
+            text-align: center !important;
+        }
+
         /* 1. Reset the breakout to be a standard block element */
         .rollover-history-breakout {
             width: 100%;
@@ -30,55 +40,56 @@
     {% if coveredCalls is empty %}
         No covered calls in play for any user
     {% else %}
-        <div id="ccGrid" style="height: 500px">
+        <button id="updateBtn" data-token="{{ csrf_token('update-ask') }}" class="rounded-xl mb-4 text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">Update Ask and Refresh</button>
+        <div id="ccGrid" style="height: 920px">
 
         </div>
     {% endif %}
 
     <script>
-        // Attach to window to ensure global visibility
-        window.RolloverRenderer = class RolloverRenderer {
-            init(params) {
-                // This is the absolute test. If this doesn't log, the grid hasn't found the class.
-                console.log("CRITICAL: Renderer initialized for ID:", params.data.id);
+        document.addEventListener('DOMContentLoaded', () => {
+            const updateBtn = document.querySelector('#updateBtn');
 
-                this.eGui = document.createElement('div');
-                this.eGui.style.cssText = "background-color: #f8f9fa; padding: 20px; border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;";
+            if (updateBtn) {
+                updateBtn.addEventListener('click', function() {
+                    // Optional: Disable button to prevent double-clicks
+                    this.disabled = true;
+                    this.textContent = 'Updating...';
+                    var xxx = this;
 
-                if (!params.data || !params.data.rollovers || params.data.rollovers.length === 0) {
-                    this.eGui.innerHTML = `<div style="color: #666; font-style: italic;">No rollover history available for this play.</div>`;
-                    return;
-                }
-
-                let tableHtml = `
-            <div style="font-weight: bold; margin-bottom: 10px; color: #0056b3;">Rollover History</div>
-            <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                <thead>
-                    <tr style="background: #e9ecef; text-align: left;">
-                        <th style="padding: 10px; border: 1px solid #dee2e6;">Price</th>
-                        <th style="padding: 10px; border: 1px solid #dee2e6;">Amount</th>
-                        <th style="padding: 10px; border: 1px solid #dee2e6;">New Expiry</th>
-                        <th style="padding: 10px; border: 1px solid #dee2e6;">New Strike</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-                params.data.rollovers.forEach(ro => {
-                    tableHtml += `
-                <tr>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.price).toFixed(2)}</td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.amount).toFixed(2)}</td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;">${ro.newExpiry}</td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.newStrike).toFixed(2)}</td>
-                </tr>`;
+                    fetch('/all/cc/updateask', {
+                        method: 'POST', // or 'GET' depending on your controller route
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': updateBtn.dataset.token,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success === true) {
+                                xxx.textContent = 'Update Complete, Refreshing now...';
+                                // Refresh the page as requested
+                                //console.log(data);
+                                window.location.reload();
+                            } else {
+                                alert('Update failed: ' + (data.message || 'Unknown error'));
+                                this.disabled = false;
+                                this.textContent = 'Update';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred during the update.');
+                            this.disabled = false;
+                            this.textContent = 'Update';
+                        });
                 });
-
-                tableHtml += `</tbody></table>`;
-                this.eGui.innerHTML = tableHtml;
             }
-
-            getGui() { return this.eGui; }
-        };
+        });
     </script>
 
     <script>
@@ -125,7 +136,7 @@
                 } else {
                     // Standard Logo logic
                     const ticker = params.value ? params.value.toLowerCase() : "";
-                    this.eGui.innerHTML = ticker ? `<img src="/assets/images/company_logos/${ticker}.jpg" style="width:80px; border-radius:8px;">` : '';
+                    this.eGui.innerHTML = ticker ? `<img src="/assets/images/company_logos/${ticker}.jpg" style="width:80px; box-shadow:0px 0px 6px rgba(0,0,0,0.4); margin-top: 10px; border-radius:8px;">` : '';
                 }
             }
             getGui() { return this.eGui; }
@@ -203,6 +214,51 @@
             refresh(params) {
                 return false;
             }
+        }
+    </script>
+
+    <script>
+        class TargetRenderer {
+            init(params) {
+                this.eGui = document.createElement('div');
+                const val = params.value;
+
+                if (val == null || (params.data && params.data.isDetail)) {
+                    return;
+                }
+
+                // Configuration map for colors based on thresholds
+                // [Threshold, BackgroundColor, TextColor, RingColor]
+                const levels = [
+                    { limit: 10, bg: 'bg-red-500', text: 'text-red-900', ring: 'ring-red-900/[0.20]' },
+                    { limit: 20, bg: 'bg-red-300', text: 'text-red-800', ring: 'ring-red-900/[0.20]' },
+                    { limit: 30, bg: 'bg-red-200', text: 'text-red-700', ring: 'ring-red-700/[0.20]' },
+                    { limit: 40, bg: 'bg-red-100', text: 'text-red-600', ring: 'ring-red-600/[0.20]' },
+                    { limit: 50, bg: 'bg-red-50',  text: 'text-red-600', ring: 'ring-red-600/[0.20]' },
+                    { limit: 60, bg: 'bg-green-50', text: 'text-green-600', ring: 'ring-green-600/[0.20]' },
+                    { limit: 70, bg: 'bg-green-100', text: 'text-green-600', ring: 'ring-green-600/[0.20]' },
+                    { limit: 80, bg: 'bg-green-200', text: 'text-green-700', ring: 'ring-green-700/[0.20]' },
+                    { limit: 90, bg: 'bg-green-300', text: 'text-green-800', ring: 'ring-green-900/[0.20]' },
+                    { limit: 100.01, bg: 'bg-green-500', text: 'text-green-900', ring: 'ring-green-900/[0.20]' },
+                    { limit: 110, bg: 'bg-red-50',  text: 'text-red-600', ring: 'ring-red-600/[0.20]' },
+                    { limit: 120, bg: 'bg-red-100', text: 'text-red-600', ring: 'ring-red-600/[0.20]' },
+                    { limit: 130, bg: 'bg-red-200', text: 'text-red-700', ring: 'ring-red-700/[0.20]' },
+                    { limit: 140, bg: 'bg-red-300', text: 'text-red-800', ring: 'ring-red-900/[0.20]' }
+                ];
+
+                // Find the first level where the value is less than the limit
+                let config = levels.find(l => val < l.limit) || levels[0];
+
+                const formattedVal = parseFloat(val).toFixed(2);
+
+                // Match the Tailwind classes you were using in Twig
+                this.eGui.innerHTML = `
+            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium pill_shadow ring-inset ${config.bg} ${config.text} ${config.ring}">
+                ${formattedVal}%
+            </span>`;
+            }
+
+            getGui() { return this.eGui; }
         }
     </script>
 
@@ -293,6 +349,8 @@
                     "targetPercent": {{ cc_away_from_target2|number_format(1) }},
                     "stats": { "eps": {{ eps|number_format(3) }} , "sbp": {{ cc.stockBuyPrice }} , "sep": {{ cc.stockExpiryPrice }} },
                 {% endif %}
+                "ask": {{ cc.ask }},
+                "buyout_profit": {{ cc_earned - ((((cc.ask * 100) + 1.25) * cc.contracts) + 9.95) }},
 
                 "rollovers": [
                     {% set ro_price_start = cc.price %}
@@ -310,7 +368,7 @@
                         "newExpiry": "{{ cc.writtenOptionRollovers|first.oldExpiry|date("m/d/Y") }}",
                         "oldStrike": {{ cc.writtenOptionRollovers|first.oldStrike|number_format(2) }},
                         "newStrike": {{ cc.writtenOptionRollovers|first.oldStrike|number_format(2) }},
-                        "stockRollOverPrice": "First Move"
+                        "stockRollOverPrice": {{ cc.stockBuyPrice }}
                     },
                     {% endif %}
 
@@ -351,12 +409,6 @@
 
         const gridOptions = {
 
-            // 4. Register in components as a fallback
-            components: {
-                rolloverRenderer: RolloverRenderer
-            },
-
-
             animateRows: false,           // This is the most likely culprit
             suppressRowAnimation: true,    // Secondary flag for strict stability
 
@@ -373,7 +425,7 @@
 
             columnDefs: [
                 {
-                    headerName: "COMPANY",
+                    headerName: "Stock",
                     field: "company",
                     cellRenderer: CompanyLogoRenderer,
                     width: 50,
@@ -382,19 +434,23 @@
                 },
                 { field: 'user', headerName: 'User', maxWidth: 70 },
                 {
-                    maxWidth: 90,
+                    maxWidth: 100,
                     field: 'price',
                     headerName: 'Price',
                     cellRenderer: (params) => {
                         if (!params.data || params.data.isDetail) return '';
 
                         const container = document.createElement('div');
+                        const br = document.createElement('br');
                         const priceValue = params.value != null ? params.value.toFixed(2) : '0.00';
+
+                        container.appendChild(document.createTextNode(priceValue));
+                        container.appendChild(br);
 
                         if (params.data.rollovers && params.data.rollovers.length > 0) {
                             const btn = document.createElement('button');
-                            btn.innerHTML = params.data.expanded ? '−' : '＋';
-                            btn.style.cssText = 'cursor:pointer; margin-right: 10px; width: 25px;';
+                            btn.innerHTML = params.data.expanded ? 'Hide RO' : 'Show RO';
+                            btn.style.cssText = 'cursor:pointer; border: solid 1px black; font-size: 12px; padding: 5px; border-radius: 4px; width:63px;';
 
                             // Native listener is more stable than string-based onclick
                             btn.onclick = (e) => {
@@ -405,14 +461,14 @@
                             container.appendChild(btn);
                         }
 
-                        container.appendChild(document.createTextNode(priceValue));
+
                         return container;
                     }
                 },
-                { field: 'contracts', headerName: 'Contracts', maxWidth: 100 },
+                { field: 'contracts', headerName: '# of Con', maxWidth: 90, headerTooltip:"Number of Contracts" },
                 { field: 'strike', headerName: 'Strike', maxWidth: 75, },
-                { field: 'days_left', headerName: 'Days Left', maxWidth: 75 },
-                { field: 'expiryDate', headerName: 'Expiry Date', maxWidth: 110 },
+                { field: 'days_left', headerName: 'Days Left', maxWidth: 100 },
+                { field: 'expiryDate', headerName: 'Expiry', maxWidth: 110, headerTooltip: "Expiry Date" },
                 { field: 'status', headerName: 'Status', maxWidth: 90 },
                 {
                     field: 'earned',
@@ -421,21 +477,44 @@
                     maxWidth: 90
                 },
                 {
-                    field: 'buyExpireDiff',
-                    headerName: 'B/E +/-',
-                    maxWidth: 80,
-                    cellClassRules: {
-                        'green-text': params => params.value > 0,
-                        'red-text': params => params.value < 0,
-                    }
+                    field: 'targetPercent',
+                    headerName: 'Target %',
+                    headerTooltip: "Target Percent",
+                    maxWidth: 90,
+                    cellRenderer: TargetRenderer
+                },
+
+                // {
+                //     field: 'buyExpireDiff',
+                //     headerName: 'B/E +/-',
+                //     headerTooltip: "Buy/Expire Diff",
+                //     maxWidth: 80,
+                //     cellClassRules: {
+                //         'green-text': params => params.value > 0,
+                //         'red-text': params => params.value < 0,
+                //     }
+                // },
+                // {
+                //     minWidth: 170,
+                //     headerName: 'Stats (EPS|SBP|SEP)',
+                //     valueGetter: params => {
+                //         if (!params.data.stats) return '';
+                //         return `${params.data.stats.eps} | ${params.data.stats.sbp} | ${params.data.stats.sep}`;
+                //     }
+                // }
+                {
+                    headerName:'Ask',
+                    field: 'ask',
+                    maxWidth: 70,
                 },
                 {
-                    headerName: 'Stats (EPS|SBP|SEP)',
-                    valueGetter: params => {
-                        if (!params.data.stats) return '';
-                        return `${params.data.stats.eps} | ${params.data.stats.sbp} | ${params.data.stats.sep}`;
-                    }
+                    headerName:'BO Profit',
+                    headerTooltip:"Buyout Profit",
+                    field: 'buyout_profit',
+                    maxWidth: 100,
+                    cellRenderer: MoneyRenderer,
                 }
+
             ],
 
             rowData: startingRows,

@@ -4,7 +4,7 @@
 
 {% block body %}
 
-<div id="stockGrid" style="height: 500px">
+<div id="stockGrid" style="height: 920px">
 
 </div>
 
@@ -321,7 +321,7 @@
                     {% set total_percent = ((((total_sold + unrealized_total) - total_expense) / total_expense) * 100) %}
                 {% endif %}
 
-                { pinned: null, user:"{{ stock.user.username }}", bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.company.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
+                { pinned: null, user:"{{ stock.user.username }}", os_total:{{ cc_over_strike_total }}, os_shares:{{ cc_over_strike_shares }}, current:{{ stock.company.currentPrice }}, average:{{ stock_breakeven }}, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.company.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
 
             {% endif %}
 
@@ -347,7 +347,7 @@
                     window.open("/stocks/details/" + id);
                 },
             },
-            { field: 'user', headerName: 'User', maxWidth: 70 },
+            { field: 'user', headerName: 'User', maxWidth: 120 },
 
             {
                 field: "shares",
@@ -359,15 +359,19 @@
                     //allowedCharPattern: '[0-9\\.]' // Allow only numbers and decimal points
                 }
             },
-            { field: "earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
+            { field: "current", headerName: "Current", headerTooltip:"Stock Current Price", width: 50, cellRenderer: MoneyRenderer },
+            { field: "average", headerName: "Breakeven", headerTooltip:"Stock Breakeven price if selling", width: 50, cellRenderer: MoneyRenderer },
+            // { field: "os_shares", headerName: "OS SHARES", width: 50},
+            // { field: "os_total", headerName: "OS TOTAL", width: 50, cellRenderer: MoneyRenderer },
+            // { field: "earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
             { field: "unrealised_total", headerName: "UNREALISED P/L", width: 100, cellRenderer: MoneyRenderer},
-            { field: "sold_pl", headerName: "SOLD P/L",width: 100, cellRenderer: MoneyRenderer},
-            { field: "total_pl", headerName: "TOTAL P/L",width: 100, cellRenderer: MoneyRenderer},
+            // { field: "sold_pl", headerName: "SOLD P/L",width: 100, cellRenderer: MoneyRenderer},
+            // { field: "total_pl", headerName: "TOTAL P/L",width: 100, cellRenderer: MoneyRenderer},
 
             { field: "unrealised_percent", headerName: "UNREALIZED %", width: 100, cellRenderer: PercentRenderer},
             //{ field: "earned_percent", headerName: "EARNED %",width: 100, cellRenderer: PercentRenderer},
-            { field: "sold_percent", headerName: "SOLD %",width: 100,cellRenderer: PercentRenderer},
-            { field: "total_percent", headerName: "TOTAL %",width: 100,cellRenderer: PercentRenderer},
+            // { field: "sold_percent", headerName: "SOLD %",width: 100,cellRenderer: PercentRenderer},
+            // { field: "total_percent", headerName: "TOTAL %",width: 100,cellRenderer: PercentRenderer},
 
             //{ field: "bought", headerName: "Bought", cellRenderer: MoneyRenderer},
             //{ field: "sold", headerName: "Sold", cellRenderer: MoneyRenderer},
