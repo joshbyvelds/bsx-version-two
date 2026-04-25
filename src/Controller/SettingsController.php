@@ -76,6 +76,7 @@ class SettingsController extends AbstractController
             $settings->setUseTenPercentWallet(false);
             $settings->setTenPercentAutoDeposit(false);
             $settings->setTenPercentDepositPercentage(0.00);
+            $settings->setSuperAdminAllCCDaysAfterExpiry(0);
 
             $em->persist($settings);
             $em->flush();

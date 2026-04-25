@@ -191,6 +191,9 @@ class Settings
     #[ORM\Column(type: 'string', length: 255)]
     private $ten_percent_wallet_name;
 
+    #[ORM\Column(type: 'integer')]
+    private $SuperAdminAllCCDaysAfterExpiry;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -900,6 +903,18 @@ class Settings
     public function setTenPercentWalletName(string $ten_percent_wallet_name): self
     {
         $this->ten_percent_wallet_name = $ten_percent_wallet_name;
+
+        return $this;
+    }
+
+    public function getSuperAdminAllCCDaysAfterExpiry(): ?int
+    {
+        return $this->SuperAdminAllCCDaysAfterExpiry;
+    }
+
+    public function setSuperAdminAllCCDaysAfterExpiry(int $SuperAdminAllCCDaysAfterExpiry): self
+    {
+        $this->SuperAdminAllCCDaysAfterExpiry = $SuperAdminAllCCDaysAfterExpiry;
 
         return $this;
     }

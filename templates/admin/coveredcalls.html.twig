@@ -1,0 +1,525 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}All Covered Calls{% endblock %}
+
+{% block body %}
+
+    <style>
+        /* 1. Reset the breakout to be a standard block element */
+        .rollover-history-breakout {
+            width: 100%;
+            background: #ffffff;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-top: 4px solid #0056b3;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            /* This adds the visual gap at the bottom */
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* 2. Ensure the grid cell doesn't restrict the detail content */
+        .detail-column-cell {
+            overflow: visible !important;
+            display: block !important;
+            white-space: normal !important;
+        }
+    </style>
+
+    {% if coveredCalls is empty %}
+        No covered calls in play for any user
+    {% else %}
+        <div id="ccGrid" style="height: 500px">
+
+        </div>
+    {% endif %}
+
+    <script>
+        // Attach to window to ensure global visibility
+        window.RolloverRenderer = class RolloverRenderer {
+            init(params) {
+                // This is the absolute test. If this doesn't log, the grid hasn't found the class.
+                console.log("CRITICAL: Renderer initialized for ID:", params.data.id);
+
+                this.eGui = document.createElement('div');
+                this.eGui.style.cssText = "background-color: #f8f9fa; padding: 20px; border-top: 1px solid #dee2e6; border-bottom: 1px solid #dee2e6;";
+
+                if (!params.data || !params.data.rollovers || params.data.rollovers.length === 0) {
+                    this.eGui.innerHTML = `<div style="color: #666; font-style: italic;">No rollover history available for this play.</div>`;
+                    return;
+                }
+
+                let tableHtml = `
+            <div style="font-weight: bold; margin-bottom: 10px; color: #0056b3;">Rollover History</div>
+            <table style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <thead>
+                    <tr style="background: #e9ecef; text-align: left;">
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Price</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Amount</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">New Expiry</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">New Strike</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+                params.data.rollovers.forEach(ro => {
+                    tableHtml += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.price).toFixed(2)}</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.amount).toFixed(2)}</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">${ro.newExpiry}</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">$${parseFloat(ro.newStrike).toFixed(2)}</td>
+                </tr>`;
+                });
+
+                tableHtml += `</tbody></table>`;
+                this.eGui.innerHTML = tableHtml;
+            }
+
+            getGui() { return this.eGui; }
+        };
+    </script>
+
+    <script>
+        class CompanyLogoRenderer {
+            init(params) {
+                this.eGui = document.createElement('div');
+
+                if (params.data && params.data.isDetail) {
+                    this.eGui.className = 'rollover-history-breakout';
+
+                    let tableHtml = `
+                <div style="font-weight: bold; margin-bottom: 10px; color: #0056b3;">
+                    Rollover History: Call #${params.data.id.toString().replace('detail_', '')}
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa; text-align: left;">
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">Price</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">Amount</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">Old Expiry</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">New Expiry</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">Old Strike</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">New Strike</th>
+                            <th style="padding: 8px; border: 1px solid #dee2e6;">Stock RO Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                    params.data.rollovers.forEach(ro => {
+                        tableHtml += `
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">$${parseFloat(ro.price).toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">$${parseFloat(ro.amount).toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">${ro.oldExpiry}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">${ro.newExpiry}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">$${parseFloat(ro.oldStrike).toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">$${parseFloat(ro.newStrike).toFixed(2)}</td>
+                        <td style="padding: 8px; border: 1px solid #dee2e6;">$${parseFloat(ro.stockRollOverPrice).toFixed(2)}</td>
+                    </tr>`;
+                    });
+
+                    tableHtml += `</tbody></table>`;
+                    this.eGui.innerHTML = tableHtml;
+                } else {
+                    // Standard Logo logic
+                    const ticker = params.value ? params.value.toLowerCase() : "";
+                    this.eGui.innerHTML = ticker ? `<img src="/assets/images/company_logos/${ticker}.jpg" style="width:80px; border-radius:8px;">` : '';
+                }
+            }
+            getGui() { return this.eGui; }
+        }
+    </script>
+
+    <script>
+        class MoneyRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                this.eGui = document.createElement('span');
+
+                if (!params.data || params.data.isDetail || params.value == null) {
+                    return; // Early exit keeps eGui as an empty span
+                }
+
+                // Wrap your text/style in a sub-element
+                const content = document.createElement('span');
+                content.innerHTML = (params.value < 0 ? "-$" : "$") + Math.abs(params.value).toFixed(2);
+                this.eGui.appendChild(content);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class PercentRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+
+                if (params.data && params.data.isDetail) return null;
+
+                this.eGui = document.createElement('span'); // Always create the base element first
+
+                if (!params.data || params.data.isDetail || params.value == null) {
+                    return; // Leave it empty, but the element exists
+                }
+
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = params.value.toFixed(2) + "%";
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-" + Math.abs(params.value).toFixed(2) + "%";
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        // ... Keep your Renderer classes (CompanyLogoRenderer, MoneyRenderer, etc.) as they are ...
+
+        // 1. Clean Data Setup
+        const initialData = [
+            {% for cc in coveredCalls %}
+            {% set stock = cc.stock %}
+                {% if cc.buyout %}
+                    {% set cc_status = "Buyout" %}
+                {% elseif cc.expired %}
+                    {% set cc_status = "Expired" %}
+                {% elseif cc.exercised %}
+                    {% set cc_status = "Exercised" %}
+                {% else %}
+                    {% if cc.partiallyBoughtout %}
+                        {% set cc_status = "Ongoing/PBO" %}
+                    {% else %}
+                        {% set cc_status = "Ongoing" %}
+                    {% endif %}
+                {% endif %}
+
+                {% set cc_earned = ((cc.price * cc.contracts * 100) - 9.95 - (1.25 * cc.contracts)) %}
+
+                {% if cc.buyout or cc.partiallyBoughtout %}
+                    {% set cc_earned = cc_earned - cc.buyoutPrice %}
+                {% endif %}
+
+                {% set eps = cc_earned / (cc.contracts * 100)  %}
+
+                {% if cc.exercised %}
+                    {% set cc_diff = cc.strike - (cc.stockBuyPrice - eps) %}
+                {% else %}
+                    {% set cc_diff = cc.stockExpiryPrice - (cc.stockBuyPrice - eps) %}
+                {% endif %}
+
+                {% if cc_status == "Ongoing" or cc_status == "Ongoing/PBO" %}
+                    {% set cc_expiry_price = stock.company.currentPrice|number_format(2) %}
+                {% else %}
+                    {% set cc_expiry_price = cc.stockExpiryPrice %}
+                {% endif %}
+
+                {% set cc_be_diff = (cc.stockBuyPrice - cc_expiry_price) * -1 %}
+                {% set cc_se_diff = (cc_expiry_price - cc.strike) %}
+                {% set cc_se_per = ((cc_expiry_price - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                {% set cc_ab_per = cc_se_per %}
+                {% set cc_away_from_target = 100 + cc_ab_per %}
+
+                {% set cc_be_diff2 = (cc.stockBuyPrice - stock.company.currentPrice) * -1 %}
+                {% set cc_se_diff2 = (stock.company.currentPrice - cc.strike) %}
+                {% set cc_se_per2 = ((stock.company.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                {% set cc_ab_per2 = cc_se_per2 %}
+                {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
+
+
+            {
+                "expanded": false, // Track state here
+                "id": {{ cc.id }},
+                "user": "{{ cc.user.username }}",
+                "company": "{{ stock.company.ticker }}", // Added for your logo renderer
+                "price": {{ cc.price }},
+                "contracts": {{ cc.contracts }},
+                "strike": {{ cc.strike }},
+
+                {% set now = "now"|date("U") %}
+                {% set expiry = cc.expiry|date("U") %}
+                {% set difference = expiry - now %}
+                {% set days_left = (difference / 86400)|round(0, 'floor') %}
+
+                "days_left": {{ days_left > 0 ? days_left : 0 }},
+                "expiryDate": "{{ cc.expiry|date("m/d/Y") }}",
+                "status": "{{ cc_status }}",
+                "earned": {{ cc_earned|number_format(2) }},
+                "buyExpireDiff":{% if cc_be_diff > 0 %}+{% endif %}{{ cc_be_diff|number_format(2) }} ,
+                "strikeDiff": {% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }},
+
+                {% if cc.buyout or cc.expired or cc.exercised %}
+                    "targetPercent": {{ cc_away_from_target|number_format(1) }},
+                    "stats": { "eps": {{ eps|number_format(3) }}, "sbp": {{ cc.stockBuyPrice }}, "sep": {{ cc.stockExpiryPrice }} },
+                {% else %}
+                    {% set cc_be_diff2 = (cc.stockBuyPrice - stock.company.currentPrice) * -1 %}
+                    {% set cc_se_diff2 = (stock.company.currentPrice - cc.strike) %}
+                    {% set cc_se_per2 = ((stock.company.currentPrice - (cc.strike - 0.02)) / (cc.strike - 0.02)) * 100 %}
+                    {% set cc_ab_per2 = cc_se_per2 %}
+                    {% set cc_away_from_target2 = 100 + cc_ab_per2 %}
+                    "targetPercent": {{ cc_away_from_target2|number_format(1) }},
+                    "stats": { "eps": {{ eps|number_format(3) }} , "sbp": {{ cc.stockBuyPrice }} , "sep": {{ cc.stockExpiryPrice }} },
+                {% endif %}
+
+                "rollovers": [
+                    {% set ro_price_start = cc.price %}
+                    {% set ro_amount_start = (cc.price * cc.contracts * 100) - (9.95 + (1.25 * cc.contracts))  %}
+
+                    {% for ro in cc.writtenOptionRollovers %}
+                        {% set ro_price_start = ro_price_start - ro.price %}
+                        {% set ro_amount_start = ro_amount_start - ro.amount %}
+                    {% endfor %}
+                    {% if cc.writtenOptionRollovers is not empty %}
+                    {
+                        "price": {{ ro_price_start|number_format(2) }},
+                        "amount": {{ ro_amount_start|number_format(2) }},
+                        "oldExpiry": "Start",
+                        "newExpiry": "{{ cc.writtenOptionRollovers|first.oldExpiry|date("m/d/Y") }}",
+                        "oldStrike": {{ cc.writtenOptionRollovers|first.oldStrike|number_format(2) }},
+                        "newStrike": {{ cc.writtenOptionRollovers|first.oldStrike|number_format(2) }},
+                        "stockRollOverPrice": "First Move"
+                    },
+                    {% endif %}
+
+                    {% for ro in cc.writtenOptionRollovers %}
+                    {
+                        "price": {{ ro.price|number_format(2) }},
+                        "amount": {{ ro.amount|number_format(2) }},
+                        "oldExpiry": "{{ ro.oldExpiry|date("m/d/Y") }}",
+                        "newExpiry": "{{ ro.newExpiry|date("m/d/Y") }}",
+                        "oldStrike": {{ ro.oldStrike|number_format(2) }},
+                        "newStrike": {{ ro.newStrike|number_format(2) }},
+                        "stockRollOverPrice": {{ ro.stockRolloverPrice|number_format(2) }}
+                    }
+                    {% endfor %}
+                ]
+            },
+
+            {% endfor %}
+        ];
+
+        // On initial load, ONLY load the parent rows
+        const startingRows = initialData.map(item => ({ ...item, isDetail: false }));
+
+        const processedData = [];
+        initialData.forEach(item => {
+            // 1. Always add the main row
+            processedData.push({ ...item, isDetail: false });
+
+            // 2. ONLY add the detail row if this specific item is expanded
+            if (item.expanded === true && item.rollovers && item.rollovers.length > 0) {
+                processedData.push({
+                    rollovers: item.rollovers,
+                    isDetail: true,
+                    id: 'detail_' + item.id // Give the detail row its own unique ID
+                });
+            }
+        });
+
+        const gridOptions = {
+
+            // 4. Register in components as a fallback
+            components: {
+                rolloverRenderer: RolloverRenderer
+            },
+
+
+            animateRows: false,           // This is the most likely culprit
+            suppressRowAnimation: true,    // Secondary flag for strict stability
+
+
+
+            // Change default row height to be smaller, let getRowHeight handle the detail
+            rowHeight: 80,
+
+            defaultColDef: {
+                flex: 1,
+                cellStyle: { textAlign: 'center' },
+                suppressHeaderMenu: true
+            },
+
+            columnDefs: [
+                {
+                    headerName: "COMPANY",
+                    field: "company",
+                    cellRenderer: CompanyLogoRenderer,
+                    width: 50,
+                    // This class hook is essential
+                    cellClass: params => params.data.isDetail ? 'detail-column-cell' : ''
+                },
+                { field: 'user', headerName: 'User', maxWidth: 70 },
+                {
+                    maxWidth: 90,
+                    field: 'price',
+                    headerName: 'Price',
+                    cellRenderer: (params) => {
+                        if (!params.data || params.data.isDetail) return '';
+
+                        const container = document.createElement('div');
+                        const priceValue = params.value != null ? params.value.toFixed(2) : '0.00';
+
+                        if (params.data.rollovers && params.data.rollovers.length > 0) {
+                            const btn = document.createElement('button');
+                            btn.innerHTML = params.data.expanded ? '−' : '＋';
+                            btn.style.cssText = 'cursor:pointer; margin-right: 10px; width: 25px;';
+
+                            // Native listener is more stable than string-based onclick
+                            btn.onclick = (e) => {
+                                e.stopPropagation();
+                                window.toggleRollover(params.data.id);
+                            };
+
+                            container.appendChild(btn);
+                        }
+
+                        container.appendChild(document.createTextNode(priceValue));
+                        return container;
+                    }
+                },
+                { field: 'contracts', headerName: 'Contracts', maxWidth: 100 },
+                { field: 'strike', headerName: 'Strike', maxWidth: 75, },
+                { field: 'days_left', headerName: 'Days Left', maxWidth: 75 },
+                { field: 'expiryDate', headerName: 'Expiry Date', maxWidth: 110 },
+                { field: 'status', headerName: 'Status', maxWidth: 90 },
+                {
+                    field: 'earned',
+                    headerName: 'Earned',
+                    cellRenderer: MoneyRenderer, // Use your custom money renderer
+                    maxWidth: 90
+                },
+                {
+                    field: 'buyExpireDiff',
+                    headerName: 'B/E +/-',
+                    maxWidth: 80,
+                    cellClassRules: {
+                        'green-text': params => params.value > 0,
+                        'red-text': params => params.value < 0,
+                    }
+                },
+                {
+                    headerName: 'Stats (EPS|SBP|SEP)',
+                    valueGetter: params => {
+                        if (!params.data.stats) return '';
+                        return `${params.data.stats.eps} | ${params.data.stats.sbp} | ${params.data.stats.sep}`;
+                    }
+                }
+            ],
+
+            rowData: startingRows,
+
+
+            getRowId: (params) => {
+                // 1. Guard against missing params or data
+                if (!params || !params.data) return 'loading-' + Math.random();
+
+                // 2. Explicitly handle the Pinned "Total" row
+                if (params.node && params.node.rowPinned) return 'pinned-total';
+
+                // 3. Ensure the ID is always a string and never null
+                if (params.data.id) {
+                    return params.data.id.toString();
+                }
+
+                return 'fallback-' + Math.random();
+            },
+
+            // Tell AG Grid which rows should span the full width
+            isFullWidthRow: (params) => {
+                return params.rowNode.data.isDetail === true;
+            },
+
+            // Use your existing CompanyLogoRenderer as the full-width renderer
+            fullWidthCellRenderer: CompanyLogoRenderer,
+
+            getRowHeight: (params) => {
+                if (params.data && params.data.isDetail) {
+                    const rowCount = params.data.rollovers.length;
+                    // Increased base height from 80 to 100 to provide 20px extra bottom padding
+                    return 100 + (rowCount * 40);
+                }
+                return 100;
+            },
+
+            // 3. Updated getRowStyle with strict null checks
+            getRowStyle: params => {
+                if (params.node && params.node.rowPinned) {
+                    return {
+                        'font-weight': 'bold',
+                        'border-top': '2px solid black',
+                        'background-color': '#eee'
+                    };
+                }
+                return null;
+            },
+
+            // 4. Ensure boolean return
+           // pinnedBottomRowData: [{ status: 'Total', earned: 448.90 }],
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const myGridElement = document.querySelector('#ccGrid');
+            gridApi = agGrid.createGrid(myGridElement, gridOptions);
+        });
+
+        window.toggleRollover = (id) => {
+            const item = initialData.find(d => d.id == id);
+            if (!item) return;
+
+            item.expanded = !item.expanded;
+
+            const updatedRows = [];
+            initialData.forEach(row => {
+                updatedRows.push({ ...row, isDetail: false });
+
+                if (row.expanded && row.rollovers && row.rollovers.length > 0) {
+                    updatedRows.push({
+                        isDetail: true,
+                        id: 'detail_' + row.id,
+                        rollovers: row.rollovers
+                    });
+                }
+            });
+
+            // 1. Update the data
+            gridApi.setGridOption('rowData', updatedRows);
+
+            // 2. IMPORTANT: Force a redraw of all rows to ensure the full-width logic fires
+            gridApi.redrawRows();
+        };
+
+    </script>
+
+{% endblock %}

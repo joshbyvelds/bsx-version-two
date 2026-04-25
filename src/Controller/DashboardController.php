@@ -114,6 +114,7 @@ class DashboardController extends AbstractController
             'debts' => $debt,
             'hisas' => $hisas,
             'user' => $user,
+            'super_admin' => ($this->isGranted('ROLE_SUPERADMIN'))
         ]);
     }
 
