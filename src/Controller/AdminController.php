@@ -78,7 +78,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/all/cc/updateask', name: 'all_plays')]
+    #[Route('/all/cc/updateask', name: 'update_cc_ask', methods: 'POST')]
     public function updateCCAsk(Request $request, ManagerRegistry $doctrine): JsonResponse
     {
 

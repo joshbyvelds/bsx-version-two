@@ -174,6 +174,36 @@
     </script>
 
     <script>
+        class DecimalRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                this.eGui = document.createElement('span');
+
+                if (!params.data || params.data.isDetail || params.value == null) {
+                    return; // Early exit keeps eGui as an empty span
+                }
+
+                // Wrap your text/style in a sub-element
+                const content = document.createElement('span');
+                content.innerHTML = Math.abs(params.value).toFixed(2);
+                this.eGui.appendChild(content);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
         class PercentRenderer  {
             eGui;
 
@@ -506,6 +536,7 @@
                     headerName:'Ask',
                     field: 'ask',
                     maxWidth: 70,
+                    cellRenderer: DecimalRenderer,
                 },
                 {
                     headerName:'BO Profit',
