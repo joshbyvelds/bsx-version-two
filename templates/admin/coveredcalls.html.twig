@@ -248,6 +248,75 @@
     </script>
 
     <script>
+        function getTimeRemainingRatio() {
+            const now = new Date();
+
+            // 1. Current time in total seconds passed today
+            const currentSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+
+            // 2. Boundaries in seconds
+            const startSeconds = 9.5 * 3600; // 9:30 AM = 34,200 seconds
+            const endSeconds = 16 * 3600;   // 4:00 PM = 57,600 seconds
+            const totalDuration = endSeconds - startSeconds;
+
+            // 3. Early check
+            if (currentSeconds < startSeconds) {
+                return 1.0;
+            }
+
+            // 4. Late check
+            if (currentSeconds >= endSeconds) {
+                return 0.0;
+            }
+
+            // 5. Progress calculation
+            const elapsed = currentSeconds - startSeconds;
+            const ratioPassed = elapsed / totalDuration;
+
+            // Return the inverse (time remaining)
+            return 1.0 - ratioPassed;
+        }
+
+
+        class DaysLeftRenderer  {
+            eGui;
+
+            /// Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                this.eGui = document.createElement('span');
+
+                if (!params.data || params.data.isDetail || params.value == null) {
+                    return; // Early exit keeps eGui as an empty span
+                }
+
+                // Wrap your text/style in a sub-element
+                const content = document.createElement('span');
+
+                if (params.value === 0) {
+                    content.innerHTML = getTimeRemainingRatio().toFixed(3);
+                } else if (params.value < 0){
+                    content.innerHTML = 0;
+                } else {
+                    content.innerHTML = params.value;
+                }
+
+
+                this.eGui.appendChild(content);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
         class TargetRenderer {
             init(params) {
                 this.eGui = document.createElement('div');
@@ -360,7 +429,7 @@
                 {% set difference = expiry - now %}
                 {% set days_left = (difference / 86400)|round(0, 'floor') %}
 
-                "days_left": {{ days_left > 0 ? days_left : 0 }},
+                "days_left": {{ days_left }},
                 "expiryDate": "{{ cc.expiry|date("m/d/Y") }}",
                 "status": "{{ cc_status }}",
                 "earned": {{ cc_earned|number_format(2) }},
@@ -497,7 +566,7 @@
                 },
                 { field: 'contracts', headerName: '# of Con', maxWidth: 90, headerTooltip:"Number of Contracts" },
                 { field: 'strike', headerName: 'Strike', maxWidth: 75, },
-                { field: 'days_left', headerName: 'Days Left', maxWidth: 100 },
+                { field: 'days_left', headerName: 'Days Left', maxWidth: 100, cellRenderer: DaysLeftRenderer },
                 { field: 'expiryDate', headerName: 'Expiry', maxWidth: 110, headerTooltip: "Expiry Date" },
                 { field: 'status', headerName: 'Status', maxWidth: 90 },
                 {
