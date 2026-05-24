@@ -76,7 +76,7 @@ class DashboardController extends AbstractController
             unset($weeklyPortfolioTotals[count($weeklyPortfolioTotals) - 1]);
         }
 
-        $n = 20;
+        $n = $settings->getWeeklyTotalGraphDates();
         $lastWeeklyPortfolioTotals = array_slice($weeklyPortfolioTotals, -$n);
         //$totalValues = $doctrine->getRepository(TotalValue::class)->findOneBy(['user' => $user->getId()]);
 

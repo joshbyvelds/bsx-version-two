@@ -83,6 +83,7 @@ class SettingsType extends AbstractType
             ->add('ten_percent_auto_deposit',CheckboxType::class, ['mapped' => true, 'required' => false])
             ->add('ten_percent_deposit_percentage',NumberType::class, ['mapped' => true, 'required' => false])
             ->add('SuperAdminAllCCDaysAfterExpiry',NumberType::class, ['label' => 'Super Admin All CC Days After Expiry', 'mapped' => true, 'required' => false])
+            ->add('weekly_total_graph_dates',NumberType::class, ['label' => 'Weekly Total Graph Dates', 'mapped' => true, 'required' => false])
 
             ->add('save', SubmitType::class, [
                 'attr' => [
