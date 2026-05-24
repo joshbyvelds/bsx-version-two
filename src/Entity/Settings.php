@@ -194,6 +194,9 @@ class Settings
     #[ORM\Column(type: 'integer')]
     private $SuperAdminAllCCDaysAfterExpiry;
 
+    #[ORM\Column(type: 'integer')]
+    private $weekly_total_graph_dates;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -915,6 +918,18 @@ class Settings
     public function setSuperAdminAllCCDaysAfterExpiry(int $SuperAdminAllCCDaysAfterExpiry): self
     {
         $this->SuperAdminAllCCDaysAfterExpiry = $SuperAdminAllCCDaysAfterExpiry;
+
+        return $this;
+    }
+
+    public function getWeeklyTotalGraphDates(): ?int
+    {
+        return $this->weekly_total_graph_dates;
+    }
+
+    public function setWeeklyTotalGraphDates(int $weeklyTotalGraphDates): self
+    {
+        $this->weekly_total_graph_dates = $weeklyTotalGraphDates;
 
         return $this;
     }

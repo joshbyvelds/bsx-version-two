@@ -77,6 +77,7 @@ class SettingsController extends AbstractController
             $settings->setTenPercentAutoDeposit(false);
             $settings->setTenPercentDepositPercentage(0.00);
             $settings->setSuperAdminAllCCDaysAfterExpiry(0);
+            $settings->setWeeklyTotalGraphDates(20);
 
             $em->persist($settings);
             $em->flush();

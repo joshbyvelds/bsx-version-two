@@ -341,7 +341,7 @@ class WalletController extends AbstractController
             $type = $form->get("type")->getData();
             $amount = $form->get("amount")->getData();
 
-            $profit = $form->get("profit")->getData();
+            //$profit = $form->get("profit")->getData();
             $profit = ($form->get("profit")->getViewData() === "1");
             $profit_percent = $settings->getTenPercentDepositPercentage();
             $profit_amount = 0;

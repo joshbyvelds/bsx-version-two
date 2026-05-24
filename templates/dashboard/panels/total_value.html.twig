@@ -150,27 +150,11 @@
 <div class="panel large_panel">
     <canvas id="total_chart"></canvas>
     <script>
+        let num_dates = {{ settings.weeklyTotalGraphDates }};
         let total_data_values = [
-            {{ totalValues[0].amount ?? '0.00' }},
-            {{ totalValues[1].amount ?? '0.00' }},
-            {{ totalValues[2].amount ?? '0.00' }},
-            {{ totalValues[3].amount ?? '0.00' }},
-            {{ totalValues[4].amount ?? '0.00' }},
-            {{ totalValues[5].amount ?? '0.00' }},
-            {{ totalValues[6].amount ?? '0.00' }},
-            {{ totalValues[7].amount ?? '0.00' }},
-            {{ totalValues[8].amount ?? '0.00' }},
-            {{ totalValues[9].amount ?? '0.00' }},
-            {{ totalValues[10].amount ?? '0.00' }},
-            {{ totalValues[11].amount ?? '0.00' }},
-            {{ totalValues[12].amount ?? '0.00' }},
-            {{ totalValues[13].amount ?? '0.00' }},
-            {{ totalValues[14].amount ?? '0.00' }},
-            {{ totalValues[15].amount ?? '0.00' }},
-            {{ totalValues[16].amount ?? '0.00' }},
-            {{ totalValues[17].amount ?? '0.00' }},
-            {{ totalValues[18].amount ?? '0.00' }},
-            {{ totalValues[19].amount ?? '0.00' }}
+            {% for i in 0..(settings.weeklyTotalGraphDates - 1) %}
+                {{ totalValues[i].amount ?? '0.00' }}{{ not loop.last ? ',' : '' }}
+            {% endfor %}
         ];
 
         {% set smallest_value = totalValues[0].amount %}
@@ -185,32 +169,15 @@
             {% set smallest_value = smallest_value - (smallest_value * 0.07) %}
         {% endif %}
 
-        const label = 'Total Value over 20 weeks..';
+        const label = 'Total Value over 6 months..';
 
 
 
         const data_total = {
             labels: [
-                "{{ totalValues[0].endDate is defined ? totalValues[0].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[1].endDate is defined ? totalValues[1].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[2].endDate is defined ? totalValues[2].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[3].endDate is defined ? totalValues[3].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[4].endDate is defined ? totalValues[4].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[5].endDate is defined ? totalValues[5].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[6].endDate is defined ? totalValues[6].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[7].endDate is defined ? totalValues[7].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[8].endDate is defined ? totalValues[8].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[9].endDate is defined ? totalValues[9].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[10].endDate is defined ? totalValues[10].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[11].endDate is defined ? totalValues[11].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[12].endDate is defined ? totalValues[12].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[13].endDate is defined ? totalValues[13].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[14].endDate is defined ? totalValues[14].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[15].endDate is defined ? totalValues[15].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[16].endDate is defined ? totalValues[16].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[17].endDate is defined ? totalValues[17].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[18].endDate is defined ? totalValues[18].endDate|date("D m/d") : 'N/A' }}",
-                "{{ totalValues[19].endDate is defined ? totalValues[19].endDate|date("D m/d") : 'N/A' }}"
+                {% for i in 0..(settings.weeklyTotalGraphDates - 1) %}
+                    "{{ (totalValues[i].endDate ?? null) ? totalValues[i].endDate|date("D m/d") : 'N/A' }}"{{ not loop.last ? ',' : '' }}
+                {% endfor %}
             ],
             datasets: [{
                 label: label,
