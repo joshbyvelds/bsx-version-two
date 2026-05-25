@@ -42,17 +42,18 @@ class AdminController extends AbstractController
         $tzString = $_ENV['APP_TIMEZONE'] ?? 'UTC';
         $timezone = new \DateTimeZone($tzString);
 
-        // 2. Calculate the cutoff
-        $days_after_expiry = $settings->getSuperAdminAllCCDaysAfterExpiry();
+        $days_after_expiry = $settings->getSuperAdminAllCCDaysAfterExpiry(); // e.g., 3
+
+        // 1. Keep the exact current time, just subtract the days
         $cutoffDate = new \DateTime('now', $timezone);
         $cutoffDate->modify("-" . $days_after_expiry . " days");
-        $cutoffDate->setTime(0, 0, 0);
 
-        // 3. Query
+        // 2. Query
         $covered_calls = $doctrine->getRepository(WrittenOption::class)
             ->createQueryBuilder('wo')
             ->where('wo.expiry >= :cutoff')
-            ->setParameter('cutoff', $cutoffDate->format('Y-m-d'))
+            ->andWhere('wo.buyout = 0') // Adds the buyout check
+            ->setParameter('cutoff', $cutoffDate)
             ->getQuery()
             ->getResult();
 

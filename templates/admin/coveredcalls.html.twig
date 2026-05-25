@@ -432,7 +432,7 @@
                 "days_left": {{ days_left }},
                 "expiryDate": "{{ cc.expiry|date("m/d/Y") }}",
                 "status": "{{ cc_status }}",
-                "earned": {{ cc_earned|number_format(2) }},
+                "earned": {{ cc_earned|number_format(2, '.', '') }},
                 "buyExpireDiff":{% if cc_be_diff > 0 %}+{% endif %}{{ cc_be_diff|number_format(2) }} ,
                 "strikeDiff": {% if cc_se_diff > 0 %}+{% endif %}{{ cc_se_diff|number_format(2) }},
 
@@ -480,7 +480,7 @@
                         "oldStrike": {{ ro.oldStrike|number_format(2) }},
                         "newStrike": {{ ro.newStrike|number_format(2) }},
                         "stockRollOverPrice": {{ ro.stockRolloverPrice|number_format(2) }}
-                    }
+                    }{% if not loop.last %}, {% endif %}
                     {% endfor %}
                 ]
             },
