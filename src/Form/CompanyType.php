@@ -9,6 +9,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -70,6 +71,11 @@ class CompanyType extends AbstractType
             ->add('no_fee', checkboxType::class, [
                 'label' => 'No Fee',
                 'required' => false,
+            ])
+            ->add('save', SubmitType::class, [
+                'attr' => [
+                    'class' => 'normal-case cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow'
+                ]
             ])
 
         ;

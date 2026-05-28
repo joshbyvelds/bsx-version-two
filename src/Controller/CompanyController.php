@@ -33,8 +33,8 @@ class CompanyController extends AbstractController
             $em = $doctrine->getManager();
             $data = $form->getData();
 
-            $sector = $em->getRepository(Sector::class)->find((int)$data['sector']);
-            $company->setSector($sector);
+            $company->setUseSvg(false);
+            $company->setSvgSize(0);
 
             $em->persist($company);
             $em->flush();
