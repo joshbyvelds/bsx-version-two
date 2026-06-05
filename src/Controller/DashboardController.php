@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Debt;
 use App\Entity\Sector;
 use App\Entity\User;
+use App\Entity\Option;
 use App\Entity\Wallet;
 use App\Entity\TotalValue;
 use App\Entity\FuturesWeek;
@@ -423,5 +424,56 @@ class DashboardController extends AbstractController
 
         dump($new_sector_values);
         return $new_sector_values;
+    }
+
+    #[Route('/dashboard/updateNakedOptions', name: 'update_no_ask', methods: 'POST')]
+    public function updateNOAsk(Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        $em = $doctrine->getManager();
+
+        if ($request->isXMLHttpRequest()) {
+            $user = $this->getUser();
+            $settings = $user->getSettings();
+
+            // 1. Get timezone safely from $_ENV
+            $tzString = $_ENV['APP_TIMEZONE'] ?? 'UTC';
+            $timezone = new \DateTimeZone($tzString);
+
+            // 2. Calculate the cutoff
+            $cutoffDate = new \DateTime('now', $timezone);
+            $cutoffDate->setTime(0, 0, 0);
+
+            // 3. Query
+            $no_options = $doctrine->getRepository(Option::class)
+                ->createQueryBuilder('wo')
+                ->where('wo.expiry >= :cutoff')
+                ->where('wo.total_contracts > wo.total_contracts_sold')
+                ->getQuery()
+                ->getResult();
+
+            $updates = [];
+
+            forEach($no_options as $option){
+                if(!$option->isExpired()){
+                    $e = date_format($option->getExpiry(), "Y-m-d");
+                    $t = "c";
+                    $s = number_format($option->getStrike(), 2);
+                    $option_data = json_decode(file_get_contents('https://www.optionsprofitcalculator.com/ajax/getOptions?stock=' . $option->getStock()->getCompany()->getTicker() . '&reqId=1'), true);
+                    $option_data = $option_data['options'];
+                    $option_data = $option_data[$e];
+                    $option_data = $option_data[$t];
+                    $option_data = $option_data[$s];
+                    $current = $option_data['b'];
+                    $updates[] = $current;
+                    $option->setCurrent($current);
+                }
+            }
+
+            $em->flush();
+
+            return new JsonResponse(array('success' => true, 'updates' => $updates, 'options_count' => count($no_options)));
+        }
+
+        return new JsonResponse(array('success' => false, 'reason' => "Non XMLHttp Request"));
     }
 }
