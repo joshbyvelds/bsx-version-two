@@ -2,6 +2,9 @@
 
 namespace App\Form;
 
+use App\Repository\StockRepository;
+use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -11,11 +14,20 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
+use Symfony\Component\Security\Core\Security;
 
 
 class WrittenOptionBuytocloseType extends AbstractType
 {
+
+    public function __construct(Security $security, StockRepository $stockRepository)
+    {
+        $this->security = $security;
+        $this->user = $this->security->getUser();
+        $this->user_id = $this->user->getId();
+        $this->stockRepository = $stockRepository;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -86,6 +98,33 @@ class WrittenOptionBuytocloseType extends AbstractType
                 'label'    => 'Use Locked Funds?',
                 'required' => false,
             ])
+
+            ->add('part_of_play', ChoiceType::class, [
+                'label' => 'Part of Play?',
+                'required' => false,
+                'mapped' => false,
+                'choices' => [
+                    'Yes' => '1',
+                    'No' => '0',
+                ],
+            ])
+
+            ->add('play', EntityType::class, [
+                'attr' => [
+                    'class' => 'block w-full rounded-md bg-white py-1.5 pl-3 pr-10 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body',
+                ],
+                'mapped' => false,
+                'label' => 'Play',
+                'class' => 'App\Entity\Play',
+                'choice_label' => 'name',
+                'query_builder' => function (EntityRepository $er) {
+                    $user_id = $this->user_id;
+                    return $er->createQueryBuilder('s')
+                        ->where('s.User = :user')
+                        ->setParameter('user', $user_id);
+                },
+            ])
+
             ->add('save', SubmitType::class, [
                 'attr' => [
                     'class' => 'btn btn-primary float-right'
