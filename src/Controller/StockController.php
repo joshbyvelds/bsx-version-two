@@ -689,7 +689,8 @@ class StockController extends AbstractController
             if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
-                $play->addToContractBuys($form->get("contracts")->getData(), $form->get("average")->getData(), $cost);
+                $play->setContractsTotalBuys($play->getContractsTotalBuys() + 1);
+                $play->setOptionsEarned($play->getOptionsEarned() - $cost);
             }
 
             $em->persist($transaction);
@@ -776,7 +777,8 @@ class StockController extends AbstractController
             if ($form->get("part_of_play")->getViewData() === "1") {
                 $play_id = $form->get("play")->getData();
                 $play = $em->getRepository(Play::class)->find($play_id);
-                $play->sellContracts($form->get("contracts")->getData(), $cost);
+                $play->setContractsTotalBuys($play->getContractsTotalBuys() + 1);
+                $play->setOptionsEarned($play->getOptionsEarned() - $cost);
             }
 
             $em->persist($transaction);
@@ -813,8 +815,8 @@ class StockController extends AbstractController
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
 
             $contracts_sold = $form->get("contracts")->getData();
-            
-            $option->setContracts($option->getContracts() - $contracts_sold);
+            $option->sellContracts($contracts_sold);
+
             $transaction = new Transaction();
             $date = new DateTime();
             $transaction->setType(1);
@@ -857,6 +859,14 @@ class StockController extends AbstractController
                     $profit_wallet_amount = round($trade_profit * $profit_percent, 2);
                     $wallet->percentDeposit(strtoupper($currency), $profit_wallet_amount);
                 }
+            }
+
+
+            if ($form->get("part_of_play")->getViewData() === "1") {
+                $play_id = $form->get("play")->getData();
+                $play = $em->getRepository(Play::class)->find($play_id);
+                $play->setContractsTotalSells($play->getContractsTotalSells() + 1);
+                $play->setOptionsEarned($play->getOptionsEarned() + $trade_profit);
             }
 
 

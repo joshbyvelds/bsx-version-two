@@ -36,9 +36,9 @@ class OptionSellType extends AbstractType
                     return $er->createQueryBuilder('s')
                     ->where('s.user = :user')
                     ->andWhere('s.contracts > 0')
-                    ->andWhere('s.expiry > :now') // Use a placeholder instead of NOW()
-                    ->setParameter('user', $this->user_id)
-                    ->setParameter('now', new \DateTime()); // Pass the current time here
+                    //->andWhere('s.expiry >= :now') // Use a placeholder instead of NOW()
+                    ->setParameter('user', $this->user_id);
+                   // ->setParameter('now', new \DateTime()); // Pass the current time here
                 },
                 'mapped' => false
             ])

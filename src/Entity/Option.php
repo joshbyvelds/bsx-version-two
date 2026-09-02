@@ -274,6 +274,15 @@ class Option
         return $this;
     }
 
+    public function sellContracts(int $contracts): self
+    {
+        $this->contracts -= $contracts;
+        $this->total_contracts_sold += $contracts;
+        $this->sells += 1;
+
+        return $this;
+    }
+
     public function getSells(): ?int
     {
         return $this->sells;

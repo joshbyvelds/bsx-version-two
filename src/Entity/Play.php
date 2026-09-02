@@ -400,7 +400,8 @@ class Play
     public function sellShares(int $amount, float $sold_for)
     {
         $this->shares_remaining -= $amount;
-        $this->total_sold += $sold_for;
+        $this->total_sold += ($amount * $sold_for);
+        $this->shares_earned += ($amount * $sold_for);
     }
 
     public function addToContractBuys(int $contracts, float $average, float $spent)
