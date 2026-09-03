@@ -1628,7 +1628,7 @@ class StockController extends AbstractController
                     $ustatus = $this->updateStockInfo($user, $doctrine, $stock,$disable_can,$day_today,$hour_today);
                     if($ustatus === "U"){
                         $date = new DateTime();
-                        $stock->setLastPriceUpdate($date);
+                        $stock->getCompany()->setLastPriceUpdate($date);
                         $em = $doctrine->getManager();
                         $em->flush();
                         $updated = true;

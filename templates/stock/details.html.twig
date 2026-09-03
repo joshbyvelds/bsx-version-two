@@ -168,7 +168,7 @@
             <div class="sm:col-span-2">
                 <div class="text-6xl"><span class="text-9xl" style="font-size: 190px;">{{ stock.company.ticker }}</span> <span>${{ stock.company.currentPrice|number_format(2) }}</span></div>
                 <div>
-
+                    <button id="update_price" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Price</button>
                 </div>
             </div>
 
@@ -1031,6 +1031,10 @@
     </div>
 
     <script>
+
+    </script>
+
+    <script>
         var search_open = false;
         $(document).ready(function() {
             $("#stocksearch").on('click', function() {
@@ -1065,9 +1069,19 @@
 
                     $("#searchresults").show();
                 }
-
-
             })
+
+            $("#update_price").on('click', function(){
+                var $btn = $(this).prop('disabled', true).text('Updating...');
+                $.post("/stocks/update", { stock_id: {{ stock.id }} }, function(json){
+                    if (json.success) {
+                        location.reload();
+                    } else {
+                        alert("Price update failed.");
+                        $btn.prop('disabled', false).text('Update Price');
+                    }
+                }, "json");
+            });
         });
     </script>
 {% endblock %}
