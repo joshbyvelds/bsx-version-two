@@ -4,6 +4,64 @@
 
 {% block body %}
 
+    <div x-data="stockUpdater()">
+
+        <button
+                type="button"
+                @click="start()"
+                :disabled="open"
+                class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+            Update All Stock Prices
+        </button>
+
+        <div
+                x-show="open"
+                x-cloak
+                @keydown.escape.window="close()"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="stock-update-title"
+        >
+            <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+                <h2 id="stock-update-title" class="text-lg font-semibold text-slate-900">
+                    Updating All Stock Prices (All Users)
+                </h2>
+
+                <div
+                        class="relative mt-5 h-10 w-full overflow-hidden rounded-md bg-slate-700"
+                        role="progressbar"
+                        aria-valuemin="0"
+                        :aria-valuemax="total"
+                        :aria-valuenow="current"
+                >
+                    <div
+                            class="h-full bg-blue-500 transition-all duration-300 ease-out"
+                            :style="`width: ${total ? (current / total) * 100 : 0}%`"
+                    ></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-sm font-medium text-white">
+            <span x-text="current"></span>/<span x-text="total"></span> Stock Prices Updated
+          </span>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <button
+                            type="button"
+                            x-show="done"
+                            @click="close()"
+                            class="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-300"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 <div id="stockGrid" style="height: 920px">
 
 </div>
@@ -382,5 +440,52 @@
     const myGridElement = document.querySelector('#stockGrid');
     gridApi = agGrid.createGrid(myGridElement, gridOptions);
 </script>
+
+{# Updater Script  #}
+
+    <script>
+        function stockUpdater() {
+            return {
+                companies: {{ companies|json_encode|raw }},
+                open: false,
+                current: 0,
+                total: 0,
+                done: false,
+                error: null,
+
+                async start() {
+                    this.current = 0;
+                    this.total = this.companies.length;
+                    this.done = false;
+                    this.error = null;
+                    this.open = true;
+
+                    for (const company of this.companies) {
+                        try {
+                            const json = await $.post("/stocks/update", { stock_id: company[1] }, null, "json");
+
+                            if (!json.success) {
+                                this.error = `Price update failed. Company ID: ${company[0]}.`;
+                                break;
+                            }
+
+                            this.current += 1;
+                        } catch (e) {
+                            this.error = `Request failed. Company ID: ${company[0]}.`;
+                            break;
+                        }
+                    }
+
+                    this.done = true;
+                },
+
+                close() {
+                    if (!this.done) return;
+                    this.open = false;
+                },
+            };
+        }
+    </script>
+
 
 {% endblock %}

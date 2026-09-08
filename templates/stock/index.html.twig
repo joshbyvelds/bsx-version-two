@@ -540,7 +540,9 @@
                         {% set total_percent = ((((total_sold + unrealized_total) - total_expense) / total_expense) * 100) %}
                     {% endif %}
 
-                { pinned: null, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.company.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
+                {% set total_value = 0.00 %}
+
+                { pinned: null, total_value:{{ shares_current_value|number_format(2,'.', '') }}, bought:{{ total_expense|number_format(2,'.', '') }}, sold:{{ total_sold|number_format(2,'.', '') }}, id:"{{ stock.id }}", company: "{{ stock.company.ticker }}", shares:{{ stock_amount }}, earned:{{ earned_total|number_format(2,'.', '') }}, unrealised_total:{{ unrealized_total|number_format(2,'.', '') }}, total_pl:{{ total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ earned_percent|number_format(2, '.', '') }}, total_percent:{{ total_percent|number_format(2, '.', '') }}, sold_pl:{{ sold_pl|number_format(2, '.', '') }}, sold_percent:{{ sold_percent|number_format(2, '.', '') }} },
                 {% endfor %}
             ],
 
@@ -561,7 +563,9 @@
                     {% set absolute_total_percent = ((((absolute_total_sold + absolute_total_unrealized) - absolute_total_expense) / absolute_total_expense) * 100) %}
                 {% endif %}
 
-                { pinned: 'bottom', bought:{{ absolute_total_expense|number_format(2,'.', '') }}, sold:{{ absolute_total_sold|number_format(2,'.', '') }}, company: "TOTAL", shares:0, earned:{{ absolute_total_earned|number_format(2,'.', '') }}, unrealised_total:{{ absolute_total_unrealized|number_format(2,'.', '') }}, total_pl:{{ absolute_total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ absolute_unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ absolute_earned_percent|number_format(2, '.', '') }}, total_percent:{{ absolute_total_percent|number_format(2, '.', '') }}, sold_pl:{{ abosulte_sold_pl|number_format(2, '.', '') }}, sold_percent:{{ absolute_sold_percent|number_format(2, '.', '') }} },
+                {% set absolute_total_value = 0.00 %}
+
+                { pinned: 'bottom', total_value:{{ absolute_total_value|number_format(2,'.', '') }}, bought:{{ absolute_total_expense|number_format(2,'.', '') }}, sold:{{ absolute_total_sold|number_format(2,'.', '') }}, company: "TOTAL", shares:0, earned:{{ absolute_total_earned|number_format(2,'.', '') }}, unrealised_total:{{ absolute_total_unrealized|number_format(2,'.', '') }}, total_pl:{{ absolute_total_pl|number_format(2,'.', '') }}, unrealised_percent:{{ absolute_unrealized_percent|number_format(2, '.', '') }}, earned_percent:{{ absolute_earned_percent|number_format(2, '.', '') }}, total_percent:{{ absolute_total_percent|number_format(2, '.', '') }}, sold_pl:{{ abosulte_sold_pl|number_format(2, '.', '') }}, sold_percent:{{ absolute_sold_percent|number_format(2, '.', '') }} },
             ],
 
             defaultColDef: {
@@ -593,6 +597,7 @@
                         //allowedCharPattern: '[0-9\\.]' // Allow only numbers and decimal points
                     }
                 },
+                { field: "total_value", headerName: "TOTAL VALUE",width: 50, cellRenderer: MoneyRenderer },
                 { field: "earned", headerName: "EARNED",width: 50, cellRenderer: MoneyRenderer },
                 { field: "unrealised_total", headerName: "UNREALISED P/L", width: 100, cellRenderer: MoneyRenderer},
                 { field: "sold_pl", headerName: "SOLD P/L",width: 100, cellRenderer: MoneyRenderer},

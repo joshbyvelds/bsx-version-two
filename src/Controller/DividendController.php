@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\Dividend;
 use App\Entity\Transaction;
 use App\Entity\Stock;
+use App\Entity\User;
 use App\Entity\Wallet;
 use App\Form\DividendType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,6 +39,47 @@ class DividendController extends AbstractController
         ]);
     }
 
+    #[Route('/getDividendStocks/{id}', name: 'dividends_get_stocks')]
+    public function getDiviStocks(ManagerRegistry $doctrine, Request $request, int $id): JsonResponse
+    {
+
+        $superadmin = ($this->isGranted('ROLE_SUPERADMIN'));
+
+        if (!$superadmin) {
+            return new JsonResponse([
+                'stocks' => [],
+            ]);
+        }
+
+        $em = $doctrine->getManager();
+        $selectedUser = $em->getRepository(User::class)->find($id);
+
+        if (!$selectedUser) {
+            return new JsonResponse([
+                'stocks' => [],
+            ]);
+        }
+
+        $sql = "SELECT p.id AS id, c.ticker AS ticker, c.name AS name FROM stock p INNER JOIN company c ON p.company_id = c.id WHERE p.user_id = :user_id AND c.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY c.ticker ASC";
+
+        $myDiviStocks = $em->getConnection()->executeQuery($sql, [
+            'user_id' => $selectedUser->getId(),
+            'pays' => 1
+        ])->fetchAllAssociative();
+
+        $myDiviStocks = array_map(static fn(array $stock) => [
+            'id' => (int) $stock['id'],
+            'ticker' => $stock['ticker'],
+            'name' => $stock['name'],
+        ], $myDiviStocks);
+
+        return new JsonResponse([
+            'stocks' => $myDiviStocks,
+        ]);
+    }
+
+
+
     #[Route('/dividends/add', name: 'dividends_add')]
     public function add(ManagerRegistry $doctrine, Request $request): Response
     {
@@ -49,13 +92,25 @@ class DividendController extends AbstractController
         $form = $this->createForm(DividendType::class, $dividend);
         $form->handleRequest($request);
         $em = $doctrine->getManager();
+        $superadmin = ($this->isGranted('ROLE_SUPERADMIN'));
 
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
             $data = $form->getData();
 
+            if ($superadmin) {
+                $user = $em->getRepository(User::class)->find($form->get("Account")->getData());
+            }
+
+            // The ten percent wallet rules below belong to whoever the dividend is
+            // being filed for, not to the (possibly super admin) user submitting it.
+            $settings = $user->getSettings();
+
             $stock = $em->getRepository(Stock::class)->find($form->get("Stock")->getData());
             $dividend->setStock($stock);
+            $dividend->setUser($user);
+
+
 
             // Update Wallet..
             $wallet = $em->getRepository(Wallet::class)->find($user->getId());
@@ -97,17 +152,32 @@ class DividendController extends AbstractController
             return $this->redirectToRoute('dividends_add');
         }
 
-        $sql = "SELECT p.* FROM stock p INNER JOIN company c ON p.company_id = c.id WHERE p.user_id = :user_id AND c.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY p.id ASC";
+        $sql = "SELECT p.id AS id, c.ticker AS ticker, c.name AS name FROM stock p INNER JOIN company c ON p.company_id = c.id WHERE p.user_id = :user_id AND c.pays_dividend = :pays AND p.shares_owned > 0 ORDER BY c.ticker ASC";
 
         $myDiviStocks = $em->getConnection()->executeQuery($sql, [
             'user_id' => $user->getId(),
-            'pays'    => 1
+            'pays' => 1
         ])->fetchAllAssociative();
 
+        $myDiviStocks = array_map(static fn(array $stock) => [
+            'id' => (int) $stock['id'],
+            'ticker' => $stock['ticker'],
+            'name' => $stock['name'],
+        ], $myDiviStocks);
+
+
+
+        $currentUser = $this->getUser();
 
         return $this->render('form/dividend.html.twig', [
+            'super_admin' => $superadmin,
             'form' => $form->createView(),
             'stocks' => $myDiviStocks,
+            'account' => [
+                'id' => $currentUser->getId(),
+                'name' => $currentUser->getRealname(),
+                'username' => $currentUser->getUsername(),
+            ],
             'error' => $error,
             'settings' => $settings
         ]);

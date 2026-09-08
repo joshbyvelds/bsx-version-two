@@ -23,9 +23,25 @@ class AdminController extends AbstractController
         $settings = $user->getSettings();
 
         $stocks = $doctrine->getRepository(Stock::class)->findAll();
+        $companyIds = [];
+        $companies = [];
+
+        foreach ($stocks as $s) {
+            if ($s->getSharesOwned() <= 0) {
+                continue;
+            }
+
+            $company = $s->getCompany();
+
+            if ($company && !in_array($company->getId(), $companyIds, true)) {
+                $companyIds[] = $company->getId();
+                $companies[] = [$company->getId(), $s->getId()];
+            }
+        }
 
         return $this->render('admin/stocks.html.twig', [
             'stocks' => $stocks,
+            'companies' => $companies,
             'settings' => $settings,
         ]);
     }
