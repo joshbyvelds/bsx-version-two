@@ -181,4 +181,76 @@ class AdminController extends AbstractController
 
         return new JsonResponse(['success' => true, 'total' => round($total, 2)] + $result);
     }
+
+    #[Route('/all/portfolio-history', name: 'all_portfolio_history')]
+    public function showUserPortfolioHistory(Request $request, ManagerRegistry $doctrine): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPERADMIN');
+
+        $current = $this->getUser();
+        $account = $doctrine->getRepository(User::class)->find((int) $request->query->get('user', $current->getId())) ?? $current;
+
+        return $this->render('admin/portfolio_history.html.twig', [
+            'settings' => $current->getSettings(),
+            'users' => $doctrine->getRepository(User::class)->findAll(),
+            'account' => $account,
+            'rows' => $this->buildHistoryRows($account),
+        ]);
+    }
+
+    #[Route('/all/portfolio-history/{id}', name: 'all_portfolio_history_data', methods: 'POST')]
+    public function userPortfolioHistoryData(int $id, ManagerRegistry $doctrine): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPERADMIN');
+
+        $user = $doctrine->getRepository(User::class)->find($id);
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'reason' => 'User not found']);
+        }
+
+        return new JsonResponse(['success' => true, 'rows' => $this->buildHistoryRows($user)]);
+    }
+
+    /**
+     * Grid rows for a user's weekly portfolio totals: change vs last week, month, year and high point.
+     */
+    private function buildHistoryRows(User $user): array
+    {
+        $pct = fn (float $new, float $old): float => ($new != $old && $old != 0.0) ? round((($new - $old) / $old) * 100, 2) : 0.0;
+
+        $rows = [];
+        $last = $month = $year = $high = null;
+
+        foreach ($user->getWeeklyPortfolioTotals() as $week) {
+            $amount = (float) $week->getAmount();
+
+            if ($last === null) {
+                $last = $month = $year = $high = $amount;
+                $highDiff = 0.0;
+            } else {
+                $highDiff = $pct($amount, $high);
+                $high = max($high, $amount);
+            }
+
+            $rows[] = [
+                'week_start' => $week->getStartDate()->format('m/d/Y'),
+                'week_end' => $week->getEndDate()->format('m/d/Y'),
+                'amount' => round($amount, 2),
+                'week_change' => $pct($amount, $last),
+                'month_change' => $pct($amount, $month),
+                'year_change' => $pct($amount, $year),
+                'high_diff' => $highDiff,
+            ];
+
+            $last = $amount;
+            if ($week->isEndofmonth()) {
+                $month = $amount;
+            }
+            if ($week->isEndofyear()) {
+                $year = $amount;
+            }
+        }
+
+        return $rows;
+    }
 }

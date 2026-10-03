@@ -1,0 +1,224 @@
+ {% extends 'base.html.twig' %}
+
+{% block title %}User Portfolio History{% endblock %}
+
+{% block body %}
+    <div class="col-span-full" x-data="UserSelect()">
+        <div>
+            <div class="relative mt-2">
+                <button type="button" x-on:click="toggleAccountDropdown();" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+                              <span class="flex items-center">
+                                <img x-bind:src="selectedAccountThumbnail"
+                                     alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                <span class="ml-3 block truncate" x-html="getAccountName()"></span>
+                              </span>
+
+                    <span class="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
+                                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"/>
+                                </svg>
+                              </span>
+                </button>
+
+                <!--
+                  Select popover, show/hide based on select state.
+
+                  Entering: ""
+                    From: ""
+                    To: ""
+                  Leaving: "transition ease-in duration-100"
+                    From: "opacity-100"
+                    To: "opacity-0"
+                -->
+                <ul x-show="dropdownAccountOpen" class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+                    <!--
+                      Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
+
+                      Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
+                    -->
+                    {% for u in users %}
+                        <li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-50 hover:cursor-pointer" id="listbox-option-0" role="option">
+                            <div class="flex items-center" x-on:click="selectAccount({{ u.id }}, {{ u.realname|json_encode|e('html_attr') }}, {{ u.username|json_encode|e('html_attr') }});">
+                                <img src="/assets/images/user_profile_pictures/{{ u.id }}.jpg" alt="" class="h-5 w-5 flex-shrink-0 rounded-full">
+                                <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
+                                <span class="ml-3 block truncate font-normal">{{ u.realname }} ({{ u.username }})</span>
+                            </div>
+
+                            <!--
+                              Checkmark, only display for selected option.
+
+                              Highlighted: "text-white", Not Highlighted: "text-indigo-600"
+                            -->
+                            <span x-show="checkAccountSelected({{ u.id }})" class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                                      </svg>
+                                    </span>
+                        </li>
+                    {% endfor %}
+
+                    <!-- More items... -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyGrid" style="height:800px;"></div>
+
+    <script>
+        function UserSelect() {
+            return {
+                dropdownAccountOpen: false,
+                selectedAccount: {{ account.id }},
+                selectedAccountName: {{ account.realname|json_encode|raw }},
+                selectedAccountUsername: {{ account.username|json_encode|raw }},
+                selectedAccountThumbnail: '/assets/images/user_profile_pictures/{{ account.id }}.jpg',
+                loadRequest: 0,
+
+                checkAccountSelected(id) {
+                    return this.selectedAccount === id;
+                },
+
+                getAccountName() {
+                    return this.selectedAccountName + " (" + this.selectedAccountUsername + ")";
+                },
+
+                selectAccount(id, name, user) {
+                    this.selectedAccount = id;
+                    this.selectedAccountName = name;
+                    this.selectedAccountUsername = user;
+                    this.selectedAccountThumbnail = "/assets/images/user_profile_pictures/" + id + ".jpg";
+                    this.toggleAccountDropdown();
+                    this.loadHistory(id);
+                },
+
+                loadHistory(id) {
+                    // Ignore out-of-order responses if the user switches accounts quickly.
+                    const request = ++this.loadRequest;
+                    gridApi.setGridOption('loading', true);
+
+                    $.post("/all/portfolio-history/" + id, {}, (json) => {
+                        if (request !== this.loadRequest) return;
+                        gridApi.setGridOption('rowData', json.success ? json.rows : []);
+                        gridApi.setGridOption('loading', false);
+                    }, "json").fail(() => {
+                        if (request !== this.loadRequest) return;
+                        gridApi.setGridOption('rowData', []);
+                        gridApi.setGridOption('loading', false);
+                    });
+                },
+
+                toggleAccountDropdown() {
+                    this.dropdownAccountOpen = (!this.dropdownAccountOpen);
+                }
+            }
+        }
+    </script>
+
+    <script>
+        class MoneyRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = "$" + params.value.toFixed(2);
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-$" + Math.abs(params.value).toFixed(2);
+                }
+
+
+                this.eGui = document.createElement('span');
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        class PercentRenderer  {
+            eGui;
+
+            // Optional: Params for rendering. The same params that are passed to the cellRenderer function.
+            init(params) {
+                const companyLogo = document.createElement('span');
+                if (params.value === null)
+                {
+                    params.value = "";
+                }
+
+                companyLogo.innerHTML = params.value.toFixed(2) + "%";
+
+                if(params.value < 0){
+                    companyLogo.innerHTML = "-" + Math.abs(params.value).toFixed(2) + "%";
+                }
+
+
+                this.eGui = document.createElement('span');
+                if(params.value > 0){
+                    this.eGui.setAttribute('style', 'color:green;');
+                } else if (params.value < 0) {
+                    this.eGui.setAttribute('style', 'color:red;');
+                }
+
+                this.eGui.appendChild(companyLogo);
+            }
+
+            // Required: Return the DOM element of the component, this is what the grid puts into the cell
+            getGui() {
+                return this.eGui;
+            }
+
+            // Required: Get the cell to refresh.
+            refresh(params) {
+                return false;
+            }
+        }
+    </script>
+
+    <script>
+        let gridApi;
+        const myGridElement = document.querySelector('#historyGrid');
+
+        const gridOptions = {
+            // Row Data: The data to be displayed.
+
+            rowData: {{ rows|json_encode|raw }},
+
+            // Column Definitions: Defines the columns to be displayed.
+
+            defaultColDef: {
+                flex: 1,
+                cellStyle: { textAlign: 'center' }
+            },
+
+            columnDefs: [
+                {field:"week_start", headerName:"Start Date"},
+                {field:"week_end", headerName:"End Date"},
+                {field:"amount", headerName:"Amount", cellRenderer: MoneyRenderer},
+                {field:"week_change", headerName:"Week Change",cellRenderer: PercentRenderer},
+                {field:"month_change", headerName:"Month Change",cellRenderer: PercentRenderer},
+                {field:"year_change", headerName:"Year Change", cellRenderer: PercentRenderer},
+                {field:"high_diff", headerName:"High Point Diff", cellRenderer: PercentRenderer},
+            ],
+        };
+
+        gridApi = agGrid.createGrid(myGridElement, gridOptions);
+
+    </script>
+{% endblock %}
