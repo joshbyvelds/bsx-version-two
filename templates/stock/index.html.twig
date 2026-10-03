@@ -195,7 +195,7 @@
                 {% endif %}
 
                 {% if stock.company.useSVG %}
-                    <div class="stock_bubble {% if update_disabled == false %}waiting{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-option-id="{{ option.id }}" data-name="{{ stock.company.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/svg/{{ stock.company.ticker }}.svg'); background-size: {{ stock.company.svgSize }}">
+                    <div class="stock_bubble {% if update_disabled == false %}waiting{% endif %} {{ stock_class }}" data-id="{{ stock.id }}" data-option-id="{{ option.id }}" data-name="{{ stock.company.name }}" data-perform="{{ percent }}" data-value="{{ diff }}" style="background-color:#{{ stock.company.bgColor }};background-image:url('/assets/images/company_logos/svg/{{ stock.company.ticker }}.svg'); background-size: {{ stock.company.svgSize }}%">
                         <div class="inside">
                             <div class="inside_content">
                                 {{ option.name }}<br />
@@ -873,6 +873,14 @@
             if(updateDisabled === 1){return;}
             stockUpdateCounter = 0;
             updateStock(stock_ids_array[stockUpdateCounter]);
+
+            $(".stock_bubble").each(function(index){
+                var stock = $(this);
+                if(!stock_ids_array.includes(stock.attr("data-id"))){
+                    stock.removeClass("waiting");
+                }
+            })
+
         }
 
         function updateStock(stock_id){

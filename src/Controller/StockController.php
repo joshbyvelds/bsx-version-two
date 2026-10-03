@@ -997,7 +997,8 @@ class StockController extends AbstractController
                 }
             }
 
-            $trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
+            //$trade_profit = ($total - (9.95 - ($wo->getContracts() * 1.25)));
+            $trade_profit = ($total - ($wo->getContracts() * 0.90)); // New Price at Sept 14th, 2026.. no flat fee
             $profit_percent = $settings->getTenPercentDepositPercentage();
 
             // If option payment is locked, don't add to profit wallet (Add it when payment is unlocked)

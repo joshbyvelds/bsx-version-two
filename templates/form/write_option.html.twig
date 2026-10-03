@@ -302,7 +302,7 @@
     <script>
         $(() => {
             $("#written_option_price, #written_option_contracts").on("change", function(){
-                var cost = floor10(((parseFloat($("#written_option_price").val()) * parseInt($("#written_option_contracts").val())) * 100) - (9.95 + (1.25 * parseInt($(" #written_option_contracts").val()))), -2) ;
+                var cost = floor10(((parseFloat($("#written_option_price").val()) * parseInt($("#written_option_contracts").val())) * 100) - ((0.90 * parseInt($(" #written_option_contracts").val()))), -2) ;
                 $("#written_option_total").val(cost);
             });
         });
