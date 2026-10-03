@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Play;
 use App\Entity\Stock;
+use App\Entity\User;
+use App\Service\PortfolioTotalService;
 use App\Entity\WrittenOption;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -148,5 +150,35 @@ class AdminController extends AbstractController
         }
 
         return new JsonResponse(array('success' => false, 'reason' => "Non XMLHttp Request"));
+    }
+
+    #[Route('/all/users/ids', name: 'all_user_ids', methods: 'POST')]
+    public function userIds(ManagerRegistry $doctrine): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPERADMIN');
+
+        $users = [];
+        foreach ($doctrine->getRepository(User::class)->findAll() as $u) {
+            $users[] = [$u->getId(), $u->getUsername()];
+        }
+
+        return new JsonResponse(['success' => true, 'users' => $users]);
+    }
+
+    #[Route('/all/weeklytotals/update', name: 'update_weekly_totals', methods: 'POST')]
+    public function updateWeeklyTotal(Request $request, ManagerRegistry $doctrine, PortfolioTotalService $totals): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_SUPERADMIN');
+
+        $user = $doctrine->getRepository(User::class)->find((int) $request->get('user_id'));
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'reason' => 'User not found']);
+        }
+
+        $total = $totals->calculateTotal($user);
+        $result = $totals->applyWeeklyTotal($user, $total);
+        $doctrine->getManager()->flush();
+
+        return new JsonResponse(['success' => true, 'total' => round($total, 2)] + $result);
     }
 }
